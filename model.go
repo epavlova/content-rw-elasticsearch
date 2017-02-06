@@ -259,8 +259,8 @@ func convertToESContentModel(enrichedContent enrichedContentModel, contentType s
 				esModel.CmrRegions = append(esModel.CmrRegions, annotation.Thing.PrefLabel)
 				esModel.CmrRegionsIds = append(esModel.CmrRegionsIds, annotation.Thing.ID)
 			case "http://www.ft.com/ontology/Genre":
-				esModel.CmrGenre = annotation.Thing.PrefLabel
-				esModel.CmrGenreId = annotation.Thing.ID
+				esModel.CmrGenre = append(esModel.CmrGenre, annotation.Thing.PrefLabel)
+				esModel.CmrGenreId = append(esModel.CmrGenreId, annotation.Thing.ID)
 			case "http://www.ft.com/ontology/SpecialReport":
 				esModel.CmrSpecialreports = append(esModel.CmrSpecialreports, annotation.Thing.PrefLabel)
 				esModel.CmrSpecialreportsIds = append(esModel.CmrSpecialreportsIds, annotation.Thing.ID)
