@@ -3,9 +3,9 @@ package main
 import (
 	awsauth "github.com/smartystreets/go-aws-auth"
 	"gopkg.in/olivere/elastic.v2"
+	"log"
 	"net/http"
 	"os"
-	"log"
 )
 
 type esAccessConfig struct {

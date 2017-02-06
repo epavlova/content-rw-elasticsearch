@@ -1,13 +1,13 @@
 package main
 
 import (
-	"github.com/jawher/mow.cli"
-	"gopkg.in/olivere/elastic.v2"
+	"github.com/Financial-Times/go-fthealth/v1a"
+	"github.com/Financial-Times/http-handlers-go/httphandlers"
 	log "github.com/Sirupsen/logrus"
 	"github.com/gorilla/mux"
-	"github.com/Financial-Times/http-handlers-go/httphandlers"
+	"github.com/jawher/mow.cli"
 	"github.com/rcrowley/go-metrics"
-	"github.com/Financial-Times/go-fthealth/v1a"
+	"gopkg.in/olivere/elastic.v2"
 	"net/http"
 	"os"
 )
@@ -96,8 +96,7 @@ func routeRequests(port *string, contentWriter *contentWriter, healthService *he
 
 	http.Handle("/", monitoringRouter)
 
-	if err := http.ListenAndServe(":" + *port, nil); err != nil {
+	if err := http.ListenAndServe(":"+*port, nil); err != nil {
 		log.Fatalf("Unable to start: %v", err)
 	}
 }
-
