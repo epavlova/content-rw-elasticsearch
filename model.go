@@ -1,7 +1,5 @@
 package main
 
-import "golang.org/x/net/ipv4"
-
 type enrichedContentModel struct {
 	Content  contentModel `json:"content"`
 	Metadata annotations  `json:"metadata"`
