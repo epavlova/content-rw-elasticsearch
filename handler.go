@@ -30,14 +30,14 @@ func (service *contentWriter) writeData(writer http.ResponseWriter, request *htt
 	}
 	defer request.Body.Close()
 
-	if content.Content.Uuid != uuid {
+	if content.Content.UUID != uuid {
 		writer.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	payload := convertToESContentModel(content, contentType)
 
-	_, err = (*service.elasticService).writeData(m[contentType].collection, uuid, payload)
+	_, err = (*service.elasticService).writeData(contentTypeMap[contentType].collection, uuid, payload)
 	if err != nil {
 		log.Errorf(err.Error())
 		writer.WriteHeader(http.StatusInternalServerError)
@@ -51,7 +51,7 @@ func (service *contentWriter) readData(writer http.ResponseWriter, request *http
 	uuid := mux.Vars(request)["id"]
 	contentType := mux.Vars(request)["content-type"]
 
-	getResult, err := (*service.elasticService).readData(m[contentType].collection, uuid)
+	getResult, err := (*service.elasticService).readData(contentTypeMap[contentType].collection, uuid)
 
 	if err != nil {
 		log.Errorf(err.Error())
@@ -75,7 +75,7 @@ func (service *contentWriter) deleteData(writer http.ResponseWriter, request *ht
 	uuid := mux.Vars(request)["id"]
 	contentType := mux.Vars(request)["content-type"]
 
-	res, err := (*service.elasticService).deleteData(m[contentType].collection, uuid)
+	res, err := (*service.elasticService).deleteData(contentTypeMap[contentType].collection, uuid)
 
 	if err != nil {
 		log.Errorf(err.Error())
