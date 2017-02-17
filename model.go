@@ -20,6 +20,7 @@ type contentModel struct {
 	Title              string `json:"title"`
 	MarkedDeleted      bool   `json:"marked_deleted"`
 	Byline             string `json:"byline"`
+	Identifiers        []identifier `json:"identifiers"`
 	PublishedDate      string `json:"publishedDate"`
 	FirstPublishedDate string `json:"firstPublishedDate"`
 	Standfirst         string `json:"standfirst"`
@@ -27,6 +28,11 @@ type contentModel struct {
 	Description        string `json:"description"`
 	MainImage          string `json:"mainImage"`
 	LastModified       string `json:"lastModified"`
+}
+
+type identifier struct {
+	Authority       string `json:"authority"`
+	IdentifierValue string `json:"identifierValue"`
 }
 
 type annotations []annotation
@@ -45,7 +51,6 @@ type thing struct {
 }
 
 type esContentModel struct {
-	// todo fix types
 	UID                   *string  `json:"uid"`
 	LastMetadataPublish   *string  `json:"last_metadata_publish"`
 	IndexDate             *string  `json:"index_date"`
@@ -168,8 +173,6 @@ var contentTypeMap = map[string]ContentType{
 }
 
 func convertToESContentModel(enrichedContent enrichedContentModel, contentType string) esContentModel {
-
-	//todo marked deleted
 	esModel := esContentModel{}
 
 	esModel.ContentType = new(string)
@@ -212,7 +215,6 @@ func convertToESContentModel(enrichedContent enrichedContentModel, contentType s
 		squaredCaptionReplacer,
 		duplicateWhiteSpaceRemover)
 
-	//esModel.ShortDescription = enrichedContent.Content.Description       string        `json:"description"`
 	if enrichedContent.Content.MainImage != "" {
 		esModel.ThumbnailURL = new(string)
 		*esModel.ThumbnailURL = fmt.Sprintf(imageServiceURL, enrichedContent.Content.MainImage)

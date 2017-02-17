@@ -10,7 +10,16 @@ import (
 	"gopkg.in/olivere/elastic.v2"
 	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
+	"github.com/Financial-Times/message-queue-gonsumer/consumer"
+	"encoding/json"
+	"github.com/kr/pretty"
+	"sync"
+	"strings"
 )
+
+var esServiceInstance esServiceI
 
 func main() {
 	app := cli.App("content-rw-es", "Service for loading contents into elasticsearch")
@@ -49,6 +58,45 @@ func main() {
 		esEndpoint: *esEndpoint,
 	}
 
+	sourceAddresses := app.Strings(cli.StringsOpt{
+		Name:   "source-addresses",
+		Value:  []string{},
+		Desc:   "Addresses used by the queue consumer to connect to the queue",
+		EnvVar: "SRC_ADDR",
+	})
+	sourceGroup := app.String(cli.StringOpt{
+		Name:   "source-group",
+		Value:  "",
+		Desc:   "Group used to read the messages from the queue",
+		EnvVar: "SRC_GROUP",
+	})
+	sourceTopic := app.String(cli.StringOpt{
+		Name:   "source-topic",
+		Value:  "",
+		Desc:   "The topic to read the meassages from",
+		EnvVar: "SRC_TOPIC",
+	})
+	sourceQueue := app.String(cli.StringOpt{
+		Name:   "source-queue",
+		Value:  "",
+		Desc:   "The header identifying the queue to read the messages from",
+		EnvVar: "SRC_QUEUE",
+	})
+	sourceConcurrentProcessing := app.Bool(cli.BoolOpt{
+		Name:   "source-concurrent-processing",
+		Value:  false,
+		Desc:   "Whether the consumer uses concurrent processing for the messages",
+		EnvVar: "SRC_CONCURRENT_PROCESSING",
+	})
+
+	queueConfig := consumer.QueueConfig{
+		Addrs:                *sourceAddresses,
+		Group:                *sourceGroup,
+		Topic:                *sourceTopic,
+		Queue:                *sourceQueue,
+		ConcurrentProcessing: *sourceConcurrentProcessing,
+	}
+
 	log.SetLevel(log.InfoLevel)
 	log.Infof("[Startup] Content RW Elasticsearch is starting ")
 
@@ -63,15 +111,17 @@ func main() {
 		}
 
 		//create writer service
-		var esService esServiceI = newEsService(elasticClient, *indexName)
+		esServiceInstance = newEsService(elasticClient, *indexName)
 
-		contentWriter := newESWriter(&esService)
+		contentWriter := newESWriter(&esServiceInstance)
 
 		//create health service
 		var esHealthService esHealthServiceI = newEsHealthService(elasticClient)
 		healthService := newHealthService(&esHealthService)
 
 		routeRequests(port, contentWriter, healthService)
+
+		readMessages(queueConfig)
 	}
 	err := app.Run(os.Args)
 	if err != nil {
@@ -98,5 +148,71 @@ func routeRequests(port *string, contentWriter *contentWriter, healthService *he
 
 	if err := http.ListenAndServe(":"+*port, nil); err != nil {
 		log.Fatalf("Unable to start: %v", err)
+	}
+}
+
+func readMessages(config consumer.QueueConfig) {
+	messageConsumer := consumer.NewConsumer(config, handleMessage, http.Client{})
+	log.Printf("[Startup] Consumer: %# v", pretty.Formatter(messageConsumer))
+
+	var consumerWaitGroup sync.WaitGroup
+	consumerWaitGroup.Add(1)
+
+	go func() {
+		messageConsumer.Start()
+		consumerWaitGroup.Done()
+	}()
+
+	ch := make(chan os.Signal)
+	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
+	<-ch
+	messageConsumer.Stop()
+	consumerWaitGroup.Wait()
+}
+
+func handleMessage(msg consumer.Message) {
+	tid := msg.Headers["X-Request-Id"]
+
+	var combinedPostPublicationEvent enrichedContentModel
+	err := json.Unmarshal([]byte(msg.Body), &combinedPostPublicationEvent)
+	if err != nil {
+		log.Errorf("[%s] Cannot unmarshal message body:[%v]", tid, err.Error())
+		return
+	}
+
+	uuid := combinedPostPublicationEvent.Content.UUID
+	log.Printf("[%s] Processing combined post publication event for uuid [%s]", tid, uuid)
+
+	var contentType string
+
+	for _, identifier := range combinedPostPublicationEvent.Content.Identifiers {
+		if strings.HasPrefix(identifier.Authority, "http://api.ft.com/system/FT-LABS-WP") {
+			contentType = "blogPost"
+		} else if strings.HasPrefix(identifier.Authority, "http://api.ft.com/system/FTCOM-METHODE") {
+			contentType = "article"
+		} else if strings.HasPrefix(identifier.Authority, "http://api.ft.com/system/BRIGHTCOVE") {
+			contentType = "video"
+		}
+	}
+
+	if contentType == "" {
+		log.Errorf("Failed to index content with UUID %s. Could not infer type of content.", uuid)
+		return
+	}
+
+	if combinedPostPublicationEvent.Content.MarkedDeleted {
+		_, err = esServiceInstance.deleteData(contentTypeMap[contentType].collection, uuid)
+		if err != nil {
+			log.Errorf(err.Error())
+			return
+		}
+	} else {
+		payload := convertToESContentModel(combinedPostPublicationEvent, contentType)
+
+		_, err = esServiceInstance.writeData(contentTypeMap[contentType].collection, uuid, payload)
+		if err != nil {
+			log.Errorf(err.Error())
+			return
+		}
 	}
 }
