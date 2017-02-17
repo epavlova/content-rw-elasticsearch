@@ -21,7 +21,7 @@ func interactiveGraphicsMarkupTagRemover(input string) string {
 
 }
 func pullTagTransformer(input string) string {
-	return regexp.MustCompile("<pull-quote(\\s|>).*?</pull-quote>").ReplaceAllString(input, "")
+	return regexp.MustCompile("(?s)<pull-quote(\\s|>).*?</pull-quote>").ReplaceAllString(input, "")
 }
 func htmlEntityTransformer(input string) string {
 	text := regexp.MustCompile("&nbsp;").ReplaceAllString(input, " ")
