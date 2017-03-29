@@ -154,7 +154,7 @@ func routeRequests(port *string, contentWriter *contentWriter, healthService *he
 }
 
 func readMessages(config consumer.QueueConfig) {
-	messageConsumer := consumer.NewConsumer(config, handleMessage, http.Client{})
+	messageConsumer := consumer.NewConsumer(config, handleMessage, &http.Client{})
 	log.Printf("[Startup] Consumer: %# v", pretty.Formatter(messageConsumer))
 
 	var consumerWaitGroup sync.WaitGroup
