@@ -21,7 +21,7 @@ func (service *healthService) clusterIsHealthyCheck() v1a.Check {
 	return v1a.Check{
 		BusinessImpact:   "Full or partial degradation in serving requests from Elasticsearch",
 		Name:             "Check Elasticsearch cluster health",
-		PanicGuide:       "todo",
+		PanicGuide:       "todo", //todo
 		Severity:         1,
 		TechnicalSummary: "Elasticsearch cluster is not healthy. Details on /__health-details",
 		Checker:          service.healthChecker,
@@ -43,7 +43,7 @@ func (service *healthService) connectivityHealthyCheck() v1a.Check {
 	return v1a.Check{
 		BusinessImpact:   "Could not connect to Elasticsearch",
 		Name:             "Check connectivity to the Elasticsearch cluster",
-		PanicGuide:       "todo",
+		PanicGuide:       "todo", //todo
 		Severity:         1,
 		TechnicalSummary: "Connection to Elasticsearch cluster could not be created. Please check your AWS credentials.",
 		Checker:          service.connectivityChecker,

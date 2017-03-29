@@ -6,6 +6,15 @@ import (
 	"strings"
 )
 
+var interactiveGraphicsRegex = regexp.MustCompile("(?s)<div[\\s]*class=\"interactive-comp\">(.*?)</div>")
+var pullTagRegex = regexp.MustCompile("(?s)<pull-quote(\\s|>).*?</pull-quote>")
+var nbspRegex = regexp.MustCompile("&nbsp;")
+var scriptRegex = regexp.MustCompile("(?i)(?s)<script[^>]*>(.*?)</script>")
+var tagRegex = regexp.MustCompile("<[^>]*>")
+var embedRegex = regexp.MustCompile("embed\\d+")
+var squaredCaptionRegex = regexp.MustCompile("\\[/?caption[^]]*]")
+var duplicateWhiteSpaceRegex = regexp.MustCompile("\\s+")
+
 type TextTransformer func(string) string
 
 func transformText(text string, transformers ...TextTransformer) string {
@@ -17,35 +26,35 @@ func transformText(text string, transformers ...TextTransformer) string {
 }
 
 func interactiveGraphicsMarkupTagRemover(input string) string {
-	return regexp.MustCompile("(?s)<div[\\s]*class=\"interactive-comp\">(.*?)</div>").ReplaceAllString(input, "")
+	return interactiveGraphicsRegex.ReplaceAllString(input, "")
 
 }
 func pullTagTransformer(input string) string {
-	return regexp.MustCompile("(?s)<pull-quote(\\s|>).*?</pull-quote>").ReplaceAllString(input, "")
+	return pullTagRegex.ReplaceAllString(input, "")
 }
 func htmlEntityTransformer(input string) string {
-	text := regexp.MustCompile("&nbsp;").ReplaceAllString(input, " ")
+	text := nbspRegex.ReplaceAllString(input, " ")
 	return html.UnescapeString(text)
 }
 
 func scriptTagRemover(input string) string {
-	return regexp.MustCompile("(?i)(?s)<script[^>]*>(.*?)</script>").ReplaceAllString(input, "")
+	return scriptRegex.ReplaceAllString(input, "")
 }
 
 func tagsRemover(input string) string {
-	return regexp.MustCompile("<[^>]*>").ReplaceAllString(input, "")
+	return tagRegex.ReplaceAllString(input, "")
 }
 func outerSpaceTrimmer(input string) string {
 	return strings.TrimSpace(input)
 }
 
 func embed1Replacer(input string) string {
-	return regexp.MustCompile("embed\\d+").ReplaceAllString(input, "")
+	return embedRegex.ReplaceAllString(input, "")
 }
 func squaredCaptionReplacer(input string) string {
-	return regexp.MustCompile("\\[/?caption[^]]*]").ReplaceAllString(input, "")
+	return squaredCaptionRegex.ReplaceAllString(input, "")
 
 }
 func duplicateWhiteSpaceRemover(input string) string {
-	return regexp.MustCompile("\\s+").ReplaceAllString(input, " ")
+	return duplicateWhiteSpaceRegex.ReplaceAllString(input, " ")
 }

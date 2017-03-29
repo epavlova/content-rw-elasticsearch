@@ -83,7 +83,56 @@ func TestBlogTransform(t *testing.T) {
 	assert.Equal(expectedText, transformedText, fmt.Sprintf("Expected text %s differs from actual text %s ", transformedText, expectedText))
 }
 
-func TestHtmlTransform(t *testing.T) {
+func TestTransformBlank(t *testing.T) {
+	assert := assert.New(t)
+	transformedText := transformText("",
+		interactiveGraphicsMarkupTagRemover,
+		pullTagTransformer,
+		htmlEntityTransformer,
+		scriptTagRemover,
+		tagsRemover,
+		outerSpaceTrimmer,
+		embed1Replacer,
+		squaredCaptionReplacer,
+		duplicateWhiteSpaceRemover)
+	assert.Equal("", transformedText, "Empty string not transformed properly")
+}
+
+func TestInteractiveGraphicsMarkupTagRemover(t *testing.T) {
+	assert := assert.New(t)
+	assert.Equal("testcomponent",
+		interactiveGraphicsMarkupTagRemover("test<div class=\"interactive-comp\">interactive</div>component"),
+		"Interactive components transformed properly")
+}
+func TestPullTagTransformer(t *testing.T) {
+	assert := assert.New(t)
+	assert.Equal("this is a test followed by another test", pullTagTransformer("this is a test<pull-quote>pull quote</pull-quote> followed by another test<pull-quote>\npull quote\n</pull-quote>"), "Pull tags not transformed properly")
+}
+func TestHtmlEntityTransformer(t *testing.T) {
 	assert := assert.New(t)
 	assert.Equal("test ‑£& >&", htmlEntityTransformer("test &#8209;&pound;&amp;&nbsp;&gt;&"), "Entities not transformed properly")
+}
+func TestScriptTagRemover(t *testing.T) {
+	assert := assert.New(t)
+	assert.Equal("Short as can be", scriptTagRemover("Short as <script>a script</script>can be"), "Script tags not transformed properly")
+}
+func TestTagsRemover(t *testing.T) {
+	assert := assert.New(t)
+	assert.Equal("this is a simple test for tag removal", tagsRemover("this is a <b>simple </b>test<br> for <span attr=\"val\">tag </span>removal"), "Tags not transformed properly")
+}
+func TestOuterSpaceTrimmer(t *testing.T) {
+	assert := assert.New(t)
+	assert.Equal("just the  goods", outerSpaceTrimmer("\n  just the  goods   \t"), "Space not trimmed properly")
+}
+func TestEmbed1Replacer(t *testing.T) {
+	assert := assert.New(t)
+	assert.Equal("takes one to ", embed1Replacer("takes one to embed1"), "Embed not transformed properly")
+}
+func TestSquaredCaptionReplacer(t *testing.T) {
+	assert := assert.New(t)
+	assert.Equal("to  or not to ", squaredCaptionReplacer("to [caption something] or not to [/caption something]"), "Squared caption not transformed properly")
+}
+func TestDuplicateWhiteSpaceRemover(t *testing.T) {
+	assert := assert.New(t)
+	assert.Equal(" lots of space but no room", duplicateWhiteSpaceRemover(" lots  of\t\tspace\r\nbut \t\nno room"), "Whitespace not transformed properly")
 }

@@ -1,33 +1,51 @@
 package main
 
 import (
-	"fmt"
+	"encoding/base64"
+	log "github.com/Sirupsen/logrus"
+	"strings"
 )
 
-const primaryClassification = "isPrimarilyClassifiedBy"
-const about = "about"
-const hasAuthor = "hasAuthor"
-const apiURLPrefix = "https://www.ft.com/content/"
-const imageServiceURL = "https://www.ft.com/__origami/service/image/v2/images/raw/http%%3A%%2F%%2Fcom.ft.imagepublish.prod-us.s3.amazonaws.com%%2F%s?source=search&fit=scale-down&width=167"
+const (
+	primaryClassification = "isPrimarilyClassifiedBy"
+	about                 = "about"
+	hasAuthor             = "hasAuthor"
+	apiURLPrefix          = "https://www.ft.com/content/"
+	imageServiceURL       = "https://www.ft.com/__origami/service/image/v2/images/raw/http%3A%2F%2Fcom.ft.imagepublish.prod-us.s3.amazonaws.com%2F[image_uuid]?source=search&fit=scale-down&width=167"
+	imagePlaceholder      = "[image_uuid]"
+
+	tmeOrganisations  = "ON"
+	tmePeople         = "PN"
+	tmeAuthors        = "Authors"
+	tmeBrands         = "Brands"
+	tmeSubjects       = "Subjects"
+	tmeSections       = "Sections"
+	tmeTopics         = "Topics"
+	tmeRegions        = "GL"
+	tmeGenres         = "Genres"
+	tmeSpecialReports = "SpecialReports"
+)
 
 type enrichedContentModel struct {
+	UUID     string       `json:"uuid"`
 	Content  contentModel `json:"content"`
-	Metadata annotations  `json:"metadata"`
+	Metadata annotations  `json:"v1-metadata"`
 }
 
 type contentModel struct {
-	UUID               string `json:"uuid"`
-	Title              string `json:"title"`
-	MarkedDeleted      bool   `json:"marked_deleted"`
-	Byline             string `json:"byline"`
+	UUID               string       `json:"uuid"`
+	Title              string       `json:"title"`
+	Body               string       `json:"body"`
 	Identifiers        []identifier `json:"identifiers"`
-	PublishedDate      string `json:"publishedDate"`
-	FirstPublishedDate string `json:"firstPublishedDate"`
-	Standfirst         string `json:"standfirst"`
-	Body               string `json:"body"`
-	Description        string `json:"description"`
-	MainImage          string `json:"mainImage"`
-	LastModified       string `json:"lastModified"`
+	PublishedDate      string       `json:"publishedDate"`
+	LastModified       string       `json:"lastModified"`
+	FirstPublishedDate string       `json:"firstPublishedDate"`
+	MarkedDeleted      bool         `json:"marked_deleted"`
+	Byline             string       `json:"byline"`
+	Standfirst         string       `json:"standfirst"`
+	Description        string       `json:"description"`
+	MainImage          string       `json:"mainImage"`
+	PublishReference   string       `json:"publishReference"`
 }
 
 type identifier struct {
@@ -48,6 +66,9 @@ type thing struct {
 	PrefLabel string   `json:"prefLabel,omitempty"`
 	Types     []string `json:"types,omitempty"`
 	Predicate string   `json:"predicate,omitempty"`
+
+	//INFO from the public-annotations-api
+	TmeIDs []string `json:"tmeIDs,omitempty"`
 }
 
 type esContentModel struct {
@@ -146,6 +167,7 @@ type esContentModel struct {
 	CompanyTickerCodeEditorial []string `json:"companyTickerCodeEditorial"`
 	ArticleTypes               []string `json:"articleTypes"`
 	ArticleBrands              []string `json:"articleBrands"`
+	PublishReference           string   `json:"publishReference"`
 }
 
 type ContentType struct {
@@ -217,60 +239,74 @@ func convertToESContentModel(enrichedContent enrichedContentModel, contentType s
 
 	if enrichedContent.Content.MainImage != "" {
 		esModel.ThumbnailURL = new(string)
-		*esModel.ThumbnailURL = fmt.Sprintf(imageServiceURL, enrichedContent.Content.MainImage)
+		*esModel.ThumbnailURL = strings.Replace(imageServiceURL, imagePlaceholder, enrichedContent.Content.MainImage, -1)
 	}
 
 	esModel.URL = new(string)
 	*esModel.URL = apiURLPrefix + enrichedContent.Content.UUID
 
+	esModel.PublishReference = enrichedContent.Content.PublishReference
+
 	for _, annotation := range enrichedContent.Metadata {
+		tmeID := annotation.Thing.ID
+		if len(annotation.Thing.TmeIDs) != 0 {
+			tmeID = annotation.Thing.TmeIDs[0]
+		} else {
+			log.Warnf("Indexing content with uuid %s - TME id missing for concept with id %s, using thing id instead",
+				&(enrichedContent.Content.UUID), annotation.Thing.ID)
+		}
 		for _, taxonomy := range annotation.Thing.Types {
 			switch taxonomy {
 			case "http://www.ft.com/ontology/organisation/Organisation":
 				esModel.CmrOrgnames = append(esModel.CmrOrgnames, annotation.Thing.PrefLabel)
-				esModel.CmrOrgnamesIds = append(esModel.CmrOrgnamesIds, annotation.Thing.ID)
+				esModel.CmrOrgnamesIds = append(esModel.CmrOrgnamesIds, getCmrID(tmeOrganisations, tmeID))
 			case "http://www.ft.com/ontology/person/Person":
 				esModel.CmrPeople = append(esModel.CmrPeople, annotation.Thing.PrefLabel)
-				esModel.CmrPeopleIds = append(esModel.CmrPeopleIds, annotation.Thing.ID)
+				esModel.CmrPeopleIds = append(esModel.CmrPeopleIds, getCmrID(tmePeople, tmeID))
 				if annotation.Thing.Predicate == hasAuthor {
 					esModel.CmrAuthors = append(esModel.CmrAuthors, annotation.Thing.PrefLabel)
-					esModel.CmrAuthorsIds = append(esModel.CmrAuthorsIds, annotation.Thing.ID)
+					esModel.CmrAuthorsIds = append(esModel.CmrAuthorsIds, getCmrID(tmeAuthors, tmeID))
 				}
 			case "http://www.ft.com/ontology/company/Company":
 				//todo make sure we get annotations in this taxo
 				esModel.CmrCompanynames = append(esModel.CmrCompanynames, annotation.Thing.PrefLabel)
-				esModel.CmrCompanynamesIds = append(esModel.CmrCompanynamesIds, annotation.Thing.ID)
+				esModel.CmrCompanynamesIds = append(esModel.CmrCompanynamesIds, getCmrID(tmeOrganisations, tmeID))
 			case "http://www.ft.com/ontology/product/Brand":
 				esModel.CmrBrands = append(esModel.CmrBrands, annotation.Thing.PrefLabel)
-				esModel.CmrBrandsIds = append(esModel.CmrBrandsIds, annotation.Thing.ID)
+				esModel.CmrBrandsIds = append(esModel.CmrBrandsIds, getCmrID(tmeBrands, tmeID))
 			case "http://www.ft.com/ontology/Subject":
 				esModel.CmrSubjects = append(esModel.CmrSubjects, annotation.Thing.PrefLabel)
-				esModel.CmrSubjectsIds = append(esModel.CmrSubjectsIds, annotation.Thing.ID)
+				esModel.CmrSubjectsIds = append(esModel.CmrSubjectsIds, getCmrID(tmeSubjects, tmeID))
 			case "http://www.ft.com/ontology/Section":
 				esModel.CmrSections = append(esModel.CmrSections, annotation.Thing.PrefLabel)
-				esModel.CmrSectionsIds = append(esModel.CmrSectionsIds, annotation.Thing.ID)
+				esModel.CmrSectionsIds = append(esModel.CmrSectionsIds, getCmrID(tmeSections, tmeID))
 				if annotation.Thing.Predicate == primaryClassification {
 					esModel.CmrPrimarysection = &(annotation.Thing.PrefLabel)
-					esModel.CmrPrimarysectionID = &(annotation.Thing.ID)
+					esModel.CmrPrimarysectionID = new(string)
+					*esModel.CmrPrimarysectionID = getCmrID(tmeSections, tmeID)
 				}
 			case "http://www.ft.com/ontology/Topic":
 				esModel.CmrTopics = append(esModel.CmrTopics, annotation.Thing.PrefLabel)
-				esModel.CmrTopicsIds = append(esModel.CmrTopicsIds, annotation.Thing.ID)
+				esModel.CmrTopicsIds = append(esModel.CmrTopicsIds, getCmrID(tmeTopics, tmeID))
 				if annotation.Thing.Predicate == about {
 					esModel.CmrPrimarytheme = &(annotation.Thing.PrefLabel)
-					esModel.CmrPrimarythemeID = &(annotation.Thing.ID)
+					esModel.CmrPrimarythemeID = new(string)
+					*esModel.CmrPrimarythemeID = getCmrID(tmeTopics, tmeID)
 				}
 			case "http://www.ft.com/ontology/Location":
 				esModel.CmrRegions = append(esModel.CmrRegions, annotation.Thing.PrefLabel)
-				esModel.CmrRegionsIds = append(esModel.CmrRegionsIds, annotation.Thing.ID)
+				esModel.CmrRegionsIds = append(esModel.CmrRegionsIds, getCmrID(tmeRegions, tmeID))
 			case "http://www.ft.com/ontology/Genre":
 				esModel.CmrGenres = append(esModel.CmrGenres, annotation.Thing.PrefLabel)
-				esModel.CmrGenreIds = append(esModel.CmrGenreIds, annotation.Thing.ID)
+				esModel.CmrGenreIds = append(esModel.CmrGenreIds, getCmrID(tmeGenres, tmeID))
 			case "http://www.ft.com/ontology/SpecialReport":
 				esModel.CmrSpecialreports = append(esModel.CmrSpecialreports, annotation.Thing.PrefLabel)
-				esModel.CmrSpecialreportsIds = append(esModel.CmrSpecialreportsIds, annotation.Thing.ID)
+				esModel.CmrSpecialreportsIds = append(esModel.CmrSpecialreportsIds, getCmrID(tmeSpecialReports, tmeID))
 			}
 		}
 	}
 	return esModel
+}
+func getCmrID(taxonomy string, tmeID string) string {
+	return base64.StdEncoding.EncodeToString([]byte(tmeID)) + "-" + base64.StdEncoding.EncodeToString([]byte(taxonomy))
 }

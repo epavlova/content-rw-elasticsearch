@@ -1,22 +1,22 @@
 package main
 
 import (
+	"encoding/json"
 	"github.com/Financial-Times/go-fthealth/v1a"
 	"github.com/Financial-Times/http-handlers-go/httphandlers"
+	"github.com/Financial-Times/message-queue-gonsumer/consumer"
 	log "github.com/Sirupsen/logrus"
 	"github.com/gorilla/mux"
 	"github.com/jawher/mow.cli"
+	"github.com/kr/pretty"
 	"github.com/rcrowley/go-metrics"
 	"gopkg.in/olivere/elastic.v2"
 	"net/http"
 	"os"
 	"os/signal"
-	"syscall"
-	"github.com/Financial-Times/message-queue-gonsumer/consumer"
-	"encoding/json"
-	"github.com/kr/pretty"
-	"sync"
 	"strings"
+	"sync"
+	"syscall"
 )
 
 var esServiceInstance esServiceI
@@ -140,9 +140,11 @@ func routeRequests(port *string, contentWriter *contentWriter, healthService *he
 	monitoringRouter = httphandlers.TransactionAwareRequestLoggingHandler(log.StandardLogger(), monitoringRouter)
 	monitoringRouter = httphandlers.HTTPMetricsHandler(metrics.DefaultRegistry, monitoringRouter)
 
+	//todo add Kafka check
 	http.HandleFunc("/__health", v1a.Handler("Amazon Elasticsearch Service Healthcheck", "Checks for AES", healthService.connectivityHealthyCheck(), healthService.clusterIsHealthyCheck()))
 	http.HandleFunc("/__health-details", healthService.HealthDetails)
 	http.HandleFunc("/__gtg", healthService.GoodToGo)
+	//todo __build-info
 
 	http.Handle("/", monitoringRouter)
 
