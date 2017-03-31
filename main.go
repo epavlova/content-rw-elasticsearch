@@ -27,7 +27,7 @@ func main() {
 		Name:   "port",
 		Value:  "8080",
 		Desc:   "Port to listen on",
-		EnvVar: "PORT",
+		EnvVar: "APP_PORT",
 	})
 	accessKey := app.String(cli.StringOpt{
 		Name:   "aws-access-key",
@@ -58,43 +58,43 @@ func main() {
 		esEndpoint: *esEndpoint,
 	}
 
-	sourceAddresses := app.Strings(cli.StringsOpt{
-		Name:   "source-addresses",
-		Value:  []string{},
+	kafkaProxyAddress := app.Strings(cli.StringsOpt{
+		Name:   "kafka-proxy-address",
+		Value:  "http://localhost:8080",
 		Desc:   "Addresses used by the queue consumer to connect to the queue",
-		EnvVar: "SRC_ADDR",
+		EnvVar: "KAFKA_PROXY_ADDR",
 	})
-	sourceGroup := app.String(cli.StringOpt{
-		Name:   "source-group",
-		Value:  "",
+	kafkaConsumerGroup := app.String(cli.StringOpt{
+		Name:   "kafka-consumer-group",
+		Value:  "default-consumer-group",
 		Desc:   "Group used to read the messages from the queue",
-		EnvVar: "SRC_GROUP",
+		EnvVar: "KAFKA_CONSUMER_GROUP",
 	})
-	sourceTopic := app.String(cli.StringOpt{
-		Name:   "source-topic",
-		Value:  "",
+	kafkaTopic := app.String(cli.StringOpt{
+		Name:   "kafka-topic",
+		Value:  "CombinedPostPublicationEvents",
 		Desc:   "The topic to read the meassages from",
-		EnvVar: "SRC_TOPIC",
+		EnvVar: "KAFKA_TOPIC",
 	})
-	sourceQueue := app.String(cli.StringOpt{
-		Name:   "source-queue",
-		Value:  "",
+	kafkaHeader := app.String(cli.StringOpt{
+		Name:   "kafka-header",
+		Value:  "kafka",
 		Desc:   "The header identifying the queue to read the messages from",
-		EnvVar: "SRC_QUEUE",
+		EnvVar: "KAFKA_HEADER",
 	})
-	sourceConcurrentProcessing := app.Bool(cli.BoolOpt{
-		Name:   "source-concurrent-processing",
+	kafkaConcurrentProcessing := app.Bool(cli.BoolOpt{
+		Name:   "kafka-concurrent-processing",
 		Value:  false,
 		Desc:   "Whether the consumer uses concurrent processing for the messages",
-		EnvVar: "SRC_CONCURRENT_PROCESSING",
+		EnvVar: "KAFKA_CONCURRENT_PROCESSING",
 	})
 
 	queueConfig := consumer.QueueConfig{
-		Addrs:                *sourceAddresses,
-		Group:                *sourceGroup,
-		Topic:                *sourceTopic,
-		Queue:                *sourceQueue,
-		ConcurrentProcessing: *sourceConcurrentProcessing,
+		Addrs:                []string{*kafkaProxyAddress},
+		Group:                *kafkaConsumerGroup,
+		Topic:                *kafkaTopic,
+		Queue:                *kafkaHeader,
+		ConcurrentProcessing: *kafkaConcurrentProcessing,
 	}
 
 	log.SetLevel(log.InfoLevel)
@@ -198,8 +198,17 @@ func handleMessage(msg consumer.Message) {
 	}
 
 	if contentType == "" {
-		log.Errorf("Failed to index content with UUID %s. Could not infer type of content.", uuid)
-		return
+		origin := msg.Headers["Origin-System-Id"]
+		if strings.Contains(origin, "methode-web-pub") {
+			contentType = "article"
+		} else if strings.Contains(origin, "wordpress") {
+			contentType = "blogPost"
+		} else if strings.Contains(origin, "brightcove") {
+			contentType = "video"
+		} else {
+			log.Errorf("Failed to index content with UUID %s. Could not infer type of content.", uuid)
+			return
+		}
 	}
 
 	if combinedPostPublicationEvent.Content.MarkedDeleted {
