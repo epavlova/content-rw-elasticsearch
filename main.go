@@ -58,7 +58,7 @@ func main() {
 		esEndpoint: *esEndpoint,
 	}
 
-	kafkaProxyAddress := app.Strings(cli.StringsOpt{
+	kafkaProxyAddress := app.String(cli.StringOpt{
 		Name:   "kafka-proxy-address",
 		Value:  "http://localhost:8080",
 		Desc:   "Addresses used by the queue consumer to connect to the queue",
