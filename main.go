@@ -119,9 +119,9 @@ func main() {
 		var esHealthService esHealthServiceI = newEsHealthService(elasticClient)
 		healthService := newHealthService(&esHealthService)
 
-		routeRequests(port, contentWriter, healthService)
-
 		readMessages(queueConfig)
+
+		routeRequests(port, contentWriter, healthService)
 	}
 	err := app.Run(os.Args)
 	if err != nil {
