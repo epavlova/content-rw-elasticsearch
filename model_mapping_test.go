@@ -5,6 +5,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"testing"
+	"time"
 )
 
 func TestConvertToESContentModel(t *testing.T) {
@@ -16,15 +17,24 @@ func TestConvertToESContentModel(t *testing.T) {
 	err = json.Unmarshal([]byte(inputJson), &enrichedContentModel)
 	assert.NoError(err, "Unexpected error")
 
+	startTime := time.Now().UTC().Format("2006-01-02T15:04:05.999Z")
+
 	esModel := convertToESContentModel(enrichedContentModel, "article")
 
-	actualJson, err := json.Marshal(esModel)
-	assert.NoError(err, "Unexpected error")
+	endTime := time.Now().UTC().Format("2006-01-02T15:04:05.999Z")
+
+	assert.True(*esModel.IndexDate >= startTime && *esModel.IndexDate <= endTime, "Index date %s not correct", *esModel.IndexDate)
+
+	esModel.IndexDate = nil
 
 	expectedJson, err := ioutil.ReadFile("exampleElasticModel.json")
 	assert.NoError(err, "Unexpected error")
 
-	assert.Equal(string(expectedJson[:]), string(actualJson[:]), "Expected JSON differs from actual JSON ")
+	expectedESModel := esContentModel{}
+	err = json.Unmarshal([]byte(expectedJson), &expectedESModel)
+	assert.NoError(err, "Unexpected error")
+
+	assert.Equal(expectedESModel, esModel)
 }
 
 func TestCmrID(t *testing.T) {

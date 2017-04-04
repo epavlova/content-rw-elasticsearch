@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	log "github.com/Sirupsen/logrus"
 	"strings"
+	"time"
 )
 
 const (
@@ -197,6 +198,9 @@ var contentTypeMap = map[string]ContentType{
 func convertToESContentModel(enrichedContent enrichedContentModel, contentType string) esContentModel {
 	esModel := esContentModel{}
 
+	esModel.IndexDate = new(string)
+	*esModel.IndexDate = time.Now().UTC().Format("2006-01-02T15:04:05.999Z")
+
 	esModel.ContentType = new(string)
 	*esModel.ContentType = contentTypeMap[contentType].category
 	esModel.InternalContentType = new(string)
@@ -222,8 +226,12 @@ func convertToESContentModel(enrichedContent enrichedContentModel, contentType s
 		outerSpaceTrimmer,
 		duplicateWhiteSpaceRemover)
 
-	esModel.LastPublish = &(enrichedContent.Content.PublishedDate)
-	esModel.InitialPublish = &(enrichedContent.Content.FirstPublishedDate)
+	if enrichedContent.Content.PublishedDate != "" {
+		esModel.LastPublish = &(enrichedContent.Content.PublishedDate)
+	}
+	if enrichedContent.Content.FirstPublishedDate != "" {
+		esModel.InitialPublish = &(enrichedContent.Content.FirstPublishedDate)
+	}
 	esModel.Body = new(string)
 
 	*esModel.Body = transformText(enrichedContent.Content.Body,
@@ -268,7 +276,6 @@ func convertToESContentModel(enrichedContent enrichedContentModel, contentType s
 					esModel.CmrAuthorsIds = append(esModel.CmrAuthorsIds, getCmrID(tmeAuthors, tmeID))
 				}
 			case "http://www.ft.com/ontology/company/Company":
-				//todo make sure we get annotations in this taxo
 				esModel.CmrCompanynames = append(esModel.CmrCompanynames, annotation.Thing.PrefLabel)
 				esModel.CmrCompanynamesIds = append(esModel.CmrCompanynamesIds, getCmrID(tmeOrganisations, tmeID))
 			case "http://www.ft.com/ontology/product/Brand":
