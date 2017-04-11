@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"gopkg.in/olivere/elastic.v2"
 )
 
@@ -15,8 +16,20 @@ type esServiceI interface {
 	deleteData(conceptType string, uuid string) (*elastic.DeleteResult, error)
 }
 
-func newEsService(client *elastic.Client, indexName string) *esService {
-	return &esService{elasticClient: client, indexName: indexName}
+type esHealthServiceI interface {
+	getClusterHealth() (*elastic.ClusterHealthResponse, error)
+}
+
+func newEsService(indexName string) esService {
+	return esService{indexName: indexName}
+}
+
+func (service esService) getClusterHealth() (*elastic.ClusterHealthResponse, error) {
+	if service.elasticClient == nil {
+		return nil, errors.New("Client could not be created, please check the application parameters/env variables, and restart the service.")
+	}
+
+	return service.elasticClient.ClusterHealth().Do()
 }
 
 func (service esService) writeData(conceptType string, uuid string, payload interface{}) (*elastic.IndexResult, error) {
