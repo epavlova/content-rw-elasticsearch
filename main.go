@@ -89,6 +89,7 @@ func main() {
 	app.Action = func() {
 		indexer := contentIndexer{}
 		indexer.start(*indexName, *port, accessConfig, queueConfig)
+		waitForSignal()
 	}
 	err := app.Run(os.Args)
 	if err != nil {

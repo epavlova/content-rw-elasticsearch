@@ -6,11 +6,13 @@ import (
 )
 
 type esService struct {
-	elasticClient *elastic.Client
+	elasticClient esClientI
 	indexName     string
 }
 
 type esServiceI interface {
+	esHealthServiceI
+	setClient(client esClientI)
 	writeData(conceptType string, uuid string, payload interface{}) (*elastic.IndexResult, error)
 	readData(conceptType string, uuid string) (*elastic.GetResult, error)
 	deleteData(conceptType string, uuid string) (*elastic.DeleteResult, error)
@@ -20,11 +22,11 @@ type esHealthServiceI interface {
 	getClusterHealth() (*elastic.ClusterHealthResponse, error)
 }
 
-func newEsService(indexName string) esService {
-	return esService{indexName: indexName}
+func newEsService(indexName string) esServiceI {
+	return &esService{indexName: indexName}
 }
 
-func (service esService) getClusterHealth() (*elastic.ClusterHealthResponse, error) {
+func (service *esService) getClusterHealth() (*elastic.ClusterHealthResponse, error) {
 	if service.elasticClient == nil {
 		return nil, errors.New("Client could not be created, please check the application parameters/env variables, and restart the service.")
 	}
@@ -32,7 +34,11 @@ func (service esService) getClusterHealth() (*elastic.ClusterHealthResponse, err
 	return service.elasticClient.ClusterHealth().Do()
 }
 
-func (service esService) writeData(conceptType string, uuid string, payload interface{}) (*elastic.IndexResult, error) {
+func (service *esService) setClient(client esClientI) {
+	service.elasticClient = client
+}
+
+func (service *esService) writeData(conceptType string, uuid string, payload interface{}) (*elastic.IndexResult, error) {
 	return service.elasticClient.Index().
 		Index(service.indexName).
 		Type(conceptType).
@@ -41,7 +47,7 @@ func (service esService) writeData(conceptType string, uuid string, payload inte
 		Do()
 }
 
-func (service esService) readData(conceptType string, uuid string) (*elastic.GetResult, error) {
+func (service *esService) readData(conceptType string, uuid string) (*elastic.GetResult, error) {
 	resp, err := service.elasticClient.Get().
 		Index(service.indexName).
 		Type(conceptType).
@@ -53,7 +59,7 @@ func (service esService) readData(conceptType string, uuid string) (*elastic.Get
 
 }
 
-func (service esService) deleteData(conceptType string, uuid string) (*elastic.DeleteResult, error) {
+func (service *esService) deleteData(conceptType string, uuid string) (*elastic.DeleteResult, error) {
 	resp, err := service.elasticClient.Delete().
 		Index(service.indexName).
 		Type(conceptType).

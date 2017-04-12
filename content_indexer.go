@@ -9,7 +9,6 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/kr/pretty"
 	"github.com/rcrowley/go-metrics"
-	"gopkg.in/olivere/elastic.v2"
 	"net/http"
 	"os"
 	"os/signal"
@@ -22,11 +21,11 @@ import (
 const SYNTHETIC_REQUEST_PREFIX = "SYNTHETIC-REQ-MON"
 
 type contentIndexer struct {
-	esServiceInstance esService
+	esServiceInstance esServiceI
 }
 
-func (indexer contentIndexer) start(indexName string, port string, accessConfig esAccessConfig, queueConfig consumer.QueueConfig) {
-	channel := make(chan *elastic.Client)
+func (indexer *contentIndexer) start(indexName string, port string, accessConfig esAccessConfig, queueConfig consumer.QueueConfig) {
+	channel := make(chan esClientI)
 	go func() {
 		defer close(channel)
 		for {
@@ -43,16 +42,18 @@ func (indexer contentIndexer) start(indexName string, port string, accessConfig 
 	}()
 
 	//create writer service
-	esServiceInstance := newEsService(indexName)
+	indexer.esServiceInstance = newEsService(indexName)
 
 	go func() {
 		for ec := range channel {
-			esServiceInstance.elasticClient = ec
+			indexer.esServiceInstance.setClient(ec)
 			indexer.startMessageConsumer(queueConfig)
 		}
 	}()
 
-	indexer.serveAdminEndpoints(port)
+	go func() {
+		indexer.serveAdminEndpoints(port)
+	}()
 }
 
 func (indexer contentIndexer) serveAdminEndpoints(port string) {
@@ -61,15 +62,17 @@ func (indexer contentIndexer) serveAdminEndpoints(port string) {
 	monitoringRouter = httphandlers.TransactionAwareRequestLoggingHandler(log.StandardLogger(), monitoringRouter)
 	monitoringRouter = httphandlers.HTTPMetricsHandler(metrics.DefaultRegistry, monitoringRouter)
 
+	serveMux := http.NewServeMux()
+
 	//todo add Kafka check
-	http.HandleFunc("/__health", v1a.Handler("Amazon Elasticsearch Service Healthcheck", "Checks for AES", healthService.connectivityHealthyCheck(), healthService.clusterIsHealthyCheck()))
-	http.HandleFunc("/__health-details", healthService.HealthDetails)
-	http.HandleFunc("/__gtg", healthService.GoodToGo)
+	serveMux.HandleFunc("/__health", v1a.Handler("Amazon Elasticsearch Service Healthcheck", "Checks for AES", healthService.connectivityHealthyCheck(), healthService.clusterIsHealthyCheck()))
+	serveMux.HandleFunc("/__health-details", healthService.HealthDetails)
+	serveMux.HandleFunc("/__gtg", healthService.GoodToGo)
 	//todo __build-info
 
-	http.Handle("/", monitoringRouter)
+	serveMux.Handle("/", monitoringRouter)
 
-	if err := http.ListenAndServe(":"+port, nil); err != nil {
+	if err := http.ListenAndServe(":"+port, serveMux); err != nil {
 		log.Fatalf("Unable to start: %v", err)
 	}
 }
@@ -86,11 +89,15 @@ func (indexer contentIndexer) startMessageConsumer(config consumer.QueueConfig) 
 		consumerWaitGroup.Done()
 	}()
 
+	waitForSignal()
+	messageConsumer.Stop()
+	consumerWaitGroup.Wait()
+}
+
+func waitForSignal() {
 	ch := make(chan os.Signal)
 	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
 	<-ch
-	messageConsumer.Stop()
-	consumerWaitGroup.Wait()
 }
 
 func (indexer contentIndexer) handleMessage(msg consumer.Message) {

@@ -8,6 +8,13 @@ import (
 	"os"
 )
 
+type esClientI interface {
+	ClusterHealth() *elastic.ClusterHealthService
+	Index() *elastic.IndexService
+	Get() *elastic.GetService
+	Delete() *elastic.DeleteService
+}
+
 type esAccessConfig struct {
 	accessKey  string
 	secretKey  string
@@ -24,7 +31,7 @@ func (a AWSSigningTransport) RoundTrip(req *http.Request) (*http.Response, error
 	return a.HTTPClient.Do(awsauth.Sign4(req, a.Credentials))
 }
 
-func newAmazonClient(config esAccessConfig) (*elastic.Client, error) {
+var newAmazonClient = func(config esAccessConfig) (esClientI, error) {
 
 	signingTransport := AWSSigningTransport{
 		Credentials: awsauth.Credentials{
@@ -46,7 +53,7 @@ func newAmazonClient(config esAccessConfig) (*elastic.Client, error) {
 	)
 }
 
-func newSimpleClient(config esAccessConfig) (*elastic.Client, error) {
+func newSimpleClient(config esAccessConfig) (esClientI, error) {
 	return elastic.NewClient(
 		elastic.SetURL(config.esEndpoint),
 		elastic.SetSniff(false),
