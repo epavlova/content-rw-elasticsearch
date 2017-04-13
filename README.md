@@ -1,5 +1,7 @@
 # Content Read Writer for Elasticsearch
 
+[![Circle CI](https://circleci.com/gh/Financial-Times/content-rw-elasticsearch/tree/master.png?style=shield)](https://circleci.com/gh/Financial-Times/content-rw-elasticsearch/tree/master)[![Go Report Card](https://goreportcard.com/badge/github.com/Financial-Times/content-rw-elasticsearch)](https://goreportcard.com/report/github.com/Financial-Times/content-rw-elasticsearch) [![Coverage Status](https://coveralls.io/repos/github/Financial-Times/content-rw-elasticsearch/badge.svg)](https://coveralls.io/github/Financial-Times/content-rw-elasticsearch)
+
 Indexes V2 content in Elasticsearch for use by SAPI v1
 
 todo: event format
