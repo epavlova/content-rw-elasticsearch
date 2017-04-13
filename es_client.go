@@ -52,10 +52,3 @@ var newAmazonClient = func(config esAccessConfig) (esClientI, error) {
 		elastic.SetTraceLog(log.New(os.Stderr, "", log.LstdFlags)),
 	)
 }
-
-func newSimpleClient(config esAccessConfig) (esClientI, error) {
-	return elastic.NewClient(
-		elastic.SetURL(config.esEndpoint),
-		elastic.SetSniff(false),
-	)
-}

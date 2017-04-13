@@ -24,6 +24,12 @@ type contentIndexer struct {
 	esServiceInstance esServiceI
 }
 
+func waitForSignal() {
+	ch := make(chan os.Signal)
+	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
+	<-ch
+}
+
 func (indexer *contentIndexer) start(indexName string, port string, accessConfig esAccessConfig, queueConfig consumer.QueueConfig) {
 	channel := make(chan esClientI)
 	go func() {
@@ -56,7 +62,7 @@ func (indexer *contentIndexer) start(indexName string, port string, accessConfig
 	}()
 }
 
-func (indexer contentIndexer) serveAdminEndpoints(port string) {
+func (indexer *contentIndexer) serveAdminEndpoints(port string) {
 	healthService := newHealthService(indexer.esServiceInstance)
 	var monitoringRouter http.Handler = mux.NewRouter()
 	monitoringRouter = httphandlers.TransactionAwareRequestLoggingHandler(log.StandardLogger(), monitoringRouter)
@@ -77,7 +83,7 @@ func (indexer contentIndexer) serveAdminEndpoints(port string) {
 	}
 }
 
-func (indexer contentIndexer) startMessageConsumer(config consumer.QueueConfig) {
+func (indexer *contentIndexer) startMessageConsumer(config consumer.QueueConfig) {
 	messageConsumer := consumer.NewConsumer(config, indexer.handleMessage, &http.Client{})
 	log.Printf("[Startup] Consumer: %# v", pretty.Formatter(messageConsumer))
 
@@ -94,13 +100,7 @@ func (indexer contentIndexer) startMessageConsumer(config consumer.QueueConfig) 
 	consumerWaitGroup.Wait()
 }
 
-func waitForSignal() {
-	ch := make(chan os.Signal)
-	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
-	<-ch
-}
-
-func (indexer contentIndexer) handleMessage(msg consumer.Message) {
+func (indexer *contentIndexer) handleMessage(msg consumer.Message) {
 
 	tid := msg.Headers["X-Request-Id"]
 

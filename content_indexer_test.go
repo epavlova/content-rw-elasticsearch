@@ -2,11 +2,13 @@ package main
 
 import (
 	"github.com/Financial-Times/message-queue-gonsumer/consumer"
+	"github.com/Sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"gopkg.in/olivere/elastic.v2"
 	"io/ioutil"
 	"net/url"
+	"strings"
 	"testing"
 	"time"
 )
@@ -19,12 +21,9 @@ func (service *esServiceMock) writeData(conceptType string, uuid string, payload
 	args := service.Called(conceptType, uuid, payload)
 	return args.Get(0).(*elastic.IndexResult), args.Error(1)
 }
-func (service *esServiceMock) readData(conceptType string, uuid string) (*elastic.GetResult, error) {
-	args := service.Called()
-	return args.Get(0).(*elastic.GetResult), args.Error(1)
-}
+
 func (service *esServiceMock) deleteData(conceptType string, uuid string) (*elastic.DeleteResult, error) {
-	args := service.Called()
+	args := service.Called(conceptType, uuid)
 	return args.Get(0).(*elastic.DeleteResult), args.Error(1)
 }
 
@@ -66,34 +65,30 @@ func (client elasticClientMock) PerformRequest(method, path string, params url.V
 	return args.Get(0).(*elastic.Response), args.Error(1)
 }
 
-func TestStartClientError(t *testing.T) {
-	assert := assert.New(t)
+type logHook struct {
+	Entries []*logrus.Entry
+}
 
-	accessConfig := esAccessConfig{
-		accessKey:  "key",
-		secretKey:  "secret",
-		esEndpoint: "endpoint",
+func (hook *logHook) Fire(e *logrus.Entry) error {
+	hook.Entries = append(hook.Entries, e)
+	return nil
+}
+
+func (hook *logHook) Levels() []logrus.Level {
+	return logrus.AllLevels
+}
+
+func (hook *logHook) LastEntry() (l *logrus.Entry) {
+	if i := len(hook.Entries) - 1; i < 0 {
+		return nil
+	} else {
+		return hook.Entries[i]
 	}
+}
 
-	queueConfig := consumer.QueueConfig{
-		Addrs:                []string{"address"},
-		Group:                "group",
-		Topic:                "topic",
-		Queue:                "queue",
-		ConcurrentProcessing: false,
-	}
-
-	newAmazonClient = func(config esAccessConfig) (esClientI, error) {
-		return nil, elastic.ErrNoClient
-	}
-
-	indexer := contentIndexer{}
-
-	indexer.start("index", "1984", accessConfig, queueConfig)
-
-	assert.NotNil(indexer.esServiceInstance, "Elastic Service should be initialized")
-	assert.Equal("index", (indexer.esServiceInstance).(*esService).indexName, "Wrong index")
-	assert.Nil((indexer.esServiceInstance).(*esService).elasticClient, "Elastic client should not be initialized")
+// Reset removes all Entries from this test hook.
+func (hook *logHook) Reset() {
+	hook.Entries = make([]*logrus.Entry, 0)
 }
 
 func TestStartClient(t *testing.T) {
@@ -121,14 +116,50 @@ func TestStartClient(t *testing.T) {
 
 	indexer.start("index", "1985", accessConfig, queueConfig)
 
-	time.Sleep(2000 * time.Millisecond)
+	time.Sleep(100 * time.Millisecond)
 
 	assert.NotNil(indexer.esServiceInstance, "Elastic Service should be initialized")
 	assert.Equal("index", (indexer.esServiceInstance).(*esService).indexName, "Wrong index")
 	assert.NotNil((indexer.esServiceInstance).(*esService).elasticClient, "Elastic client should be initialized")
 }
 
-func TestHandleMessage(t *testing.T) {
+func TestStartClientError(t *testing.T) {
+	assert := assert.New(t)
+
+	hook := &logHook{}
+	logrus.AddHook(hook)
+
+	accessConfig := esAccessConfig{
+		accessKey:  "key",
+		secretKey:  "secret",
+		esEndpoint: "endpoint",
+	}
+
+	queueConfig := consumer.QueueConfig{
+		Addrs:                []string{"address"},
+		Group:                "group",
+		Topic:                "topic",
+		Queue:                "queue",
+		ConcurrentProcessing: false,
+	}
+
+	newAmazonClient = func(config esAccessConfig) (esClientI, error) {
+		return nil, elastic.ErrNoClient
+	}
+
+	indexer := contentIndexer{}
+
+	indexer.start("index", "1984", accessConfig, queueConfig)
+
+	time.Sleep(100 * time.Millisecond)
+
+	assert.Equal("error", hook.LastEntry().Level.String(), "Wrong log")
+	assert.NotNil(indexer.esServiceInstance, "Elastic Service should be initialized")
+	assert.Equal("index", (indexer.esServiceInstance).(*esService).indexName, "Wrong index")
+	assert.Nil((indexer.esServiceInstance).(*esService).elasticClient, "Elastic client should not be initialized")
+}
+
+func TestHandleWriteMessage(t *testing.T) {
 	assert := assert.New(t)
 
 	inputJson, err := ioutil.ReadFile("exampleEnrichedContentModel.json")
@@ -142,5 +173,164 @@ func TestHandleMessage(t *testing.T) {
 	indexer.handleMessage(consumer.Message{Body: string(inputJson)})
 
 	serviceMock.AssertExpectations(t)
+}
 
+func TestHandleWriteMessageBlog(t *testing.T) {
+	assert := assert.New(t)
+
+	inputJson, err := ioutil.ReadFile("exampleEnrichedContentModel.json")
+	assert.NoError(err, "Unexpected error")
+	input := strings.Replace(string(inputJson), "FTCOM-METHODE", "FT-LABS-WP1234", 1)
+
+	serviceMock := &esServiceMock{}
+
+	serviceMock.On("writeData", "FTBlogs", "aae9611e-f66c-4fe4-a6c6-2e2bdea69060", mock.Anything).Return(&elastic.IndexResult{}, nil)
+
+	indexer := contentIndexer{esServiceInstance: serviceMock}
+	indexer.handleMessage(consumer.Message{Body: input})
+
+	serviceMock.AssertExpectations(t)
+}
+
+func TestHandleWriteMessageBlogWithHeader(t *testing.T) {
+	assert := assert.New(t)
+
+	inputJson, err := ioutil.ReadFile("exampleEnrichedContentModel.json")
+	assert.NoError(err, "Unexpected error")
+	input := strings.Replace(string(inputJson), "FTCOM-METHODE", "invalid", 1)
+
+	serviceMock := &esServiceMock{}
+
+	serviceMock.On("writeData", "FTBlogs", "aae9611e-f66c-4fe4-a6c6-2e2bdea69060", mock.Anything).Return(&elastic.IndexResult{}, nil)
+
+	indexer := contentIndexer{esServiceInstance: serviceMock}
+	indexer.handleMessage(consumer.Message{Body: input, Headers: map[string]string{"Origin-System-Id": "wordpress"}})
+
+	serviceMock.AssertExpectations(t)
+}
+
+func TestHandleWriteMessageVideo(t *testing.T) {
+	assert := assert.New(t)
+
+	inputJson, err := ioutil.ReadFile("exampleEnrichedContentModel.json")
+	assert.NoError(err, "Unexpected error")
+	input := strings.Replace(string(inputJson), "FTCOM-METHODE", "BRIGHTCOVE", 1)
+
+	serviceMock := &esServiceMock{}
+
+	serviceMock.On("writeData", "FTVideos", "aae9611e-f66c-4fe4-a6c6-2e2bdea69060", mock.Anything).Return(&elastic.IndexResult{}, nil)
+
+	indexer := contentIndexer{esServiceInstance: serviceMock}
+	indexer.handleMessage(consumer.Message{Body: input})
+
+	serviceMock.AssertExpectations(t)
+}
+
+func TestHandleWriteMessageNoType(t *testing.T) {
+	assert := assert.New(t)
+
+	hook := &logHook{}
+	logrus.AddHook(hook)
+
+	inputJson, err := ioutil.ReadFile("exampleEnrichedContentModel.json")
+	assert.NoError(err, "Unexpected error")
+	input := strings.Replace(string(inputJson), "FTCOM-METHODE", "invalid", 1)
+
+	serviceMock := &esServiceMock{}
+
+	indexer := contentIndexer{esServiceInstance: serviceMock}
+	indexer.handleMessage(consumer.Message{Body: input})
+
+	serviceMock.AssertNotCalled(t, "writeData", mock.Anything, mock.Anything, mock.Anything)
+	serviceMock.AssertNotCalled(t, "deleteData", mock.Anything, mock.Anything)
+	assert.Equal("error", hook.LastEntry().Level.String(), "Wrong log")
+}
+
+func TestHandleWriteMessageError(t *testing.T) {
+	assert := assert.New(t)
+
+	hook := &logHook{}
+	logrus.AddHook(hook)
+
+	inputJson, err := ioutil.ReadFile("exampleEnrichedContentModel.json")
+	assert.NoError(err, "Unexpected error")
+
+	serviceMock := &esServiceMock{}
+
+	serviceMock.On("writeData", "FTCom", "aae9611e-f66c-4fe4-a6c6-2e2bdea69060", mock.Anything).Return(&elastic.IndexResult{}, elastic.ErrTimeout)
+
+	indexer := contentIndexer{esServiceInstance: serviceMock}
+	indexer.handleMessage(consumer.Message{Body: string(inputJson)})
+
+	serviceMock.AssertExpectations(t)
+	assert.Equal("error", hook.LastEntry().Level.String(), "Wrong log")
+}
+
+func TestHandleDeleteMessage(t *testing.T) {
+	assert := assert.New(t)
+
+	inputJson, err := ioutil.ReadFile("exampleEnrichedContentModel.json")
+	assert.NoError(err, "Unexpected error")
+	input := strings.Replace(string(inputJson), `"marked_deleted": false`, `"marked_deleted": true`, 1)
+
+	serviceMock := &esServiceMock{}
+
+	serviceMock.On("deleteData", "FTCom", "aae9611e-f66c-4fe4-a6c6-2e2bdea69060").Return(&elastic.DeleteResult{}, nil)
+
+	indexer := contentIndexer{esServiceInstance: serviceMock}
+	indexer.handleMessage(consumer.Message{Body: input})
+
+	serviceMock.AssertExpectations(t)
+}
+
+func TestHandleDeleteMessageError(t *testing.T) {
+	assert := assert.New(t)
+
+	hook := &logHook{}
+	logrus.AddHook(hook)
+
+	inputJson, err := ioutil.ReadFile("exampleEnrichedContentModel.json")
+	assert.NoError(err, "Unexpected error")
+	input := strings.Replace(string(inputJson), `"marked_deleted": false`, `"marked_deleted": true`, 1)
+
+	serviceMock := &esServiceMock{}
+
+	serviceMock.On("deleteData", "FTCom", "aae9611e-f66c-4fe4-a6c6-2e2bdea69060").Return(&elastic.DeleteResult{}, elastic.ErrTimeout)
+
+	indexer := contentIndexer{esServiceInstance: serviceMock}
+	indexer.handleMessage(consumer.Message{Body: input})
+
+	serviceMock.AssertExpectations(t)
+	assert.Equal("error", hook.LastEntry().Level.String(), "Wrong log")
+}
+
+func TestHandleMessageJsonError(t *testing.T) {
+	assert := assert.New(t)
+
+	hook := &logHook{}
+	logrus.AddHook(hook)
+
+	serviceMock := &esServiceMock{}
+
+	indexer := &contentIndexer{esServiceInstance: serviceMock}
+	indexer.handleMessage(consumer.Message{Body: "malformed json"})
+
+	assert.Equal("error", hook.LastEntry().Level.String(), "Wrong log")
+	serviceMock.AssertNotCalled(t, "writeData", mock.Anything, mock.Anything, mock.Anything)
+	serviceMock.AssertNotCalled(t, "deleteData", mock.Anything, mock.Anything)
+}
+
+func TestHandleSyntheticMessage(t *testing.T) {
+	assert := assert.New(t)
+
+	hook := &logHook{}
+	logrus.AddHook(hook)
+
+	serviceMock := &esServiceMock{}
+	indexer := &contentIndexer{esServiceInstance: serviceMock}
+	indexer.handleMessage(consumer.Message{Headers: map[string]string{"X-Request-Id": "SYNTHETIC-REQ-MON_WuLjbRpCgh"}})
+
+	assert.Equal("info", hook.LastEntry().Level.String(), "Wrong log")
+	serviceMock.AssertNotCalled(t, "writeData", mock.Anything, mock.Anything, mock.Anything)
+	serviceMock.AssertNotCalled(t, "deleteData", mock.Anything, mock.Anything)
 }

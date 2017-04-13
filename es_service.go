@@ -14,7 +14,6 @@ type esServiceI interface {
 	esHealthServiceI
 	setClient(client esClientI)
 	writeData(conceptType string, uuid string, payload interface{}) (*elastic.IndexResult, error)
-	readData(conceptType string, uuid string) (*elastic.GetResult, error)
 	deleteData(conceptType string, uuid string) (*elastic.DeleteResult, error)
 }
 
@@ -47,25 +46,10 @@ func (service *esService) writeData(conceptType string, uuid string, payload int
 		Do()
 }
 
-func (service *esService) readData(conceptType string, uuid string) (*elastic.GetResult, error) {
-	resp, err := service.elasticClient.Get().
-		Index(service.indexName).
-		Type(conceptType).
-		Id(uuid).
-		IgnoreErrorsOnGeneratedFields(false).
-		Do()
-
-	return resp, err
-
-}
-
 func (service *esService) deleteData(conceptType string, uuid string) (*elastic.DeleteResult, error) {
-	resp, err := service.elasticClient.Delete().
+	return service.elasticClient.Delete().
 		Index(service.indexName).
 		Type(conceptType).
 		Id(uuid).
 		Do()
-
-	return resp, err
-
 }

@@ -288,7 +288,8 @@ func convertToESContentModel(enrichedContent enrichedContentModel, contentType s
 				esModel.CmrSections = append(esModel.CmrSections, annotation.Thing.PrefLabel)
 				esModel.CmrSectionsIds = append(esModel.CmrSectionsIds, getCmrID(tmeSections, tmeID))
 				if annotation.Thing.Predicate == primaryClassification {
-					esModel.CmrPrimarysection = &(annotation.Thing.PrefLabel)
+					esModel.CmrPrimarysection = new(string)
+					*esModel.CmrPrimarysection = annotation.Thing.PrefLabel
 					esModel.CmrPrimarysectionID = new(string)
 					*esModel.CmrPrimarysectionID = getCmrID(tmeSections, tmeID)
 				}
@@ -296,7 +297,8 @@ func convertToESContentModel(enrichedContent enrichedContentModel, contentType s
 				esModel.CmrTopics = append(esModel.CmrTopics, annotation.Thing.PrefLabel)
 				esModel.CmrTopicsIds = append(esModel.CmrTopicsIds, getCmrID(tmeTopics, tmeID))
 				if annotation.Thing.Predicate == about {
-					esModel.CmrPrimarytheme = &(annotation.Thing.PrefLabel)
+					esModel.CmrPrimarytheme = new(string)
+					*esModel.CmrPrimarytheme = annotation.Thing.PrefLabel
 					esModel.CmrPrimarythemeID = new(string)
 					*esModel.CmrPrimarythemeID = getCmrID(tmeTopics, tmeID)
 				}
