@@ -16,6 +16,7 @@ import (
 	"sync"
 	"syscall"
 	"time"
+	status "github.com/Financial-Times/service-status-go/httphandlers"
 )
 
 const SYNTHETIC_REQUEST_PREFIX = "SYNTHETIC-REQ-MON"
@@ -73,8 +74,8 @@ func (indexer *contentIndexer) serveAdminEndpoints(port string) {
 	//todo add Kafka check
 	serveMux.HandleFunc("/__health", v1a.Handler("Amazon Elasticsearch Service Healthcheck", "Checks for AES", healthService.connectivityHealthyCheck(), healthService.clusterIsHealthyCheck()))
 	serveMux.HandleFunc("/__health-details", healthService.HealthDetails)
-	serveMux.HandleFunc("/__gtg", healthService.GoodToGo)
-	//todo __build-info
+	serveMux.HandleFunc(status.GTGPath, healthService.GoodToGo)
+	serveMux.HandleFunc(status.BuildInfoPath, status.BuildInfoHandler)
 
 	serveMux.Handle("/", monitoringRouter)
 
