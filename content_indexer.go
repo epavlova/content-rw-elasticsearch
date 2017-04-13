@@ -5,6 +5,7 @@ import (
 	"github.com/Financial-Times/go-fthealth/v1a"
 	"github.com/Financial-Times/http-handlers-go/httphandlers"
 	"github.com/Financial-Times/message-queue-gonsumer/consumer"
+	status "github.com/Financial-Times/service-status-go/httphandlers"
 	log "github.com/Sirupsen/logrus"
 	"github.com/gorilla/mux"
 	"github.com/kr/pretty"
@@ -16,7 +17,6 @@ import (
 	"sync"
 	"syscall"
 	"time"
-	status "github.com/Financial-Times/service-status-go/httphandlers"
 )
 
 const SYNTHETIC_REQUEST_PREFIX = "SYNTHETIC-REQ-MON"
