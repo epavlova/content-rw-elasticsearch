@@ -16,7 +16,7 @@ RUN apk add --update bash \
   && REPOSITORY="repository=$(git config --get remote.origin.url)" \
   && REVISION="revision=$(git rev-parse HEAD)" \
   && BUILDER="builder=$(go version)" \
-  && LDFLAGS="-X '"${BUILDINFO_PACKAGE}$VERSION"' -X '"${BUILDINFO_PACKAGE}$DATETIME"' -X '"${BUILDINFO_PACKAGE}$REPOSITORY"' -X '"${BUILDINFO_PACKAGE}$REVISION"' -X '"${BUILDINFO_PACKAGE}$BUILDER"'" \
+  && LDFLAGS="-X '${BUILDINFO_PACKAGE}$VERSION' -X '${BUILDINFO_PACKAGE}$DATETIME' -X '${BUILDINFO_PACKAGE}$REPOSITORY' -X '${BUILDINFO_PACKAGE}$REVISION' -X '${BUILDINFO_PACKAGE}$BUILDER'" \
   && echo $LDFLAGS \
   && go get -t ./... \
   && go build  -ldflags="${LDFLAGS}" \
