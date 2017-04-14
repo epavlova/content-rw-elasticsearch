@@ -21,6 +21,7 @@ RUN apk --no-cache --virtual .build-dependencies add git \
   && echo "Fetching dependencies..." \
   && go get -t ./... \
   && go build -ldflags="${LDFLAGS}" \
+  && mv ${PROJECT} /${PROJECT} \
   && apk del .build-dependencies \
   && rm -rf $GOPATH /var/cache/apk/*
 
