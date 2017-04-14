@@ -1,14 +1,14 @@
-FROM alpine:3.4
+FROM golang:1.7-alpine3.5
 
-ADD *.go /content-rw-elasticsearch/
+ENV PROJECT=content-rw-elasticsearch
+COPY . /${PROJECT}-sources/
 
-RUN apk add --update bash \
-  && apk --update add git bzr go ca-certificates \
-  && export GOPATH=/gopath \
-  && REPO_PATH="github.com/Financial-Times/content-rw-elasticsearch" \
-  && mkdir -p $GOPATH/src/${REPO_PATH} \
-  && mv content-rw-elasticsearch/* $GOPATH/src/${REPO_PATH} \
-  && rm -r content-rw-elasticsearch \
+RUN apk --no-cache --virtual .build-dependencies add git \
+  && ORG_PATH="github.com/Financial-Times" \
+  && REPO_PATH="${ORG_PATH}/${PROJECT}" \
+  && mkdir -p $GOPATH/src/${ORG_PATH} \
+  # Linking the project sources in the GOPATH folder
+  && ln -s /${PROJECT}-sources $GOPATH/src/${REPO_PATH} \
   && cd $GOPATH/src/${REPO_PATH} \
   && BUILDINFO_PACKAGE="github.com/Financial-Times/service-status-go/buildinfo." \
   && VERSION="version=$(git describe --tag --always 2> /dev/null)" \
@@ -16,12 +16,14 @@ RUN apk add --update bash \
   && REPOSITORY="repository=$(git config --get remote.origin.url)" \
   && REVISION="revision=$(git rev-parse HEAD)" \
   && BUILDER="builder=$(go version)" \
-  && LDFLAGS="-X '${BUILDINFO_PACKAGE}$VERSION' -X '${BUILDINFO_PACKAGE}$DATETIME' -X '${BUILDINFO_PACKAGE}$REPOSITORY' -X '${BUILDINFO_PACKAGE}$REVISION' -X '${BUILDINFO_PACKAGE}$BUILDER'" \
-  && echo $LDFLAGS \
+  && LDFLAGS="-X '"${BUILDINFO_PACKAGE}$VERSION"' -X '"${BUILDINFO_PACKAGE}$DATETIME"' -X '"${BUILDINFO_PACKAGE}$REPOSITORY"' -X '"${BUILDINFO_PACKAGE}$REVISION"' -X '"${BUILDINFO_PACKAGE}$BUILDER"'" \
+  && echo "Build flags: $LDFLAGS" \
+  && echo "Fetching dependencies..." \
   && go get -t ./... \
-  && go build  -ldflags="${LDFLAGS}" \
-  && mv content-rw-elasticsearch /content-rw-elasticsearch \
-  && apk del go git bzr \
+  && go build -ldflags="${LDFLAGS}" \
+  && apk del .build-dependencies \
   && rm -rf $GOPATH /var/cache/apk/*
 
-CMD [ "/content-rw-elasticsearch" ]
+WORKDIR /
+# Using the expanded command, so that the shell will expand the $PROJECT env var. See https://docs.docker.com/engine/reference/builder/#cmd
+CMD ["sh", "-c", "/${PROJECT}"]
