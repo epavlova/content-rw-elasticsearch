@@ -9,9 +9,9 @@ import (
 	"io/ioutil"
 	"net/url"
 	"strings"
+	"sync"
 	"testing"
 	"time"
-	"sync"
 )
 
 type esServiceMock struct {
