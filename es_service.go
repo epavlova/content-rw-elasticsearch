@@ -3,9 +3,11 @@ package main
 import (
 	"errors"
 	"gopkg.in/olivere/elastic.v2"
+	"sync"
 )
 
 type esService struct {
+	sync.RWMutex
 	elasticClient esClientI
 	indexName     string
 }
@@ -34,6 +36,8 @@ func (service *esService) getClusterHealth() (*elastic.ClusterHealthResponse, er
 }
 
 func (service *esService) setClient(client esClientI) {
+	service.Lock()
+	defer service.Unlock()
 	service.elasticClient = client
 }
 

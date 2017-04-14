@@ -11,6 +11,7 @@ import (
 	"strings"
 	"testing"
 	"time"
+	"sync"
 )
 
 type esServiceMock struct {
@@ -66,10 +67,13 @@ func (client elasticClientMock) PerformRequest(method, path string, params url.V
 }
 
 type logHook struct {
+	sync.Mutex
 	Entries []*logrus.Entry
 }
 
 func (hook *logHook) Fire(e *logrus.Entry) error {
+	hook.Lock()
+	defer hook.Unlock()
 	hook.Entries = append(hook.Entries, e)
 	return nil
 }
@@ -79,6 +83,8 @@ func (hook *logHook) Levels() []logrus.Level {
 }
 
 func (hook *logHook) LastEntry() (l *logrus.Entry) {
+	hook.Lock()
+	defer hook.Unlock()
 	if i := len(hook.Entries) - 1; i < 0 {
 		return nil
 	} else {
@@ -120,7 +126,9 @@ func TestStartClient(t *testing.T) {
 
 	assert.NotNil(indexer.esServiceInstance, "Elastic Service should be initialized")
 	assert.Equal("index", (indexer.esServiceInstance).(*esService).indexName, "Wrong index")
+	(indexer.esServiceInstance).(*esService).Lock()
 	assert.NotNil((indexer.esServiceInstance).(*esService).elasticClient, "Elastic client should be initialized")
+	(indexer.esServiceInstance).(*esService).Unlock()
 }
 
 func TestStartClientError(t *testing.T) {
