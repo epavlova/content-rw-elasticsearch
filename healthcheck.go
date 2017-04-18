@@ -73,7 +73,7 @@ func (service *healthService) schemaChecker() (string, error) {
 	output, err := service.esHealthService.getSchemaHealth()
 	if err != nil {
 		return "Could not get schema: ", err
-	} else if output != "green" {
+	} else if output != "ok" {
 		return "Schema is not healthy", fmt.Errorf("Schema is %v", output)
 	} else {
 		return "Schema is healthy", nil
