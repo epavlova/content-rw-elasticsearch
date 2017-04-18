@@ -9,6 +9,14 @@ import (
 
 func main() {
 	app := cli.App("content-rw-es", "Service for loading contents into elasticsearch")
+
+	appSystemCode := app.String(cli.StringOpt{
+		Name:   "app-system-code",
+		Value:  "content_rw_elasticsearch",
+		Desc:   "System Code of the application",
+		EnvVar: "APP_SYSTEM_CODE",
+	})
+
 	port := app.String(cli.StringOpt{
 		Name:   "port",
 		Value:  "8080",
@@ -88,7 +96,7 @@ func main() {
 
 	app.Action = func() {
 		indexer := contentIndexer{}
-		indexer.start(*indexName, *port, accessConfig, queueConfig)
+		indexer.start(*appSystemCode, *indexName, *port, accessConfig, queueConfig)
 		waitForSignal()
 	}
 	err := app.Run(os.Args)

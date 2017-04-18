@@ -2,7 +2,7 @@ package main
 
 import (
 	"encoding/json"
-	"github.com/Financial-Times/go-fthealth/v1a"
+	health "github.com/Financial-Times/go-fthealth/v1_1"
 	"github.com/Financial-Times/http-handlers-go/httphandlers"
 	"github.com/Financial-Times/message-queue-gonsumer/consumer"
 	status "github.com/Financial-Times/service-status-go/httphandlers"
@@ -19,7 +19,7 @@ import (
 	"time"
 )
 
-const SYNTHETIC_REQUEST_PREFIX = "SYNTHETIC-REQ-MON"
+const syntheticRequestPrefix = "SYNTHETIC-REQ-MON"
 
 type contentIndexer struct {
 	esServiceInstance esServiceI
@@ -31,7 +31,7 @@ func waitForSignal() {
 	<-ch
 }
 
-func (indexer *contentIndexer) start(indexName string, port string, accessConfig esAccessConfig, queueConfig consumer.QueueConfig) {
+func (indexer *contentIndexer) start(appSystemCode string, indexName string, port string, accessConfig esAccessConfig, queueConfig consumer.QueueConfig) {
 	channel := make(chan esClientI)
 	go func() {
 		defer close(channel)
@@ -41,10 +41,9 @@ func (indexer *contentIndexer) start(indexName string, port string, accessConfig
 				log.Infof("connected to ElasticSearch")
 				channel <- ec
 				return
-			} else {
-				log.Errorf("could not connect to ElasticSearch: %s", err.Error())
-				time.Sleep(time.Minute)
 			}
+			log.Errorf("could not connect to ElasticSearch: %s", err.Error())
+			time.Sleep(time.Minute)
 		}
 	}()
 
@@ -59,11 +58,11 @@ func (indexer *contentIndexer) start(indexName string, port string, accessConfig
 	}()
 
 	go func() {
-		indexer.serveAdminEndpoints(port)
+		indexer.serveAdminEndpoints(appSystemCode, port)
 	}()
 }
 
-func (indexer *contentIndexer) serveAdminEndpoints(port string) {
+func (indexer *contentIndexer) serveAdminEndpoints(appSystemCode string, port string) {
 	healthService := newHealthService(indexer.esServiceInstance)
 	var monitoringRouter http.Handler = mux.NewRouter()
 	monitoringRouter = httphandlers.TransactionAwareRequestLoggingHandler(log.StandardLogger(), monitoringRouter)
@@ -71,8 +70,13 @@ func (indexer *contentIndexer) serveAdminEndpoints(port string) {
 
 	serveMux := http.NewServeMux()
 
+	checks := []health.Check{healthService.connectivityHealthyCheck(),
+		healthService.clusterIsHealthyCheck(),
+		healthService.schemaHealthyCheck()}
+
 	//todo add Kafka check
-	serveMux.HandleFunc("/__health", v1a.Handler("Amazon Elasticsearch Service Healthcheck", "Checks for AES", healthService.connectivityHealthyCheck(), healthService.clusterIsHealthyCheck()))
+	hc := health.HealthCheck{SystemCode: appSystemCode, Name: appSystemCode, Description: "Content Read Writer for Elasticsearch", Checks: checks}
+	serveMux.HandleFunc("/__health", health.Handler(hc))
 	serveMux.HandleFunc("/__health-details", healthService.HealthDetails)
 	serveMux.HandleFunc(status.GTGPath, healthService.GoodToGo)
 	serveMux.HandleFunc(status.BuildInfoPath, status.BuildInfoHandler)
@@ -105,7 +109,7 @@ func (indexer *contentIndexer) handleMessage(msg consumer.Message) {
 
 	tid := msg.Headers["X-Request-Id"]
 
-	if strings.Contains(tid, SYNTHETIC_REQUEST_PREFIX) {
+	if strings.Contains(tid, syntheticRequestPrefix) {
 		log.Infof("[%s] Ignoring synthetic message", tid)
 		return
 	}

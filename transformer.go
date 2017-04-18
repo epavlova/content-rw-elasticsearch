@@ -15,9 +15,9 @@ var embedRegex = regexp.MustCompile("embed\\d+")
 var squaredCaptionRegex = regexp.MustCompile("\\[/?caption[^]]*]")
 var duplicateWhiteSpaceRegex = regexp.MustCompile("\\s+")
 
-type TextTransformer func(string) string
+type textTransformer func(string) string
 
-func transformText(text string, transformers ...TextTransformer) string {
+func transformText(text string, transformers ...textTransformer) string {
 	current := text
 	for _, transformer := range transformers {
 		current = transformer(current)

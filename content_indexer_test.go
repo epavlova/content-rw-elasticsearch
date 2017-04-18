@@ -18,6 +18,10 @@ type esServiceMock struct {
 	mock.Mock
 }
 
+func (*esServiceMock) getSchemaHealth() (string, error) {
+	panic("implement me")
+}
+
 func (service *esServiceMock) writeData(conceptType string, uuid string, payload interface{}) (*elastic.IndexResult, error) {
 	args := service.Called(conceptType, uuid, payload)
 	return args.Get(0).(*elastic.IndexResult), args.Error(1)
@@ -39,6 +43,11 @@ func (service *esServiceMock) getClusterHealth() (*elastic.ClusterHealthResponse
 
 type elasticClientMock struct {
 	mock.Mock
+}
+
+func (client elasticClientMock) IndexGet() *elastic.IndicesGetService {
+	args := client.Called()
+	return args.Get(0).(*elastic.IndicesGetService)
 }
 
 func (client elasticClientMock) ClusterHealth() *elastic.ClusterHealthService {
@@ -120,7 +129,7 @@ func TestStartClient(t *testing.T) {
 
 	indexer := contentIndexer{}
 
-	indexer.start("index", "1985", accessConfig, queueConfig)
+	indexer.start("app", "index", "1985", accessConfig, queueConfig)
 
 	time.Sleep(100 * time.Millisecond)
 
@@ -157,7 +166,7 @@ func TestStartClientError(t *testing.T) {
 
 	indexer := contentIndexer{}
 
-	indexer.start("index", "1984", accessConfig, queueConfig)
+	indexer.start("app", "index", "1984", accessConfig, queueConfig)
 
 	time.Sleep(100 * time.Millisecond)
 
@@ -170,7 +179,7 @@ func TestStartClientError(t *testing.T) {
 func TestHandleWriteMessage(t *testing.T) {
 	assert := assert.New(t)
 
-	inputJson, err := ioutil.ReadFile("exampleEnrichedContentModel.json")
+	inputJSON, err := ioutil.ReadFile("exampleEnrichedContentModel.json")
 	assert.NoError(err, "Unexpected error")
 
 	serviceMock := &esServiceMock{}
@@ -178,7 +187,7 @@ func TestHandleWriteMessage(t *testing.T) {
 	serviceMock.On("writeData", "FTCom", "aae9611e-f66c-4fe4-a6c6-2e2bdea69060", mock.Anything).Return(&elastic.IndexResult{}, nil)
 
 	indexer := contentIndexer{esServiceInstance: serviceMock}
-	indexer.handleMessage(consumer.Message{Body: string(inputJson)})
+	indexer.handleMessage(consumer.Message{Body: string(inputJSON)})
 
 	serviceMock.AssertExpectations(t)
 }
@@ -186,9 +195,9 @@ func TestHandleWriteMessage(t *testing.T) {
 func TestHandleWriteMessageBlog(t *testing.T) {
 	assert := assert.New(t)
 
-	inputJson, err := ioutil.ReadFile("exampleEnrichedContentModel.json")
+	inputJSON, err := ioutil.ReadFile("exampleEnrichedContentModel.json")
 	assert.NoError(err, "Unexpected error")
-	input := strings.Replace(string(inputJson), "FTCOM-METHODE", "FT-LABS-WP1234", 1)
+	input := strings.Replace(string(inputJSON), "FTCOM-METHODE", "FT-LABS-WP1234", 1)
 
 	serviceMock := &esServiceMock{}
 
@@ -203,9 +212,9 @@ func TestHandleWriteMessageBlog(t *testing.T) {
 func TestHandleWriteMessageBlogWithHeader(t *testing.T) {
 	assert := assert.New(t)
 
-	inputJson, err := ioutil.ReadFile("exampleEnrichedContentModel.json")
+	inputJSON, err := ioutil.ReadFile("exampleEnrichedContentModel.json")
 	assert.NoError(err, "Unexpected error")
-	input := strings.Replace(string(inputJson), "FTCOM-METHODE", "invalid", 1)
+	input := strings.Replace(string(inputJSON), "FTCOM-METHODE", "invalid", 1)
 
 	serviceMock := &esServiceMock{}
 
@@ -220,9 +229,9 @@ func TestHandleWriteMessageBlogWithHeader(t *testing.T) {
 func TestHandleWriteMessageVideo(t *testing.T) {
 	assert := assert.New(t)
 
-	inputJson, err := ioutil.ReadFile("exampleEnrichedContentModel.json")
+	inputJSON, err := ioutil.ReadFile("exampleEnrichedContentModel.json")
 	assert.NoError(err, "Unexpected error")
-	input := strings.Replace(string(inputJson), "FTCOM-METHODE", "BRIGHTCOVE", 1)
+	input := strings.Replace(string(inputJSON), "FTCOM-METHODE", "BRIGHTCOVE", 1)
 
 	serviceMock := &esServiceMock{}
 
@@ -240,9 +249,9 @@ func TestHandleWriteMessageNoType(t *testing.T) {
 	hook := &logHook{}
 	logrus.AddHook(hook)
 
-	inputJson, err := ioutil.ReadFile("exampleEnrichedContentModel.json")
+	inputJSON, err := ioutil.ReadFile("exampleEnrichedContentModel.json")
 	assert.NoError(err, "Unexpected error")
-	input := strings.Replace(string(inputJson), "FTCOM-METHODE", "invalid", 1)
+	input := strings.Replace(string(inputJSON), "FTCOM-METHODE", "invalid", 1)
 
 	serviceMock := &esServiceMock{}
 
@@ -260,7 +269,7 @@ func TestHandleWriteMessageError(t *testing.T) {
 	hook := &logHook{}
 	logrus.AddHook(hook)
 
-	inputJson, err := ioutil.ReadFile("exampleEnrichedContentModel.json")
+	inputJSON, err := ioutil.ReadFile("exampleEnrichedContentModel.json")
 	assert.NoError(err, "Unexpected error")
 
 	serviceMock := &esServiceMock{}
@@ -268,7 +277,7 @@ func TestHandleWriteMessageError(t *testing.T) {
 	serviceMock.On("writeData", "FTCom", "aae9611e-f66c-4fe4-a6c6-2e2bdea69060", mock.Anything).Return(&elastic.IndexResult{}, elastic.ErrTimeout)
 
 	indexer := contentIndexer{esServiceInstance: serviceMock}
-	indexer.handleMessage(consumer.Message{Body: string(inputJson)})
+	indexer.handleMessage(consumer.Message{Body: string(inputJSON)})
 
 	serviceMock.AssertExpectations(t)
 	assert.Equal("error", hook.LastEntry().Level.String(), "Wrong log")
@@ -277,9 +286,9 @@ func TestHandleWriteMessageError(t *testing.T) {
 func TestHandleDeleteMessage(t *testing.T) {
 	assert := assert.New(t)
 
-	inputJson, err := ioutil.ReadFile("exampleEnrichedContentModel.json")
+	inputJSON, err := ioutil.ReadFile("exampleEnrichedContentModel.json")
 	assert.NoError(err, "Unexpected error")
-	input := strings.Replace(string(inputJson), `"marked_deleted": false`, `"marked_deleted": true`, 1)
+	input := strings.Replace(string(inputJSON), `"marked_deleted": false`, `"marked_deleted": true`, 1)
 
 	serviceMock := &esServiceMock{}
 
@@ -297,9 +306,9 @@ func TestHandleDeleteMessageError(t *testing.T) {
 	hook := &logHook{}
 	logrus.AddHook(hook)
 
-	inputJson, err := ioutil.ReadFile("exampleEnrichedContentModel.json")
+	inputJSON, err := ioutil.ReadFile("exampleEnrichedContentModel.json")
 	assert.NoError(err, "Unexpected error")
-	input := strings.Replace(string(inputJson), `"marked_deleted": false`, `"marked_deleted": true`, 1)
+	input := strings.Replace(string(inputJSON), `"marked_deleted": false`, `"marked_deleted": true`, 1)
 
 	serviceMock := &esServiceMock{}
 

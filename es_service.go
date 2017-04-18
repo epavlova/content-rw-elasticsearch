@@ -1,10 +1,19 @@
 package main
 
 import (
+	"encoding/json"
 	"errors"
 	"gopkg.in/olivere/elastic.v2"
+	"io/ioutil"
+	"reflect"
 	"sync"
 )
+
+var referenceIndex *elasticIndex
+
+type elasticIndex struct {
+	index map[string]*elastic.IndicesGetResponse
+}
 
 type esService struct {
 	sync.RWMutex
@@ -21,6 +30,7 @@ type esServiceI interface {
 
 type esHealthServiceI interface {
 	getClusterHealth() (*elastic.ClusterHealthResponse, error)
+	getSchemaHealth() (string, error)
 }
 
 func newEsService(indexName string) esServiceI {
@@ -29,10 +39,50 @@ func newEsService(indexName string) esServiceI {
 
 func (service *esService) getClusterHealth() (*elastic.ClusterHealthResponse, error) {
 	if service.elasticClient == nil {
-		return nil, errors.New("Client could not be created, please check the application parameters/env variables, and restart the service.")
+		return nil, errors.New("client could not be created, please check the application parameters/env variables, and restart the service")
 	}
 
 	return service.elasticClient.ClusterHealth().Do()
+}
+
+func (service *esService) getSchemaHealth() (string, error) {
+
+	if referenceIndex == nil {
+		referenceIndex = new(elasticIndex)
+
+		referenceJSON, err := ioutil.ReadFile("referenceSchema.json")
+		if err != nil {
+			return "", err
+		}
+
+		err = json.Unmarshal([]byte(referenceJSON), &referenceIndex.index)
+		if err != nil {
+			return "", err
+		}
+	}
+
+	liveIndex, err := service.elasticClient.IndexGet().Index(service.indexName).Do()
+	if err != nil {
+		return "", err
+	}
+
+	settings, ok := liveIndex[service.indexName].Settings["index"].(map[string]interface{})
+	if ok {
+		delete(settings, "creation_date")
+		delete(settings, "uuid")
+		delete(settings, "version")
+		delete(settings, "created")
+	}
+
+	if !reflect.DeepEqual(liveIndex[service.indexName].Settings, referenceIndex.index[service.indexName].Settings) {
+		return "not ok, wrong settings", nil
+	}
+
+	if !reflect.DeepEqual(liveIndex[service.indexName].Mappings, referenceIndex.index[service.indexName].Mappings) {
+		return "not ok, wrong mappings", nil
+	}
+
+	return "ok", nil
 }
 
 func (service *esService) setClient(client esClientI) {

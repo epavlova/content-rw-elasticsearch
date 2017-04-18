@@ -13,6 +13,7 @@ type esClientI interface {
 	Index() *elastic.IndexService
 	Get() *elastic.GetService
 	Delete() *elastic.DeleteService
+	IndexGet() *elastic.IndicesGetService
 }
 
 type esAccessConfig struct {
