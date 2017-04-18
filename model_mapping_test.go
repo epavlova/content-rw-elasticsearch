@@ -17,13 +17,16 @@ func TestConvertToESContentModel(t *testing.T) {
 	err = json.Unmarshal([]byte(inputJSON), &enrichedContentModel)
 	assert.NoError(err, "Unexpected error")
 
-	startTime := time.Now().UTC().Format("2006-01-02T15:04:05.999Z")
-
+	startTime := time.Now().UnixNano() / 1000000
 	esModel := convertToESContentModel(enrichedContentModel, "article")
 
-	endTime := time.Now().UTC().Format("2006-01-02T15:04:05.999Z")
+	endTime := time.Now().UnixNano() / 1000000
 
-	assert.True(*esModel.IndexDate >= startTime && *esModel.IndexDate <= endTime, "Index date %s not correct", *esModel.IndexDate)
+	indexDate, err := time.Parse("2006-01-02T15:04:05.999Z", *esModel.IndexDate)
+	assert.NoError(err, "Unexpected error")
+	indexTime := indexDate.UnixNano() / 1000000
+
+	assert.True(indexTime >= startTime && indexTime <= endTime, "Index date %s not correct", *esModel.IndexDate)
 
 	esModel.IndexDate = nil
 
