@@ -4,16 +4,49 @@ import (
 	"encoding/json"
 	"fmt"
 	health "github.com/Financial-Times/go-fthealth/v1_1"
+	"github.com/Financial-Times/service-status-go/gtg"
 	log "github.com/Sirupsen/logrus"
+	"io"
+	"io/ioutil"
+	"net"
 	"net/http"
+	"time"
 )
+
+// ResponseOK Successful healthcheck response
+const ResponseOK = "OK"
 
 type healthService struct {
 	esHealthService esHealthServiceI
+	topic           string
+	proxyAddress    string
+	httpClient      *http.Client
+	checks          []health.Check
 }
 
-func newHealthService(esHealthService esHealthServiceI) *healthService {
-	return &healthService{esHealthService: esHealthService}
+func newHealthService(esHealthService esHealthServiceI, topic string, proxyAddress string) *healthService {
+	service := &healthService{
+		esHealthService: esHealthService,
+		topic:           topic,
+		proxyAddress:    proxyAddress,
+		httpClient: &http.Client{
+			Transport: &http.Transport{
+				Proxy: http.ProxyFromEnvironment,
+				DialContext: (&net.Dialer{
+					Timeout:   30 * time.Second,
+					KeepAlive: 30 * time.Second,
+				}).DialContext,
+				MaxIdleConnsPerHost:   20,
+				TLSHandshakeTimeout:   3 * time.Second,
+				ExpectContinueTimeout: 1 * time.Second,
+			},
+		}}
+	service.checks = []health.Check{
+		service.clusterIsHealthyCheck(),
+		service.connectivityHealthyCheck(),
+		service.schemaHealthyCheck(),
+		service.topicHealthcheck()}
+	return service
 }
 
 func (service *healthService) clusterIsHealthyCheck() health.Check {
@@ -80,11 +113,94 @@ func (service *healthService) schemaChecker() (string, error) {
 	}
 }
 
-//GoodToGo returns a 503 if the healthcheck fails - suitable for use from varnish to check availability of a node
-func (service *healthService) GoodToGo(writer http.ResponseWriter, req *http.Request) {
-	if _, err := service.healthChecker(); err != nil {
-		writer.WriteHeader(http.StatusServiceUnavailable)
+func (service *healthService) topicHealthcheck() health.Check {
+	return health.Check{
+		BusinessImpact:   "CombinedPostPublication messages can't be read from the queue. Indexing for search won't work.",
+		Name:             fmt.Sprintf("Check kafka-proxy connectivity and %s topic", service.topic),
+		PanicGuide:       "https://dewey.ft.com/content-rw-elasticsearch.html",
+		Severity:         1,
+		TechnicalSummary: "Messages couldn't be read from the queue. Check if kafka-proxy is reachable and topic is present.",
+		Checker:          service.checkIfCombinedPublicationTopicIsPresent,
 	}
+}
+
+func (service *healthService) checkIfCombinedPublicationTopicIsPresent() (string, error) {
+	return ResponseOK, service.checkIfTopicIsPresent(service.topic)
+}
+
+func (service *healthService) checkIfTopicIsPresent(searchedTopic string) error {
+
+	urlStr := service.proxyAddress + "/__kafka-rest-proxy/topics"
+
+	body, _, err := executeHTTPRequest(urlStr, service.httpClient)
+	if err != nil {
+		log.Errorf("Healthcheck: %v", err.Error())
+		return err
+	}
+
+	var topics []string
+
+	err = json.Unmarshal(body, &topics)
+	if err != nil {
+		log.Errorf("Connection could be established to kafka-proxy, but a parsing error occurred and topic could not be found. %v", err.Error())
+		return err
+	}
+
+	for _, topic := range topics {
+		if topic == searchedTopic {
+			return nil
+		}
+	}
+
+	return fmt.Errorf("Connection could be established to kafka-proxy, but topic %s was not found", searchedTopic)
+}
+
+func executeHTTPRequest(urlStr string, httpClient *http.Client) (b []byte, status int, err error) {
+
+	req, err := http.NewRequest("GET", urlStr, nil)
+	if err != nil {
+		return nil, -1, fmt.Errorf("Error creating requests for url=%s, error=%v", urlStr, err)
+	}
+
+	resp, err := httpClient.Do(req)
+	if err != nil {
+		return nil, resp.StatusCode, fmt.Errorf("Error executing requests for url=%s, error=%v", urlStr, err)
+	}
+
+	defer cleanUp(resp)
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, resp.StatusCode, fmt.Errorf("Connecting to %s was not successful. Status: %d", urlStr, resp.StatusCode)
+	}
+
+	b, err = ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, http.StatusOK, fmt.Errorf("Could not parse payload from response for url=%s, error=%v", urlStr, err)
+	}
+
+	return b, http.StatusOK, err
+}
+
+func cleanUp(resp *http.Response) {
+
+	_, err := io.Copy(ioutil.Discard, resp.Body)
+	if err != nil {
+		log.Warningf("[%v]", err)
+	}
+
+	err = resp.Body.Close()
+	if err != nil {
+		log.Warningf("[%v]", err)
+	}
+}
+
+func (service *healthService) gtgCheck() gtg.Status {
+	for _, check := range service.checks {
+		if _, err := check.Checker(); err != nil {
+			return gtg.Status{GoodToGo: false, Message: err.Error()}
+		}
+	}
+	return gtg.Status{GoodToGo: true}
 }
 
 //HealthDetails returns the response from elasticsearch service /__health endpoint - describing the cluster health

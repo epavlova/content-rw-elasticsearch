@@ -10,6 +10,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/kr/pretty"
 	"github.com/rcrowley/go-metrics"
+	"net"
 	"net/http"
 	"os"
 	"os/signal"
@@ -58,27 +59,22 @@ func (indexer *contentIndexer) start(appSystemCode string, indexName string, por
 	}()
 
 	go func() {
-		indexer.serveAdminEndpoints(appSystemCode, port)
+		indexer.serveAdminEndpoints(appSystemCode, port, queueConfig)
 	}()
 }
 
-func (indexer *contentIndexer) serveAdminEndpoints(appSystemCode string, port string) {
-	healthService := newHealthService(indexer.esServiceInstance)
+func (indexer *contentIndexer) serveAdminEndpoints(appSystemCode string, port string, queueConfig consumer.QueueConfig) {
+	healthService := newHealthService(indexer.esServiceInstance, queueConfig.Topic, queueConfig.Addrs[0])
 	var monitoringRouter http.Handler = mux.NewRouter()
 	monitoringRouter = httphandlers.TransactionAwareRequestLoggingHandler(log.StandardLogger(), monitoringRouter)
 	monitoringRouter = httphandlers.HTTPMetricsHandler(metrics.DefaultRegistry, monitoringRouter)
 
 	serveMux := http.NewServeMux()
 
-	checks := []health.Check{healthService.connectivityHealthyCheck(),
-		healthService.clusterIsHealthyCheck(),
-		healthService.schemaHealthyCheck()}
-
-	//todo add Kafka check
-	hc := health.HealthCheck{SystemCode: appSystemCode, Name: appSystemCode, Description: "Content Read Writer for Elasticsearch", Checks: checks}
+	hc := health.HealthCheck{SystemCode: appSystemCode, Name: appSystemCode, Description: "Content Read Writer for Elasticsearch", Checks: healthService.checks}
 	serveMux.HandleFunc("/__health", health.Handler(hc))
 	serveMux.HandleFunc("/__health-details", healthService.HealthDetails)
-	serveMux.HandleFunc(status.GTGPath, healthService.GoodToGo)
+	serveMux.HandleFunc(status.GTGPath, status.NewGoodToGoHandler(healthService.gtgCheck))
 	serveMux.HandleFunc(status.BuildInfoPath, status.BuildInfoHandler)
 
 	serveMux.Handle("/", monitoringRouter)
@@ -89,7 +85,19 @@ func (indexer *contentIndexer) serveAdminEndpoints(appSystemCode string, port st
 }
 
 func (indexer *contentIndexer) startMessageConsumer(config consumer.QueueConfig) {
-	messageConsumer := consumer.NewConsumer(config, indexer.handleMessage, &http.Client{})
+	client := &http.Client{
+		Transport: &http.Transport{
+			Proxy: http.ProxyFromEnvironment,
+			DialContext: (&net.Dialer{
+				Timeout:   30 * time.Second,
+				KeepAlive: 30 * time.Second,
+			}).DialContext,
+			MaxIdleConnsPerHost:   20,
+			TLSHandshakeTimeout:   3 * time.Second,
+			ExpectContinueTimeout: 1 * time.Second,
+		},
+	}
+	messageConsumer := consumer.NewConsumer(config, indexer.handleMessage, client)
 	log.Printf("[Startup] Consumer: %# v", pretty.Formatter(messageConsumer))
 
 	var consumerWaitGroup sync.WaitGroup
