@@ -1,4 +1,4 @@
-FROM golang:1.7-alpine3.5
+FROM golang:1.8-alpine
 
 ENV PROJECT=content-rw-elasticsearch
 COPY . /${PROJECT}-sources/
@@ -19,7 +19,9 @@ RUN apk --no-cache --virtual .build-dependencies add git \
   && LDFLAGS="-X '"${BUILDINFO_PACKAGE}$VERSION"' -X '"${BUILDINFO_PACKAGE}$DATETIME"' -X '"${BUILDINFO_PACKAGE}$REPOSITORY"' -X '"${BUILDINFO_PACKAGE}$REVISION"' -X '"${BUILDINFO_PACKAGE}$BUILDER"'" \
   && echo "Build flags: $LDFLAGS" \
   && echo "Fetching dependencies..." \
-  && go get -t ./... \
+  && go get -u github.com/kardianos/govendor \
+  && $GOPATH/bin/govendor sync \
+  && go get -v \
   && go build -ldflags="${LDFLAGS}" \
   && mv ${PROJECT} /${PROJECT} \
   && apk del .build-dependencies \
