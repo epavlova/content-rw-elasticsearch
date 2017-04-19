@@ -55,7 +55,7 @@ func (service *esService) getSchemaHealth() (string, error) {
 			return "", err
 		}
 
-		err = json.Unmarshal([]byte(referenceJSON), &referenceIndex.index)
+		err = json.Unmarshal(referenceJSON, &referenceIndex.index)
 		if err != nil {
 			return "", err
 		}

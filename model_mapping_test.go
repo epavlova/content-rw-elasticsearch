@@ -10,15 +10,15 @@ import (
 
 func TestConvertToESContentModel(t *testing.T) {
 	assert := assert.New(t)
-	enrichedContentModel := enrichedContentModel{}
+	ecModel := enrichedContentModel{}
 	inputJSON, err := ioutil.ReadFile("exampleEnrichedContentModel.json")
 	assert.NoError(err, "Unexpected error")
 
-	err = json.Unmarshal([]byte(inputJSON), &enrichedContentModel)
+	err = json.Unmarshal([]byte(inputJSON), &ecModel)
 	assert.NoError(err, "Unexpected error")
 
 	startTime := time.Now().UnixNano() / 1000000
-	esModel := convertToESContentModel(enrichedContentModel, "article")
+	esModel := convertToESContentModel(ecModel, "article")
 
 	endTime := time.Now().UnixNano() / 1000000
 
