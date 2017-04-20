@@ -153,7 +153,7 @@ func (indexer *contentIndexer) handleMessage(msg consumer.Message) {
 		} else if strings.Contains(origin, "brightcove") {
 			contentType = "video"
 		} else {
-			log.Errorf("Failed to index content with UUID %s. Could not infer type of content.", uuid)
+			log.Errorf("[%s] Failed to index content with UUID %s. Could not infer type of content.", tid, uuid)
 			return
 		}
 	}

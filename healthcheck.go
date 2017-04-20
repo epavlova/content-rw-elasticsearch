@@ -97,7 +97,7 @@ func (service *healthService) schemaHealthyCheck() health.Check {
 		Name:             "Check Elasticsearch mapping",
 		PanicGuide:       "https://dewey.ft.com/content-rw-elasticsearch.html",
 		Severity:         1,
-		TechnicalSummary: "Elasticsearch mapping does not match expected mapping. Please check index against the reference https://github.com/Financial-Times/content-rw-elasticsearch/blob/master/referenceSchema.json",
+		TechnicalSummary: "Elasticsearch mapping does not match expected mapping. Please check index against the reference https://github.com/Financial-Times/content-rw-elasticsearch/blob/master/runtime/referenceSchema.json",
 		Checker:          service.schemaChecker,
 	}
 }
