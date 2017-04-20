@@ -11,7 +11,7 @@ import (
 func TestConvertToESContentModel(t *testing.T) {
 	assert := assert.New(t)
 	ecModel := enrichedContentModel{}
-	inputJSON, err := ioutil.ReadFile("exampleEnrichedContentModel.json")
+	inputJSON, err := ioutil.ReadFile("testdata/exampleEnrichedContentModel.json")
 	assert.NoError(err, "Unexpected error")
 
 	err = json.Unmarshal([]byte(inputJSON), &ecModel)
@@ -30,7 +30,7 @@ func TestConvertToESContentModel(t *testing.T) {
 
 	esModel.IndexDate = nil
 
-	expectedJSON, err := ioutil.ReadFile("exampleElasticModel.json")
+	expectedJSON, err := ioutil.ReadFile("testdata/exampleElasticModel.json")
 	assert.NoError(err, "Unexpected error")
 
 	expectedESModel := esContentModel{}
