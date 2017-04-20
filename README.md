@@ -13,7 +13,6 @@ Download the source code, dependencies and test dependencies:
         go get -u github.com/Financial-Times/content-rw-elasticsearch
         cd $GOPATH/src/github.com/Financial-Times/content-rw-elasticsearch
         govendor sync
-        go get -t
         go build .
 
 ## Running locally
