@@ -29,5 +29,5 @@ RUN apk --no-cache --virtual .build-dependencies add git \
   && rm -rf $GOPATH /var/cache/apk/*
 
 WORKDIR /
-# Using the expanded command, so that the shell will expand the $PROJECT env var. See https://docs.docker.com/engine/reference/builder/#cmd
-CMD ["sh", "-c", "/${PROJECT}"]
+
+CMD [ "/${PROJECT}" ]
