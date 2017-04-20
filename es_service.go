@@ -50,7 +50,7 @@ func (service *esService) getSchemaHealth() (string, error) {
 	if referenceIndex == nil {
 		referenceIndex = new(elasticIndex)
 
-		referenceJSON, err := ioutil.ReadFile("referenceSchema.json")
+		referenceJSON, err := ioutil.ReadFile("runtime/referenceSchema.json")
 		if err != nil {
 			return "", err
 		}
