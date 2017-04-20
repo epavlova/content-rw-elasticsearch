@@ -20,7 +20,22 @@ import (
 	"time"
 )
 
-const syntheticRequestPrefix = "SYNTHETIC-REQ-MON"
+const (
+	healthPath             = "/__health"
+	healthDetailsPath      = "/__health-details"
+	syntheticRequestPrefix = "SYNTHETIC-REQ-MON"
+	transactionIDHeader    = "X-Request-Id"
+	blogsAuthority         = "http://api.ft.com/system/FT-LABS-WP"
+	articleAuthority       = "http://api.ft.com/system/FTCOM-METHODE"
+	videoAuthority         = "http://api.ft.com/system/BRIGHTCOVE"
+	originHeader           = "Origin-System-Id"
+	methodeOrigin          = "methode-web-pub"
+	wordpressOrigin        = "wordpress"
+	brightcoveOrigin       = "brightcove"
+	blogPostType           = "blogPost"
+	articleType            = "article"
+	videoType              = "video"
+)
 
 type contentIndexer struct {
 	esServiceInstance esServiceI
@@ -72,8 +87,8 @@ func (indexer *contentIndexer) serveAdminEndpoints(appSystemCode string, port st
 	serveMux := http.NewServeMux()
 
 	hc := health.HealthCheck{SystemCode: appSystemCode, Name: appSystemCode, Description: "Content Read Writer for Elasticsearch", Checks: healthService.checks}
-	serveMux.HandleFunc("/__health", health.Handler(hc))
-	serveMux.HandleFunc("/__health-details", healthService.HealthDetails)
+	serveMux.HandleFunc(healthPath, health.Handler(hc))
+	serveMux.HandleFunc(healthDetailsPath, healthService.HealthDetails)
 	serveMux.HandleFunc(status.GTGPath, status.NewGoodToGoHandler(healthService.gtgCheck))
 	serveMux.HandleFunc(status.BuildInfoPath, status.BuildInfoHandler)
 
@@ -98,7 +113,7 @@ func (indexer *contentIndexer) startMessageConsumer(config consumer.QueueConfig)
 		},
 	}
 	messageConsumer := consumer.NewConsumer(config, indexer.handleMessage, client)
-	log.Printf("[Startup] Consumer: %# v", pretty.Formatter(messageConsumer))
+	log.Infof("[Startup] Consumer: %# v", pretty.Formatter(messageConsumer))
 
 	var consumerWaitGroup sync.WaitGroup
 	consumerWaitGroup.Add(1)
@@ -115,7 +130,7 @@ func (indexer *contentIndexer) startMessageConsumer(config consumer.QueueConfig)
 
 func (indexer *contentIndexer) handleMessage(msg consumer.Message) {
 
-	tid := msg.Headers["X-Request-Id"]
+	tid := msg.Headers[transactionIDHeader]
 
 	if strings.Contains(tid, syntheticRequestPrefix) {
 		log.Infof("[%s] Ignoring synthetic message", tid)
@@ -135,23 +150,23 @@ func (indexer *contentIndexer) handleMessage(msg consumer.Message) {
 	var contentType string
 
 	for _, identifier := range combinedPostPublicationEvent.Content.Identifiers {
-		if strings.HasPrefix(identifier.Authority, "http://api.ft.com/system/FT-LABS-WP") {
-			contentType = "blogPost"
-		} else if strings.HasPrefix(identifier.Authority, "http://api.ft.com/system/FTCOM-METHODE") {
-			contentType = "article"
-		} else if strings.HasPrefix(identifier.Authority, "http://api.ft.com/system/BRIGHTCOVE") {
-			contentType = "video"
+		if strings.HasPrefix(identifier.Authority, blogsAuthority) {
+			contentType = blogPostType
+		} else if strings.HasPrefix(identifier.Authority, articleAuthority) {
+			contentType = articleType
+		} else if strings.HasPrefix(identifier.Authority, videoAuthority) {
+			contentType = videoType
 		}
 	}
 
 	if contentType == "" {
-		origin := msg.Headers["Origin-System-Id"]
-		if strings.Contains(origin, "methode-web-pub") {
-			contentType = "article"
-		} else if strings.Contains(origin, "wordpress") {
-			contentType = "blogPost"
-		} else if strings.Contains(origin, "brightcove") {
-			contentType = "video"
+		origin := msg.Headers[originHeader]
+		if strings.Contains(origin, methodeOrigin) {
+			contentType = articleType
+		} else if strings.Contains(origin, wordpressOrigin) {
+			contentType = blogPostType
+		} else if strings.Contains(origin, brightcoveOrigin) {
+			contentType = videoType
 		} else {
 			log.Errorf("[%s] Failed to index content with UUID %s. Could not infer type of content.", tid, uuid)
 			return
