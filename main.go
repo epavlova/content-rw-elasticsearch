@@ -12,7 +12,7 @@ func main() {
 
 	appSystemCode := app.String(cli.StringOpt{
 		Name:   "app-system-code",
-		Value:  "content_rw_elasticsearch",
+		Value:  "content-rw-elasticsearch",
 		Desc:   "System Code of the application",
 		EnvVar: "APP_SYSTEM_CODE",
 	})

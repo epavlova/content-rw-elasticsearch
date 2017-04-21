@@ -29,7 +29,7 @@ Download the source code, dependencies and test dependencies:
 
 Options:
 
-        --app-system-code="content_rw_elasticsearch"            System Code of the application ($APP_SYSTEM_CODE)
+        --app-system-code="content-rw-elasticsearch"            System Code of the application ($APP_SYSTEM_CODE)
         --port="8080"                                           Port to listen on ($APP_PORT)
         --aws-access-key=""                                     AWS ACCES KEY ($AWS_ACCESS_KEY_ID)
         --aws-secret-access-key=""                              AWS SECRET ACCES KEY ($AWS_SECRET_ACCESS_KEY)
