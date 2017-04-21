@@ -30,6 +30,7 @@ Download the source code, dependencies and test dependencies:
 Options:
 
         --app-system-code="content-rw-elasticsearch"            System Code of the application ($APP_SYSTEM_CODE)
+        --app-name="Content RW Elasticsearch"                   Application name ($APP_NAME)
         --port="8080"                                           Port to listen on ($APP_PORT)
         --aws-access-key=""                                     AWS ACCES KEY ($AWS_ACCESS_KEY_ID)
         --aws-secret-access-key=""                              AWS SECRET ACCES KEY ($AWS_SECRET_ACCESS_KEY)
@@ -39,7 +40,6 @@ Options:
         --kafka-consumer-group="default-consumer-group"         Group used to read the messages from the queue ($KAFKA_CONSUMER_GROUP)
         --kafka-topic="CombinedPostPublicationEvents"           The topic to read the meassages from ($KAFKA_TOPIC)
         --kafka-header="kafka"                                  The header identifying the queue to read the messages from ($KAFKA_HEADER)
-        --kafka-concurrent-processing=false                     Whether the consumer uses concurrent processing for the messages ($KAFKA_CONCURRENT_PROCESSING)
 
 3. Test:
 

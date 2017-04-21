@@ -129,7 +129,7 @@ func TestStartClient(t *testing.T) {
 
 	indexer := contentIndexer{}
 
-	indexer.start("app", "index", "1985", accessConfig, queueConfig)
+	indexer.start("app", "name", "index", "1985", accessConfig, queueConfig)
 
 	time.Sleep(100 * time.Millisecond)
 
@@ -166,7 +166,7 @@ func TestStartClientError(t *testing.T) {
 
 	indexer := contentIndexer{}
 
-	indexer.start("app", "index", "1984", accessConfig, queueConfig)
+	indexer.start("app", "name", "index", "1984", accessConfig, queueConfig)
 
 	time.Sleep(100 * time.Millisecond)
 

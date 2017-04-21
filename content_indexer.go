@@ -47,18 +47,18 @@ func waitForSignal() {
 	<-ch
 }
 
-func (indexer *contentIndexer) start(appSystemCode string, indexName string, port string, accessConfig esAccessConfig, queueConfig consumer.QueueConfig) {
+func (indexer *contentIndexer) start(appSystemCode string, appName string, indexName string, port string, accessConfig esAccessConfig, queueConfig consumer.QueueConfig) {
 	channel := make(chan esClientI)
 	go func() {
 		defer close(channel)
 		for {
 			ec, err := newAmazonClient(accessConfig)
 			if err == nil {
-				log.Infof("connected to ElasticSearch")
+				log.Infof("connected to Elasticsearch")
 				channel <- ec
 				return
 			}
-			log.Errorf("could not connect to ElasticSearch: %s", err.Error())
+			log.Errorf("could not connect to Elasticsearch: %s", err.Error())
 			time.Sleep(time.Minute)
 		}
 	}()
@@ -74,11 +74,11 @@ func (indexer *contentIndexer) start(appSystemCode string, indexName string, por
 	}()
 
 	go func() {
-		indexer.serveAdminEndpoints(appSystemCode, port, queueConfig)
+		indexer.serveAdminEndpoints(appSystemCode, appName, port, queueConfig)
 	}()
 }
 
-func (indexer *contentIndexer) serveAdminEndpoints(appSystemCode string, port string, queueConfig consumer.QueueConfig) {
+func (indexer *contentIndexer) serveAdminEndpoints(appSystemCode string, appName string, port string, queueConfig consumer.QueueConfig) {
 	healthService := newHealthService(indexer.esServiceInstance, queueConfig.Topic, queueConfig.Addrs[0])
 	var monitoringRouter http.Handler = mux.NewRouter()
 	monitoringRouter = httphandlers.TransactionAwareRequestLoggingHandler(log.StandardLogger(), monitoringRouter)
@@ -86,7 +86,7 @@ func (indexer *contentIndexer) serveAdminEndpoints(appSystemCode string, port st
 
 	serveMux := http.NewServeMux()
 
-	hc := health.HealthCheck{SystemCode: appSystemCode, Name: appSystemCode, Description: "Content Read Writer for Elasticsearch", Checks: healthService.checks}
+	hc := health.HealthCheck{SystemCode: appSystemCode, Name: appName, Description: "Content Read Writer for Elasticsearch", Checks: healthService.checks}
 	serveMux.HandleFunc(healthPath, health.Handler(hc))
 	serveMux.HandleFunc(healthDetailsPath, healthService.HealthDetails)
 	serveMux.HandleFunc(status.GTGPath, status.NewGoodToGoHandler(healthService.gtgCheck))

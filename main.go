@@ -8,13 +8,20 @@ import (
 )
 
 func main() {
-	app := cli.App("content-rw-es", "Service for loading contents into elasticsearch")
+	app := cli.App("content-rw-elasticsearch", "Service for loading contents into elasticsearch")
 
 	appSystemCode := app.String(cli.StringOpt{
 		Name:   "app-system-code",
 		Value:  "content-rw-elasticsearch",
 		Desc:   "System Code of the application",
 		EnvVar: "APP_SYSTEM_CODE",
+	})
+
+	appName := app.String(cli.StringOpt{
+		Name:   "app-name",
+		Value:  "Content RW Elasticsearch",
+		Desc:   "Application name",
+		EnvVar: "APP_NAME",
 	})
 
 	port := app.String(cli.StringOpt{
@@ -96,7 +103,7 @@ func main() {
 
 	app.Action = func() {
 		indexer := contentIndexer{}
-		indexer.start(*appSystemCode, *indexName, *port, accessConfig, queueConfig)
+		indexer.start(*appSystemCode, *appName, *indexName, *port, accessConfig, queueConfig)
 		waitForSignal()
 	}
 	err := app.Run(os.Args)
