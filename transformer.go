@@ -6,14 +6,18 @@ import (
 	"strings"
 )
 
-var interactiveGraphicsRegex = regexp.MustCompile(`(?s)<div[\s]*class="interactive-comp">(.*?)</div>`)
-var pullTagRegex = regexp.MustCompile(`(?s)<pull-quote(\s|>).*?</pull-quote>`)
-var nbspRegex = regexp.MustCompile(`&nbsp;`)
-var scriptRegex = regexp.MustCompile(`(?i)(?s)<script[^>]*>(.*?)</script>`)
-var tagRegex = regexp.MustCompile(`<[^>]*>`)
-var embedRegex = regexp.MustCompile(`embed\d+`)
-var squaredCaptionRegex = regexp.MustCompile(`\[/?caption[^]]*]`)
-var duplicateWhiteSpaceRegex = regexp.MustCompile(`\s+`)
+const singleSpace = " "
+
+var (
+	interactiveGraphicsRegex = regexp.MustCompile(`(?s)<div[\s]*class="interactive-comp">(.*?)</div>`)
+	pullTagRegex             = regexp.MustCompile(`(?s)<pull-quote(\s|>).*?</pull-quote>`)
+	nbspRegex                = regexp.MustCompile(`&nbsp;`)
+	scriptRegex              = regexp.MustCompile(`(?i)(?s)<script[^>]*>(.*?)</script>`)
+	tagRegex                 = regexp.MustCompile(`<[^>]*>`)
+	embedRegex               = regexp.MustCompile(`embed\d+`)
+	squaredCaptionRegex      = regexp.MustCompile(`\[/?caption[^]]*]`)
+	duplicateWhiteSpaceRegex = regexp.MustCompile(`\s+`)
+)
 
 type textTransformer func(string) string
 
@@ -56,5 +60,5 @@ func squaredCaptionReplacer(input string) string {
 
 }
 func duplicateWhiteSpaceRemover(input string) string {
-	return duplicateWhiteSpaceRegex.ReplaceAllString(input, " ")
+	return duplicateWhiteSpaceRegex.ReplaceAllString(input, singleSpace)
 }
