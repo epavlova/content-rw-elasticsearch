@@ -30,4 +30,4 @@ RUN apk --no-cache --virtual .build-dependencies add git \
 
 WORKDIR /
 
-CMD [ "/${PROJECT}" ]
+CMD [ "/content-rw-elasticsearch" ]
