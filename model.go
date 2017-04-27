@@ -171,13 +171,13 @@ type esContentModel struct {
 	PublishReference           string   `json:"publishReference"`
 }
 
-type ContentType struct {
+type contentType struct {
 	collection string
 	format     string
 	category   string
 }
 
-var contentTypeMap = map[string]ContentType{
+var contentTypeMap = map[string]contentType{
 	"article": {
 		collection: "FTCom",
 		format:     "Articles",
@@ -256,9 +256,9 @@ func convertToESContentModel(enrichedContent enrichedContentModel, contentType s
 	esModel.PublishReference = enrichedContent.Content.PublishReference
 
 	for _, annotation := range enrichedContent.Metadata {
-		tmeID := annotation.Thing.ID
+		tmeIDs := []string{annotation.Thing.ID}
 		if len(annotation.Thing.TmeIDs) != 0 {
-			tmeID = annotation.Thing.TmeIDs[0]
+			tmeIDs = append(tmeIDs, annotation.Thing.TmeIDs...)
 		} else {
 			log.Warnf("Indexing content with uuid %s - TME id missing for concept with id %s, using thing id instead",
 				&(enrichedContent.Content.UUID), annotation.Thing.ID)
@@ -267,55 +267,67 @@ func convertToESContentModel(enrichedContent enrichedContentModel, contentType s
 			switch taxonomy {
 			case "http://www.ft.com/ontology/organisation/Organisation":
 				esModel.CmrOrgnames = append(esModel.CmrOrgnames, annotation.Thing.PrefLabel)
-				esModel.CmrOrgnamesIds = append(esModel.CmrOrgnamesIds, getCmrID(tmeOrganisations, tmeID))
+				esModel.CmrOrgnamesIds = append(esModel.CmrOrgnamesIds, getCmrID(tmeOrganisations, tmeIDs))
 			case "http://www.ft.com/ontology/person/Person":
-				esModel.CmrPeople = append(esModel.CmrPeople, annotation.Thing.PrefLabel)
-				esModel.CmrPeopleIds = append(esModel.CmrPeopleIds, getCmrID(tmePeople, tmeID))
+				cmrID := getCmrID(tmePeople, tmeIDs)
+				if cmrID != annotation.Thing.ID {
+					esModel.CmrPeople = append(esModel.CmrPeople, annotation.Thing.PrefLabel)
+					esModel.CmrPeopleIds = append(esModel.CmrPeopleIds, cmrID)
+				}
 				if annotation.Thing.Predicate == hasAuthor {
-					esModel.CmrAuthors = append(esModel.CmrAuthors, annotation.Thing.PrefLabel)
-					esModel.CmrAuthorsIds = append(esModel.CmrAuthorsIds, getCmrID(tmeAuthors, tmeID))
+					cmrID := getCmrID(tmeAuthors, tmeIDs)
+					if cmrID != annotation.Thing.ID {
+						esModel.CmrAuthors = append(esModel.CmrAuthors, annotation.Thing.PrefLabel)
+						esModel.CmrAuthorsIds = append(esModel.CmrAuthorsIds, cmrID)
+					}
 				}
 			case "http://www.ft.com/ontology/company/Company":
 				esModel.CmrCompanynames = append(esModel.CmrCompanynames, annotation.Thing.PrefLabel)
-				esModel.CmrCompanynamesIds = append(esModel.CmrCompanynamesIds, getCmrID(tmeOrganisations, tmeID))
+				esModel.CmrCompanynamesIds = append(esModel.CmrCompanynamesIds, getCmrID(tmeOrganisations, tmeIDs))
 			case "http://www.ft.com/ontology/product/Brand":
 				esModel.CmrBrands = append(esModel.CmrBrands, annotation.Thing.PrefLabel)
-				esModel.CmrBrandsIds = append(esModel.CmrBrandsIds, getCmrID(tmeBrands, tmeID))
+				esModel.CmrBrandsIds = append(esModel.CmrBrandsIds, getCmrID(tmeBrands, tmeIDs))
 			case "http://www.ft.com/ontology/Subject":
 				esModel.CmrSubjects = append(esModel.CmrSubjects, annotation.Thing.PrefLabel)
-				esModel.CmrSubjectsIds = append(esModel.CmrSubjectsIds, getCmrID(tmeSubjects, tmeID))
+				esModel.CmrSubjectsIds = append(esModel.CmrSubjectsIds, getCmrID(tmeSubjects, tmeIDs))
 			case "http://www.ft.com/ontology/Section":
 				esModel.CmrSections = append(esModel.CmrSections, annotation.Thing.PrefLabel)
-				esModel.CmrSectionsIds = append(esModel.CmrSectionsIds, getCmrID(tmeSections, tmeID))
+				esModel.CmrSectionsIds = append(esModel.CmrSectionsIds, getCmrID(tmeSections, tmeIDs))
 				if annotation.Thing.Predicate == primaryClassification {
 					esModel.CmrPrimarysection = new(string)
 					*esModel.CmrPrimarysection = annotation.Thing.PrefLabel
 					esModel.CmrPrimarysectionID = new(string)
-					*esModel.CmrPrimarysectionID = getCmrID(tmeSections, tmeID)
+					*esModel.CmrPrimarysectionID = getCmrID(tmeSections, tmeIDs)
 				}
 			case "http://www.ft.com/ontology/Topic":
 				esModel.CmrTopics = append(esModel.CmrTopics, annotation.Thing.PrefLabel)
-				esModel.CmrTopicsIds = append(esModel.CmrTopicsIds, getCmrID(tmeTopics, tmeID))
+				esModel.CmrTopicsIds = append(esModel.CmrTopicsIds, getCmrID(tmeTopics, tmeIDs))
 				if annotation.Thing.Predicate == about {
 					esModel.CmrPrimarytheme = new(string)
 					*esModel.CmrPrimarytheme = annotation.Thing.PrefLabel
 					esModel.CmrPrimarythemeID = new(string)
-					*esModel.CmrPrimarythemeID = getCmrID(tmeTopics, tmeID)
+					*esModel.CmrPrimarythemeID = getCmrID(tmeTopics, tmeIDs)
 				}
 			case "http://www.ft.com/ontology/Location":
 				esModel.CmrRegions = append(esModel.CmrRegions, annotation.Thing.PrefLabel)
-				esModel.CmrRegionsIds = append(esModel.CmrRegionsIds, getCmrID(tmeRegions, tmeID))
+				esModel.CmrRegionsIds = append(esModel.CmrRegionsIds, getCmrID(tmeRegions, tmeIDs))
 			case "http://www.ft.com/ontology/Genre":
 				esModel.CmrGenres = append(esModel.CmrGenres, annotation.Thing.PrefLabel)
-				esModel.CmrGenreIds = append(esModel.CmrGenreIds, getCmrID(tmeGenres, tmeID))
+				esModel.CmrGenreIds = append(esModel.CmrGenreIds, getCmrID(tmeGenres, tmeIDs))
 			case "http://www.ft.com/ontology/SpecialReport":
 				esModel.CmrSpecialreports = append(esModel.CmrSpecialreports, annotation.Thing.PrefLabel)
-				esModel.CmrSpecialreportsIds = append(esModel.CmrSpecialreportsIds, getCmrID(tmeSpecialReports, tmeID))
+				esModel.CmrSpecialreportsIds = append(esModel.CmrSpecialreportsIds, getCmrID(tmeSpecialReports, tmeIDs))
 			}
 		}
 	}
 	return esModel
 }
-func getCmrID(taxonomy string, tmeID string) string {
-	return base64.StdEncoding.EncodeToString([]byte(tmeID)) + "-" + base64.StdEncoding.EncodeToString([]byte(taxonomy))
+func getCmrID(taxonomy string, tmeIDs []string) string {
+	encodedTaxonomy := base64.StdEncoding.EncodeToString([]byte(taxonomy))
+	for _, tmeID := range tmeIDs {
+		if strings.HasSuffix(tmeID, encodedTaxonomy) {
+			return tmeID
+		}
+	}
+	return tmeIDs[0]
 }

@@ -32,7 +32,7 @@
         ],
         "predicate": "isClassifiedBy",
         "tmeIDs": [
-          "05d58033-0456-4ee7-9408-0fef202a0bf7"
+          "MDVkNTgwMzMtMDQ1Ni00ZWU3LTk0MDgtMGZlZjIwMmEwYmY3-T04="
         ]
       },
       "provenances": [
@@ -63,7 +63,7 @@
           "http://www.ft.com/ontology/concept/Concept"
         ],
         "tmeIDs": [
-          "a356b264-ab94-4453-8155-44638d14a4f0"
+          "YTM1NmIyNjQtYWI5NC00NDUzLTgxNTUtNDQ2MzhkMTRhNGYw-T04="
         ]
       },
       "provenances": [
@@ -94,7 +94,69 @@
           "http://www.ft.com/ontology/concept/Concept"
         ],
         "tmeIDs": [
-          "76ecee52-997d-43a0-9c32-49f04179dd24"
+          "NzZlY2VlNTItOTk3ZC00M2EwLTljMzItNDlmMDQxNzlkZDI0-QXV0aG9ycw=="
+        ]
+      },
+      "provenances": [
+        {
+          "scores": [
+            {
+              "scoringSystem": "http://api.ft.com/scoringsystem/FT-RELEVANCE-SYSTEM",
+              "value": 0.375
+            },
+            {
+              "scoringSystem": "http://api.ft.com/scoringsystem/FT-CONFIDENCE-SYSTEM",
+              "value": 0.9996836123273414
+            }
+          ],
+          "atTime": "2016-01-20T19:43:47.314Z",
+          "agentRole": "http://api.ft.com/things/286b1285-737b-4fac-87dc-30a37575df80"
+        }
+      ]
+    },
+    {
+      "thing": {
+        "id": "http://api.ft.com/things/bec5a464-bdf8-4f5a-95f0-8e2ea253c589",
+        "prefLabel": "Joe Smith",
+        "predicate": "hasAuthor",
+        "types": [
+          "http://www.ft.com/ontology/person/Person",
+          "http://www.ft.com/ontology/core/Thing",
+          "http://www.ft.com/ontology/concept/Concept"
+        ],
+        "tmeIDs": [
+          "NmFmNDU4NWQtZDBkYS00YjEyLWEwMmYtOWE0YTYwYTA2ZDRj-UE4=",
+          "YzcxMTcyNGYtMzQyZC00ZmU2LTk0ZGYtYWI2Y2YxMDMwMTQy-QXV0aG9ycw=="
+        ]
+      },
+      "provenances": [
+        {
+          "scores": [
+            {
+              "scoringSystem": "http://api.ft.com/scoringsystem/FT-RELEVANCE-SYSTEM",
+              "value": 0.375
+            },
+            {
+              "scoringSystem": "http://api.ft.com/scoringsystem/FT-CONFIDENCE-SYSTEM",
+              "value": 0.9996836123273414
+            }
+          ],
+          "atTime": "2016-01-20T19:43:47.314Z",
+          "agentRole": "http://api.ft.com/things/286b1285-737b-4fac-87dc-30a37575df80"
+        }
+      ]
+    },
+    {
+      "thing": {
+        "id": "http://api.ft.com/things/bec5a464-bdf8-4f5a-95f0-8e2ea253c589",
+        "prefLabel": "Martin Testerman",
+        "types": [
+          "http://www.ft.com/ontology/person/Person",
+          "http://www.ft.com/ontology/core/Thing",
+          "http://www.ft.com/ontology/concept/Concept"
+        ],
+        "tmeIDs": [
+          "NGI4YWNhOTktOTc0Ny00MTdiLTkzNzMtZTUwMDM4MGIyODdh-UE4="
         ]
       },
       "provenances": [
@@ -124,7 +186,7 @@
           "http://www.ft.com/ontology/concept/Concept"
         ],
         "tmeIDs": [
-          "f99e9429-09c5-48c5-b018-6cab93a2c003"
+          "Zjk5ZTk0MjktMDljNS00OGM1LWIwMTgtNmNhYjkzYTJjMDAz-QnJhbmRz"
         ]
       },
       "provenances": [
@@ -154,7 +216,7 @@
           "http://www.ft.com/ontology/concept/Concept"
         ],
         "tmeIDs": [
-          "ae6f8783-63a5-4f50-8709-e5df5542c9cc"
+          "YWU2Zjg3ODMtNjNhNS00ZjUwLTg3MDktZTVkZjU1NDJjOWNj-U3ViamVjdHM="
         ]
       },
       "provenances": [
@@ -185,7 +247,7 @@
           "http://www.ft.com/ontology/concept/Concept"
         ],
         "tmeIDs": [
-          "1554cc6e-f981-4fda-8eba-02cb26fd70f9"
+          "MTU1NGNjNmUtZjk4MS00ZmRhLThlYmEtMDJjYjI2ZmQ3MGY5-U2VjdGlvbnM="
         ]
       },
       "provenances": [
@@ -216,7 +278,7 @@
           "http://www.ft.com/ontology/concept/Concept"
         ],
         "tmeIDs": [
-          "1b78ca37-dc3b-4917-aa0c-4b0e88dbff79"
+          "MWI3OGNhMzctZGMzYi00OTE3LWFhMGMtNGIwZTg4ZGJmZjc5-VG9waWNz"
         ]
       },
       "provenances": [
@@ -246,7 +308,7 @@
           "http://www.ft.com/ontology/concept/Concept"
         ],
         "tmeIDs": [
-          "2055e37f-fb30-4e56-a053-a4844641e327"
+          "MjA1NWUzN2YtZmIzMC00ZTU2LWEwNTMtYTQ4NDQ2NDFlMzI3-R0w="
         ]
       },
       "provenances": [
@@ -276,7 +338,7 @@
           "http://www.ft.com/ontology/concept/Concept"
         ],
         "tmeIDs": [
-          "44b1d0db-da34-45bf-9b6a-df9d33df6dee"
+          "NDRiMWQwZGItZGEzNC00NWJmLTliNmEtZGY5ZDMzZGY2ZGVl-R2VucmVz"
         ]
       },
       "provenances": [
@@ -306,7 +368,7 @@
           "http://www.ft.com/ontology/concept/Concept"
         ],
         "tmeIDs": [
-          "3afa56fc-1004-4f39-b9e4-72bed5f1fb88"
+          "M2FmYTU2ZmMtMTAwNC00ZjM5LWI5ZTQtNzJiZWQ1ZjFmYjg4-U3BlY2lhbFJlcG9ydHM="
         ]
       },
       "provenances": [

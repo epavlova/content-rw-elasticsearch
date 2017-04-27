@@ -42,5 +42,6 @@ func TestConvertToESContentModel(t *testing.T) {
 
 func TestCmrID(t *testing.T) {
 	assert := assert.New(t)
-	assert.Equal("NzE0ZThkZGItNDAyMC00MDRjLTlkNzMtY2I5MzRmZDVhOWM2-T04=", getCmrID("ON", "714e8ddb-4020-404c-9d73-cb934fd5a9c6"), "Wrong CMR ID encoding")
+	assert.Equal("NzE0ZThkZGItNDAyMC00MDRjLTlkNzMtY2I5MzRmZDVhOWM2-T04=",
+		getCmrID("ON", []string{"YzcxMTcyNGYtMzQyZC00ZmU2LTk0ZGYtYWI2Y2YxMDMwMTQy-QXV0aG9ycw==", "NzE0ZThkZGItNDAyMC00MDRjLTlkNzMtY2I5MzRmZDVhOWM2-T04="}), "Wrong CMR ID encoding")
 }

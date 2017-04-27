@@ -42,16 +42,28 @@
   "cmr_subjects_ids": ["YWU2Zjg3ODMtNjNhNS00ZjUwLTg3MDktZTVkZjU1NDJjOWNj-U3ViamVjdHM="],
   "cmr_topics": ["Life"],
   "cmr_topics_ids": ["MWI3OGNhMzctZGMzYi00OTE3LWFhMGMtNGIwZTg4ZGJmZjc5-VG9waWNz"],
-  "cmr_people": ["John Doe"],
-  "cmr_people_ids": ["NzZlY2VlNTItOTk3ZC00M2EwLTljMzItNDlmMDQxNzlkZDI0-UE4="],
+  "cmr_people": [
+    "Joe Smith",
+    "Martin Testerman"
+  ],
+  "cmr_people_ids": [
+    "NmFmNDU4NWQtZDBkYS00YjEyLWEwMmYtOWE0YTYwYTA2ZDRj-UE4=",
+    "NGI4YWNhOTktOTc0Ny00MTdiLTkzNzMtZTUwMDM4MGIyODdh-UE4="
+  ],
   "cmr_regions": ["Europe"],
   "cmr_regions_ids": ["MjA1NWUzN2YtZmIzMC00ZTU2LWEwNTMtYTQ4NDQ2NDFlMzI3-R0w="],
   "cmr_icb": null,
   "cmr_icb_ids": null,
   "cmr_iptc": null,
   "cmr_iptc_ids": null,
-  "cmr_authors_ids": ["NzZlY2VlNTItOTk3ZC00M2EwLTljMzItNDlmMDQxNzlkZDI0-QXV0aG9ycw=="],
-  "cmr_authors": ["John Doe"],
+  "cmr_authors_ids": [
+    "NzZlY2VlNTItOTk3ZC00M2EwLTljMzItNDlmMDQxNzlkZDI0-QXV0aG9ycw==",
+    "YzcxMTcyNGYtMzQyZC00ZmU2LTk0ZGYtYWI2Y2YxMDMwMTQy-QXV0aG9ycw=="
+  ],
+  "cmr_authors": [
+    "John Doe",
+    "Joe Smith"
+  ],
   "cmr_companynames": [
     "Pomegranate",
     "ACME Corp"
