@@ -5,6 +5,8 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/jawher/mow.cli"
 	"os"
+	"os/signal"
+	"syscall"
 )
 
 func main() {
@@ -105,10 +107,19 @@ func main() {
 		indexer := contentIndexer{}
 		indexer.start(*appSystemCode, *appName, *indexName, *port, accessConfig, queueConfig)
 		waitForSignal()
+		log.Infof("[Shutdown] Content RW Elasticsearch is shutting down")
+		indexer.stop()
 	}
 	err := app.Run(os.Args)
 	if err != nil {
 		log.Errorf("App could not start, error=[%s]\n", err)
 		return
 	}
+	log.Infof("[Shutdown] Content RW Elasticsearch shutdown complete")
+}
+
+func waitForSignal() {
+	ch := make(chan os.Signal)
+	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
+	<-ch
 }

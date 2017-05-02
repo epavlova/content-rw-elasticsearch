@@ -6,14 +6,10 @@ import (
 	"github.com/Financial-Times/message-queue-gonsumer/consumer"
 	status "github.com/Financial-Times/service-status-go/httphandlers"
 	log "github.com/Sirupsen/logrus"
-	"github.com/kr/pretty"
 	"net"
 	"net/http"
-	"os"
-	"os/signal"
 	"strings"
 	"sync"
-	"syscall"
 	"time"
 )
 
@@ -36,12 +32,10 @@ const (
 
 type contentIndexer struct {
 	esServiceInstance esServiceI
-}
-
-func waitForSignal() {
-	ch := make(chan os.Signal)
-	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
-	<-ch
+	server            *http.Server
+	messageConsumer   consumer.MessageConsumer
+	wg                sync.WaitGroup
+	mu                sync.Mutex
 }
 
 func (indexer *contentIndexer) start(appSystemCode string, appName string, indexName string, port string, accessConfig esAccessConfig, queueConfig consumer.QueueConfig) {
@@ -70,9 +64,21 @@ func (indexer *contentIndexer) start(appSystemCode string, appName string, index
 		}
 	}()
 
+	indexer.serveAdminEndpoints(appSystemCode, appName, port, queueConfig)
+}
+
+func (indexer *contentIndexer) stop() {
 	go func() {
-		indexer.serveAdminEndpoints(appSystemCode, appName, port, queueConfig)
+		indexer.mu.Lock()
+		if indexer.messageConsumer != nil {
+			indexer.messageConsumer.Stop()
+		}
+		indexer.mu.Unlock()
 	}()
+	if err := indexer.server.Close(); err != nil {
+		log.Errorf("Unable to stop http server: %v", err)
+	}
+	indexer.wg.Wait()
 }
 
 func (indexer *contentIndexer) serveAdminEndpoints(appSystemCode string, appName string, port string, queueConfig consumer.QueueConfig) {
@@ -86,9 +92,15 @@ func (indexer *contentIndexer) serveAdminEndpoints(appSystemCode string, appName
 	serveMux.HandleFunc(status.GTGPath, status.NewGoodToGoHandler(healthService.gtgCheck))
 	serveMux.HandleFunc(status.BuildInfoPath, status.BuildInfoHandler)
 
-	if err := http.ListenAndServe(":"+port, serveMux); err != nil {
-		log.Fatalf("Unable to start: %v", err)
-	}
+	indexer.server = &http.Server{Addr: ":" + port, Handler: serveMux}
+
+	indexer.wg.Add(1)
+	go func() {
+		if err := indexer.server.ListenAndServe(); err != nil {
+			log.Infof("HTTP server closing with message: %v", err)
+		}
+		indexer.wg.Done()
+	}()
 }
 
 func (indexer *contentIndexer) startMessageConsumer(config consumer.QueueConfig) {
@@ -104,20 +116,14 @@ func (indexer *contentIndexer) startMessageConsumer(config consumer.QueueConfig)
 			ExpectContinueTimeout: 1 * time.Second,
 		},
 	}
-	messageConsumer := consumer.NewConsumer(config, indexer.handleMessage, client)
-	log.Infof("[Startup] Consumer: %# v", pretty.Formatter(messageConsumer))
+	indexer.mu.Lock()
+	indexer.messageConsumer = consumer.NewConsumer(config, indexer.handleMessage, client)
+	indexer.mu.Unlock()
 
-	var consumerWaitGroup sync.WaitGroup
-	consumerWaitGroup.Add(1)
+	indexer.wg.Add(1)
 
-	go func() {
-		messageConsumer.Start()
-		consumerWaitGroup.Done()
-	}()
-
-	waitForSignal()
-	messageConsumer.Stop()
-	consumerWaitGroup.Wait()
+	indexer.messageConsumer.Start()
+	indexer.wg.Done()
 }
 
 func (indexer *contentIndexer) handleMessage(msg consumer.Message) {
