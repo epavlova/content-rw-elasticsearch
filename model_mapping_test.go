@@ -10,38 +10,49 @@ import (
 
 func TestConvertToESContentModel(t *testing.T) {
 	assert := assert.New(t)
-	ecModel := enrichedContentModel{}
-	inputJSON, err := ioutil.ReadFile("testdata/exampleEnrichedContentModel.json")
-	assert.NoError(err, "Unexpected error")
 
-	err = json.Unmarshal([]byte(inputJSON), &ecModel)
-	assert.NoError(err, "Unexpected error")
+	tests := []struct {
+		inputFile  string
+		outputFile string
+	}{
+		{"testdata/exampleEnrichedContentModel.json", "testdata/exampleElasticModel.json"},
+		{"testdata/testInput1.json", "testdata/testOutput1.json"},
+	}
 
-	startTime := time.Now().UnixNano() / 1000000
-	esModel := convertToESContentModel(ecModel, "article")
+	for _, test := range tests {
+		ecModel := enrichedContentModel{}
+		inputJSON, err := ioutil.ReadFile(test.inputFile)
+		assert.NoError(err, "Unexpected error")
 
-	endTime := time.Now().UnixNano() / 1000000
+		err = json.Unmarshal([]byte(inputJSON), &ecModel)
+		assert.NoError(err, "Unexpected error")
 
-	indexDate, err := time.Parse("2006-01-02T15:04:05.999Z", *esModel.IndexDate)
-	assert.NoError(err, "Unexpected error")
-	indexTime := indexDate.UnixNano() / 1000000
+		startTime := time.Now().UnixNano() / 1000000
+		esModel := convertToESContentModel(ecModel, "article")
 
-	assert.True(indexTime >= startTime && indexTime <= endTime, "Index date %s not correct", *esModel.IndexDate)
+		endTime := time.Now().UnixNano() / 1000000
 
-	esModel.IndexDate = nil
+		indexDate, err := time.Parse("2006-01-02T15:04:05.999Z", *esModel.IndexDate)
+		assert.NoError(err, "Unexpected error")
+		indexTime := indexDate.UnixNano() / 1000000
 
-	expectedJSON, err := ioutil.ReadFile("testdata/exampleElasticModel.json")
-	assert.NoError(err, "Unexpected error")
+		assert.True(indexTime >= startTime && indexTime <= endTime, "Index date %s not correct", *esModel.IndexDate)
 
-	expectedESModel := esContentModel{}
-	err = json.Unmarshal([]byte(expectedJSON), &expectedESModel)
-	assert.NoError(err, "Unexpected error")
+		esModel.IndexDate = nil
 
-	assert.Equal(expectedESModel, esModel)
+		expectedJSON, err := ioutil.ReadFile(test.outputFile)
+		assert.NoError(err, "Unexpected error")
+
+		expectedESModel := esContentModel{}
+		err = json.Unmarshal([]byte(expectedJSON), &expectedESModel)
+		assert.NoError(err, "Unexpected error")
+
+		assert.Equal(expectedESModel, esModel)
+	}
 }
 
 func TestCmrID(t *testing.T) {
 	assert := assert.New(t)
 	assert.Equal("NzE0ZThkZGItNDAyMC00MDRjLTlkNzMtY2I5MzRmZDVhOWM2-T04=",
-		getCmrID("ON", []string{"YzcxMTcyNGYtMzQyZC00ZmU2LTk0ZGYtYWI2Y2YxMDMwMTQy-QXV0aG9ycw==", "NzE0ZThkZGItNDAyMC00MDRjLTlkNzMtY2I5MzRmZDVhOWM2-T04="}), "Wrong CMR ID encoding")
+		getCmrID("ON", []string{"YzcxMTcyNGYtMzQyZC00ZmU2LTk0ZGYtYWI2Y2YxMDMwMTQy-QXV0aG9ycw==", "NzE0ZThkZGItNDAyMC00MDRjLTlkNzMtY2I5MzRmZDVhOWM2-T04="}), "Wrong CMR ID")
 }

@@ -30,7 +30,7 @@
           "http://www.ft.com/ontology/core/Thing",
           "http://www.ft.com/ontology/concept/Concept"
         ],
-        "predicate": "isClassifiedBy",
+        "predicate": "http://www.ft.com/ontology/classification/isClassifiedBy",
         "tmeIDs": [
           "MDVkNTgwMzMtMDQ1Ni00ZWU3LTk0MDgtMGZlZjIwMmEwYmY3-T04="
         ]
@@ -87,7 +87,7 @@
       "thing": {
         "id": "http://api.ft.com/things/bec5a464-bdf8-4f5a-95f0-8e2ea253c589",
         "prefLabel": "John Doe",
-        "predicate": "hasAuthor",
+        "predicate": "http://www.ft.com/ontology/annotation/hasAuthor",
         "types": [
           "http://www.ft.com/ontology/person/Person",
           "http://www.ft.com/ontology/core/Thing",
@@ -118,7 +118,7 @@
       "thing": {
         "id": "http://api.ft.com/things/bec5a464-bdf8-4f5a-95f0-8e2ea253c589",
         "prefLabel": "Joe Smith",
-        "predicate": "hasAuthor",
+        "predicate": "http://www.ft.com/ontology/annotation/hasAuthor",
         "types": [
           "http://www.ft.com/ontology/person/Person",
           "http://www.ft.com/ontology/core/Thing",
@@ -240,7 +240,7 @@
       "thing": {
         "id": "http://api.ft.com/things/6c5674ed-3760-41ca-919d-11494d3eca65",
         "prefLabel": "Misc",
-        "predicate": "isPrimarilyClassifiedBy",
+        "predicate": "http://www.ft.com/ontology/classification/isPrimarilyClassifiedBy",
         "types": [
           "http://www.ft.com/ontology/Section",
           "http://www.ft.com/ontology/core/Thing",
@@ -271,7 +271,7 @@
       "thing": {
         "id": "http://api.ft.com/things/fe6e3306-e3de-48e5-89c2-d56c2a6fe3ce",
         "prefLabel": "Life",
-        "predicate": "about",
+        "predicate": "http://www.ft.com/ontology/annotation/about",
         "types": [
           "http://www.ft.com/ontology/Topic",
           "http://www.ft.com/ontology/core/Thing",
