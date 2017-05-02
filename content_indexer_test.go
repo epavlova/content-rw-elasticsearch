@@ -94,11 +94,10 @@ func (hook *logHook) Levels() []logrus.Level {
 func (hook *logHook) LastEntry() (l *logrus.Entry) {
 	hook.Lock()
 	defer hook.Unlock()
-	if i := len(hook.Entries) - 1; i < 0 {
-		return nil
-	} else {
+	if i := len(hook.Entries) - 1; i >= 0 {
 		return hook.Entries[i]
 	}
+	return nil
 }
 
 // Reset removes all Entries from this test hook.

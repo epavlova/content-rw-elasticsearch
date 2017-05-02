@@ -3,13 +3,10 @@ package main
 import (
 	"encoding/json"
 	health "github.com/Financial-Times/go-fthealth/v1_1"
-	"github.com/Financial-Times/http-handlers-go/httphandlers"
 	"github.com/Financial-Times/message-queue-gonsumer/consumer"
 	status "github.com/Financial-Times/service-status-go/httphandlers"
 	log "github.com/Sirupsen/logrus"
-	"github.com/gorilla/mux"
 	"github.com/kr/pretty"
-	"github.com/rcrowley/go-metrics"
 	"net"
 	"net/http"
 	"os"
@@ -80,9 +77,6 @@ func (indexer *contentIndexer) start(appSystemCode string, appName string, index
 
 func (indexer *contentIndexer) serveAdminEndpoints(appSystemCode string, appName string, port string, queueConfig consumer.QueueConfig) {
 	healthService := newHealthService(indexer.esServiceInstance, queueConfig.Topic, queueConfig.Addrs[0])
-	var monitoringRouter http.Handler = mux.NewRouter()
-	monitoringRouter = httphandlers.TransactionAwareRequestLoggingHandler(log.StandardLogger(), monitoringRouter)
-	monitoringRouter = httphandlers.HTTPMetricsHandler(metrics.DefaultRegistry, monitoringRouter)
 
 	serveMux := http.NewServeMux()
 
@@ -91,8 +85,6 @@ func (indexer *contentIndexer) serveAdminEndpoints(appSystemCode string, appName
 	serveMux.HandleFunc(healthDetailsPath, healthService.HealthDetails)
 	serveMux.HandleFunc(status.GTGPath, status.NewGoodToGoHandler(healthService.gtgCheck))
 	serveMux.HandleFunc(status.BuildInfoPath, status.BuildInfoHandler)
-
-	serveMux.Handle("/", monitoringRouter)
 
 	if err := http.ListenAndServe(":"+port, serveMux); err != nil {
 		log.Fatalf("Unable to start: %v", err)
