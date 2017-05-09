@@ -232,7 +232,7 @@ func TestHandleWriteMessageVideo(t *testing.T) {
 
 	inputJSON, err := ioutil.ReadFile("testdata/exampleEnrichedContentModel.json")
 	assert.NoError(err, "Unexpected error")
-	input := strings.Replace(string(inputJSON), "FTCOM-METHODE", "BRIGHTCOVE", 1)
+	input := strings.Replace(string(inputJSON), "FTCOM-METHODE", "NEXT-VIDEO-EDITOR", 1)
 
 	serviceMock := &esServiceMock{}
 
@@ -241,6 +241,23 @@ func TestHandleWriteMessageVideo(t *testing.T) {
 	indexer := contentIndexer{esServiceInstance: serviceMock}
 	indexer.handleMessage(consumer.Message{Body: input})
 
+	serviceMock.AssertExpectations(t)
+}
+
+func TestHandleWriteMessageUnknownType(t *testing.T) {
+	assert := assert.New(t)
+
+	inputJSON, err := ioutil.ReadFile("testdata/exampleEnrichedContentModel.json")
+	assert.NoError(err, "Unexpected error")
+	input := strings.Replace(string(inputJSON), `"Article"`, `"Content"`, 1)
+
+	serviceMock := &esServiceMock{}
+
+	indexer := contentIndexer{esServiceInstance: serviceMock}
+	indexer.handleMessage(consumer.Message{Body: input})
+
+	serviceMock.AssertNotCalled(t, "writeData", mock.Anything, "aae9611e-f66c-4fe4-a6c6-2e2bdea69060", mock.Anything)
+	serviceMock.AssertNotCalled(t, "deleteData", mock.Anything, "aae9611e-f66c-4fe4-a6c6-2e2bdea69060")
 	serviceMock.AssertExpectations(t)
 }
 

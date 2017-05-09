@@ -19,9 +19,10 @@
     "standfirst": "standfirst",
     "description": "description",
     "mainImage": "",
-    "publishReference": "tid_riega1hr5w"
+    "publishReference": "tid_riega1hr5w",
+    "type": "Article"
   },
-  "v1-metadata": [
+  "metadata": [
     {
       "thing": {
         "id": "http://api.ft.com/things/bb923fea-82df-3d33-8fe1-e52292721258",

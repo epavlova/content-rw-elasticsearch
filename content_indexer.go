@@ -20,15 +20,17 @@ const (
 	transactionIDHeader    = "X-Request-Id"
 	blogsAuthority         = "http://api.ft.com/system/FT-LABS-WP"
 	articleAuthority       = "http://api.ft.com/system/FTCOM-METHODE"
-	videoAuthority         = "http://api.ft.com/system/BRIGHTCOVE"
+	videoAuthority         = "http://api.ft.com/system/NEXT-VIDEO-EDITOR"
 	originHeader           = "Origin-System-Id"
 	methodeOrigin          = "methode-web-pub"
 	wordpressOrigin        = "wordpress"
-	brightcoveOrigin       = "brightcove"
+	videoOrigin            = "next-video-editor"
 	blogPostType           = "blogPost"
 	articleType            = "article"
 	videoType              = "video"
 )
+
+var allowedTypes = []string{"Article", "Video"}
 
 type contentIndexer struct {
 	esServiceInstance esServiceI
@@ -142,6 +144,11 @@ func (indexer *contentIndexer) handleMessage(msg consumer.Message) {
 		return
 	}
 
+	if !contains(allowedTypes, combinedPostPublicationEvent.Content.Type) {
+		log.Infof("[%s] Ignoring message of type %s", tid, combinedPostPublicationEvent.Content.Type)
+		return
+	}
+
 	uuid := combinedPostPublicationEvent.Content.UUID
 	log.Printf("[%s] Processing combined post publication event for uuid [%s]", tid, uuid)
 
@@ -163,7 +170,7 @@ func (indexer *contentIndexer) handleMessage(msg consumer.Message) {
 			contentType = articleType
 		} else if strings.Contains(origin, wordpressOrigin) {
 			contentType = blogPostType
-		} else if strings.Contains(origin, brightcoveOrigin) {
+		} else if strings.Contains(origin, videoOrigin) {
 			contentType = videoType
 		} else {
 			log.Errorf("[%s] Failed to index content with UUID %s. Could not infer type of content.", tid, uuid)
@@ -186,4 +193,13 @@ func (indexer *contentIndexer) handleMessage(msg consumer.Message) {
 			return
 		}
 	}
+}
+
+func contains(list []string, elem string) bool {
+	for _, a := range list {
+		if a == elem {
+			return true
+		}
+	}
+	return false
 }

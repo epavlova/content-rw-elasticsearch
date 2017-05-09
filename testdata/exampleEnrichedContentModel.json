@@ -17,9 +17,10 @@
     "description": null,
     "mainImage": "7d696608-e032-4c61-a977-bdcfceb64291",
     "publishReference": "tid_f7k7nexpop",
-    "lastModified": "2017-02-01T03:57:55.505Z"
+    "lastModified": "2017-02-01T03:57:55.505Z",
+    "type": "Article"
   },
-  "v1-metadata": [
+  "metadata": [
     {
       "thing": {
         "id": "http://api.ft.com/things/173f9769-2085-48e7-9927-3a71366f2ea3",

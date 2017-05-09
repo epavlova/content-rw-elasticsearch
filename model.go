@@ -30,7 +30,7 @@ const (
 type enrichedContentModel struct {
 	UUID     string       `json:"uuid"`
 	Content  contentModel `json:"content"`
-	Metadata annotations  `json:"v1-metadata"`
+	Metadata annotations  `json:"metadata"`
 }
 
 type contentModel struct {
@@ -47,6 +47,7 @@ type contentModel struct {
 	Description        string       `json:"description"`
 	MainImage          string       `json:"mainImage"`
 	PublishReference   string       `json:"publishReference"`
+	Type               string       `json:"type"`
 }
 
 type identifier struct {

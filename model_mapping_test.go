@@ -17,6 +17,8 @@ func TestConvertToESContentModel(t *testing.T) {
 	}{
 		{"testdata/exampleEnrichedContentModel.json", "testdata/exampleElasticModel.json"},
 		{"testdata/testInput1.json", "testdata/testOutput1.json"},
+		{"testdata/testInput2.json", "testdata/testOutput2.json"},
+		{"testdata/testInput3.json", "testdata/testOutput3.json"},
 	}
 
 	for _, test := range tests {
