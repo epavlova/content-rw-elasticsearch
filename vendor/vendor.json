@@ -126,6 +126,13 @@
 			"revisionTime": "2017-01-30T11:31:45Z"
 		},
 		{
+			"checksumSHA1": "xegYczAmM0AnZfE/Salv75CB1R0=",
+			"origin": "github.com/Financial-Times/content-rw-elasticsearch/vendor/github.com/willf/bitset",
+			"path": "github.com/willf/bitset",
+			"revision": "988f4f24992fc745de53c42df0da6581e42a6686",
+			"revisionTime": "2017-05-05T19:16:46Z"
+		},
+		{
 			"checksumSHA1": "Y+HGqEkYM15ir+J93MEaHdyFy0c=",
 			"path": "golang.org/x/net/context",
 			"revision": "05d3205156cb1bdc096578d6457fa161cd950aa2",
