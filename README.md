@@ -4,7 +4,7 @@
 
 
 ## Introduction
-Indexes V2 content in Elasticsearch for use by SAPI v1
+Indexes V2 content in Elasticsearch for use by SAPI V1
 
 ## Installation
 Download the source code, dependencies and test dependencies:
@@ -40,6 +40,7 @@ Options:
         --kafka-consumer-group="default-consumer-group"         Group used to read the messages from the queue ($KAFKA_CONSUMER_GROUP)
         --kafka-topic="CombinedPostPublicationEvents"           The topic to read the meassages from ($KAFKA_TOPIC)
         --kafka-header="kafka"                                  The header identifying the queue to read the messages from ($KAFKA_HEADER)
+        --kafka-concurrent-processing=false                     Whether the consumer uses concurrent processing for the messages ($KAFKA_CONCURRENT_PROCESSING)
 
 3. Test:
 
