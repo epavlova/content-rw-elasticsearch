@@ -251,6 +251,24 @@ func convertToESContentModel(enrichedContent enrichedContentModel, contentType s
 		*esModel.ThumbnailURL = strings.Replace(imageServiceURL, imagePlaceholder, enrichedContent.Content.MainImage, -1)
 	}
 
+	if enrichedContent.Content.MainImage != "" {
+		esModel.ThumbnailURL = new(string)
+
+		var imageID UUID
+
+		//Generate the actual image UUID from the received image set UUID
+		imageSetUUID, err := NewUUIDFromString(enrichedContent.Content.MainImage)
+		if err == nil {
+			imageID, err = GenerateUUID(*imageSetUUID)
+		}
+
+		if err != nil {
+			log.Warnf("Couldn't generate image uuid for the image set with uuid %s: image field won't be populated. Received error: %s", enrichedContent.Content.MainImage, err.Error())
+		}
+
+		*esModel.ThumbnailURL = strings.Replace(imageServiceURL, imagePlaceholder, imageID.String(), -1)
+	}
+
 	esModel.URL = new(string)
 	*esModel.URL = apiURLPrefix + enrichedContent.Content.UUID
 
