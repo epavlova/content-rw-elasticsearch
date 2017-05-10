@@ -31,7 +31,7 @@ const (
 )
 
 // Empty type added for older content. Placeholders - which are subject of exclusion - have type Content.
-var allowedTypes = []string{"Article", "Video", ""}
+var allowedTypes = []string{"Article", "Video", "MediaResource", ""}
 
 type contentIndexer struct {
 	esServiceInstance esServiceI
