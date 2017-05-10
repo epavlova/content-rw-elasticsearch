@@ -14,7 +14,8 @@ dependencies:
   pre:
     - go get -u github.com/kardianos/govendor
   override:
-    - cd $PROJECT_PATH && govendor sync
+    - cd $PROJECT_PATH
+    - govendor sync -v
     - cd $PROJECT_PATH && go build -v
 
 test:
