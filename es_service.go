@@ -61,6 +61,10 @@ func (service *esService) getSchemaHealth() (string, error) {
 		}
 	}
 
+	if service.elasticClient == nil {
+		return "not ok, connection to ES couldn't be established", nil
+	}
+
 	liveIndex, err := service.elasticClient.IndexGet().Index(service.indexName).Do()
 	if err != nil {
 		return "", err

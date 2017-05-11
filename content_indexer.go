@@ -151,7 +151,7 @@ func (indexer *contentIndexer) handleMessage(msg consumer.Message) {
 	}
 
 	uuid := combinedPostPublicationEvent.Content.UUID
-	log.Printf("[%s] Processing combined post publication event for uuid [%s]", tid, uuid)
+	log.Infof("[%s] Processing combined post publication event for uuid [%s]", tid, uuid)
 
 	var contentType string
 

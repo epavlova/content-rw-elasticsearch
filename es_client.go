@@ -3,9 +3,8 @@ package main
 import (
 	awsauth "github.com/smartystreets/go-aws-auth"
 	"gopkg.in/olivere/elastic.v2"
-	"log"
+	log "github.com/Sirupsen/logrus"
 	"net/http"
-	"os"
 )
 
 type esClientI interface {
@@ -48,8 +47,6 @@ var newAmazonClient = func(config esAccessConfig) (esClientI, error) {
 		elastic.SetScheme("https"),
 		elastic.SetHttpClient(signingClient),
 		elastic.SetSniff(false), //needs to be disabled due to EAS behavior. Healthcheck still operates as normal.
-		elastic.SetInfoLog(log.New(os.Stderr, "", log.LstdFlags)),
-		elastic.SetErrorLog(log.New(os.Stderr, "", log.LstdFlags)),
-		elastic.SetTraceLog(log.New(os.Stderr, "", log.LstdFlags)),
+		elastic.SetErrorLog(log.New()),
 	)
 }
