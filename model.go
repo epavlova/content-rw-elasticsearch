@@ -12,7 +12,7 @@ const (
 	about                 = "about"
 	hasAuthor             = "hasAuthor"
 	apiURLPrefix          = "https://www.ft.com/content/"
-	imageServiceURL       = "https://www.ft.com/__origami/service/image/v2/images/raw/http%3A%2F%2Fcom.ft.imagepublish.prod-us.s3.amazonaws.com%2F[image_uuid]?source=search&fit=scale-down&width=167"
+	imageServiceURL       = "https://www.ft.com/__origami/service/image/v2/images/raw/http%3A%2F%2Fprod-upp-image-read.ft.com%2F[image_uuid]?source=search&fit=scale-down&width=167"
 	imagePlaceholder      = "[image_uuid]"
 
 	tmeOrganisations  = "ON"
