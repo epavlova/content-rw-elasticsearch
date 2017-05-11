@@ -281,7 +281,7 @@ func convertToESContentModel(enrichedContent enrichedContentModel, contentType s
 			tmeIDs = append(tmeIDs, annotation.Thing.TmeIDs...)
 		} else {
 			log.Warnf("Indexing content with uuid %s - TME id missing for concept with id %s, using thing id instead",
-				&(enrichedContent.Content.UUID), fallbackID)
+				enrichedContent.Content.UUID, fallbackID)
 		}
 		for _, taxonomy := range annotation.Thing.Types {
 			switch taxonomy {
