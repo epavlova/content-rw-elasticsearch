@@ -19,6 +19,7 @@ func TestConvertToESContentModel(t *testing.T) {
 		{"testdata/testInput1.json", "testdata/testOutput1.json"},
 		{"testdata/testInput2.json", "testdata/testOutput2.json"},
 		{"testdata/testInput3.json", "testdata/testOutput3.json"},
+		{"testdata/testInputMultipleAbouts.json", "testdata/testOutputMultipleAbouts.json"},
 	}
 
 	for _, test := range tests {
