@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"reflect"
 	"sync"
+	"fmt"
 )
 
 var referenceIndex *elasticIndex
@@ -55,7 +56,7 @@ func (service *esService) getSchemaHealth() (string, error) {
 			return "", err
 		}
 
-		err = json.Unmarshal(referenceJSON, &referenceIndex.index)
+		err = json.Unmarshal([]byte(fmt.Sprintf(`{"ft": %s}`, referenceJSON)), &referenceIndex.index)
 		if err != nil {
 			return "", err
 		}
