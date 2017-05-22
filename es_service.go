@@ -3,11 +3,11 @@ package main
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"gopkg.in/olivere/elastic.v2"
 	"io/ioutil"
 	"reflect"
 	"sync"
-	"fmt"
 )
 
 var referenceIndex *elasticIndex
