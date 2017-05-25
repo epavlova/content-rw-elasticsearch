@@ -45,7 +45,7 @@ func newHealthService(esHealthService esHealthServiceI, topic string, proxyAddre
 		service.clusterIsHealthyCheck(),
 		service.connectivityHealthyCheck(),
 		service.schemaHealthyCheck(),
-		service.topicHealthcheck()}
+		service.checkKafkaProxyConnectivity()}
 	return service
 }
 
@@ -113,46 +113,26 @@ func (service *healthService) schemaChecker() (string, error) {
 	}
 }
 
-func (service *healthService) topicHealthcheck() health.Check {
+func (service *healthService) checkKafkaProxyConnectivity() health.Check {
 	return health.Check{
 		BusinessImpact:   "CombinedPostPublication messages can't be read from the queue. Indexing for search won't work.",
-		Name:             fmt.Sprintf("Check kafka-proxy connectivity and %s topic", service.topic),
+		Name:             "Check kafka-proxy connectivity.",
 		PanicGuide:       "https://dewey.ft.com/content-rw-elasticsearch.html",
 		Severity:         1,
-		TechnicalSummary: "Messages couldn't be read from the queue. Check if kafka-proxy is reachable and topic is present.",
-		Checker:          service.checkIfCombinedPublicationTopicIsPresent,
+		TechnicalSummary: "Messages couldn't be read from the queue. Check if kafka-proxy is reachable.",
+		Checker:          service.checkIfKafkaProxyIsReachable,
 	}
 }
 
-func (service *healthService) checkIfCombinedPublicationTopicIsPresent() (string, error) {
-	return ResponseOK, service.checkIfTopicIsPresent(service.topic)
-}
-
-func (service *healthService) checkIfTopicIsPresent(searchedTopic string) error {
-
+func (service *healthService) checkIfKafkaProxyIsReachable() (string, error) {
 	urlStr := service.proxyAddress + "/__kafka-rest-proxy/topics"
 
-	body, _, err := executeHTTPRequest(urlStr, service.httpClient)
+	_, _, err := executeHTTPRequest(urlStr, service.httpClient)
 	if err != nil {
 		log.Errorf("Healthcheck: %v", err.Error())
-		return err
+		return "", err
 	}
-
-	var topics []string
-
-	err = json.Unmarshal(body, &topics)
-	if err != nil {
-		log.Errorf("Connection could be established to kafka-proxy, but a parsing error occurred and topic could not be found. %v", err.Error())
-		return err
-	}
-
-	for _, topic := range topics {
-		if topic == searchedTopic {
-			return nil
-		}
-	}
-
-	return fmt.Errorf("Connection could be established to kafka-proxy, but topic %s was not found", searchedTopic)
+	return ResponseOK, nil
 }
 
 func executeHTTPRequest(urlStr string, httpClient *http.Client) (b []byte, status int, err error) {
