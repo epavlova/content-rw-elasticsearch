@@ -246,12 +246,7 @@ func convertToESContentModel(enrichedContent enrichedContentModel, contentType s
 		squaredCaptionReplacer,
 		duplicateWhiteSpaceRemover)
 
-	if enrichedContent.Content.MainImage != "" {
-		esModel.ThumbnailURL = new(string)
-		*esModel.ThumbnailURL = strings.Replace(imageServiceURL, imagePlaceholder, enrichedContent.Content.MainImage, -1)
-	}
-
-	if enrichedContent.Content.MainImage != "" {
+	if contentType != blogType && enrichedContent.Content.MainImage != "" {
 		esModel.ThumbnailURL = new(string)
 
 		var imageID UUID
