@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"gopkg.in/olivere/elastic.v2"
 	"io/ioutil"
 	"reflect"
@@ -55,7 +56,7 @@ func (service *esService) getSchemaHealth() (string, error) {
 			return "", err
 		}
 
-		err = json.Unmarshal(referenceJSON, &referenceIndex.index)
+		err = json.Unmarshal([]byte(fmt.Sprintf(`{"ft": %s}`, referenceJSON)), &referenceIndex.index)
 		if err != nil {
 			return "", err
 		}

@@ -25,7 +25,7 @@ const (
 	methodeOrigin          = "methode-web-pub"
 	wordpressOrigin        = "wordpress"
 	videoOrigin            = "next-video-editor"
-	blogPostType           = "blogPost"
+	blogType               = "blog"
 	articleType            = "article"
 	videoType              = "video"
 )
@@ -157,7 +157,7 @@ func (indexer *contentIndexer) handleMessage(msg consumer.Message) {
 
 	for _, identifier := range combinedPostPublicationEvent.Content.Identifiers {
 		if strings.HasPrefix(identifier.Authority, blogsAuthority) {
-			contentType = blogPostType
+			contentType = blogType
 		} else if strings.HasPrefix(identifier.Authority, articleAuthority) {
 			contentType = articleType
 		} else if strings.HasPrefix(identifier.Authority, videoAuthority) {
@@ -170,7 +170,7 @@ func (indexer *contentIndexer) handleMessage(msg consumer.Message) {
 		if strings.Contains(origin, methodeOrigin) {
 			contentType = articleType
 		} else if strings.Contains(origin, wordpressOrigin) {
-			contentType = blogPostType
+			contentType = blogType
 		} else if strings.Contains(origin, videoOrigin) {
 			contentType = videoType
 		} else {

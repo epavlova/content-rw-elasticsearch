@@ -10,7 +10,7 @@ import (
 
 var magic = toBitSet(NewNameUUIDFromBytes([]byte("imageset")).lsb)
 
-// GenerateImageSetUUID generated the image set UUID corresponding to the given
+// GenerateUUID generated the image set UUID corresponding to the given
 // image UUID
 func GenerateUUID(imageUUID UUID) (UUID, error) {
 	uuidBits := toBitSet(imageUUID.lsb)
