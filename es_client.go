@@ -1,9 +1,9 @@
 package main
 
 import (
+	log "github.com/Sirupsen/logrus"
 	awsauth "github.com/smartystreets/go-aws-auth"
 	"gopkg.in/olivere/elastic.v2"
-	log "github.com/Sirupsen/logrus"
 	"net/http"
 )
 

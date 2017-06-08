@@ -15,10 +15,12 @@
 			"revisionTime": "2016-08-03T10:40:03Z"
 		},
 		{
-			"checksumSHA1": "/kMYtkcxWV4dZNvJaEGkDUwt3TA=",
+			"checksumSHA1": "mirNgwWRdRte0ku/g4u4fNbzQP0=",
 			"path": "github.com/Financial-Times/message-queue-gonsumer/consumer",
-			"revision": "4e173298922ba4c10721b1b5b3e0d35be7f162e9",
-			"revisionTime": "2017-03-20T10:34:32Z"
+			"revision": "0a481ff94df47f766a74867475247eaf1ed40107",
+			"revisionTime": "2017-05-26T12:08:30Z",
+			"version": "0.4.0-xp-remove-kafka-topic-check-rc.1",
+			"versionExact": "0.4.0-xp-remove-kafka-topic-check-rc.1"
 		},
 		{
 			"checksumSHA1": "fqpohN7Qp2qj7TLMbUxh/cK4oH0=",
