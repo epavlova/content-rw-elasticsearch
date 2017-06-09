@@ -5,6 +5,7 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"strings"
 	"time"
+	"github.com/Financial-Times/uuid-utils-go"
 )
 
 const (
@@ -249,12 +250,12 @@ func convertToESContentModel(enrichedContent enrichedContentModel, contentType s
 	if contentType != blogType && enrichedContent.Content.MainImage != "" {
 		esModel.ThumbnailURL = new(string)
 
-		var imageID UUID
+		var imageID *uuidutils.UUID
 
 		//Generate the actual image UUID from the received image set UUID
-		imageSetUUID, err := NewUUIDFromString(enrichedContent.Content.MainImage)
+		imageSetUUID, err := uuidutils.NewUUIDFromString(enrichedContent.Content.MainImage)
 		if err == nil {
-			imageID, err = GenerateUUID(*imageSetUUID)
+			imageID, err = uuidutils.NewUUIDDeriverWith(uuidutils.IMAGE_SET).From(imageSetUUID)
 		}
 
 		if err != nil {

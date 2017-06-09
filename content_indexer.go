@@ -150,11 +150,15 @@ func (indexer *contentIndexer) handleMessage(msg consumer.Message) {
 		return
 	}
 
-	uuid := combinedPostPublicationEvent.Content.UUID
+	if combinedPostPublicationEvent.Content.UUID == "" {
+		log.Infof("[%s] Ignoring message with no content for UUID: %s", tid, combinedPostPublicationEvent.UUID)
+		return
+	}
+
+	uuid := combinedPostPublicationEvent.UUID
 	log.Infof("[%s] Processing combined post publication event for uuid [%s]", tid, uuid)
 
 	var contentType string
-
 	for _, identifier := range combinedPostPublicationEvent.Content.Identifiers {
 		if strings.HasPrefix(identifier.Authority, blogsAuthority) {
 			contentType = blogType
@@ -182,7 +186,7 @@ func (indexer *contentIndexer) handleMessage(msg consumer.Message) {
 	if combinedPostPublicationEvent.Content.MarkedDeleted {
 		_, err = indexer.esServiceInstance.deleteData(contentTypeMap[contentType].collection, uuid)
 		if err != nil {
-			log.Errorf(err.Error())
+			log.Errorf("[%s] Failed to index content with UUID %s. Error: [%s]", tid, uuid, err.Error())
 			return
 		}
 	} else {
@@ -190,7 +194,7 @@ func (indexer *contentIndexer) handleMessage(msg consumer.Message) {
 
 		_, err = indexer.esServiceInstance.writeData(contentTypeMap[contentType].collection, uuid, payload)
 		if err != nil {
-			log.Errorf(err.Error())
+			log.Errorf("[%s] Failed to index content with UUID %s. Error: [%s]", tid, uuid, err.Error())
 			return
 		}
 	}

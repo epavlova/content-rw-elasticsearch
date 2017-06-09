@@ -45,6 +45,14 @@
 			"revisionTime": "2017-03-28T16:39:54Z"
 		},
 		{
+			"checksumSHA1": "OctXH9nxfVzFlVWD7h4K5e+x5/M=",
+			"path": "github.com/Financial-Times/uuid-utils-go",
+			"revision": "e22658edd0f130936e99079bf844bde7087c914c",
+			"revisionTime": "2017-05-16T11:04:27Z",
+			"version": "1.0.1",
+			"versionExact": "1.0.1"
+		},
+		{
 			"checksumSHA1": "ZKxETlJdB2XubMrZnXB0FQimVA8=",
 			"path": "github.com/Sirupsen/logrus",
 			"revision": "10f801ebc38b33738c9d17d50860f484a0988ff5",
@@ -126,7 +134,7 @@
 			"revisionTime": "2017-01-30T11:31:45Z"
 		},
 		{
-			"checksumSHA1": "xegYczAmM0AnZfE/Salv75CB1R0=",
+			"checksumSHA1": "6KZEap6v/5gD+tjiNbpD81kD61o=",
 			"path": "github.com/willf/bitset",
 			"revision": "988f4f24992fc745de53c42df0da6581e42a6686",
 			"revisionTime": "2017-05-05T19:16:46Z"
