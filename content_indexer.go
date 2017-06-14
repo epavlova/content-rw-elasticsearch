@@ -134,7 +134,7 @@ func (indexer *contentIndexer) handleMessage(msg consumer.Message) {
 
 	tid := msg.Headers[transactionIDHeader]
 	if tid == "" {
-		tid = "tid_force_publish" + uniuri.NewLen(10) + "_content-rw-elasticsearch"
+		tid = "tid_" + uniuri.NewLen(10) + "_content-rw-elasticsearch"
 		log.Infof("Generated tid: %d", tid)
 	}
 
