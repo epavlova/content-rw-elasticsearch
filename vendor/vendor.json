@@ -3,6 +3,12 @@
 	"ignore": "test",
 	"package": [
 		{
+			"checksumSHA1": "VOKQCjTlBvkO+iQ7qGUVQZJcwJg=",
+			"path": "github.com/Financial-Times/content-rw-elasticsearch",
+			"revision": "28ec46fb13c51b69d977242e46bcfe5c6340ca77",
+			"revisionTime": "2017-06-14T14:04:47Z"
+		},
+		{
 			"checksumSHA1": "2dtgENfeO6SICvxjruwb9f1CzLY=",
 			"path": "github.com/Financial-Times/go-fthealth/v1_1",
 			"revision": "bc27ed19189994eef0364e4a07879d5a3f3be76f",
@@ -64,6 +70,12 @@
 			"path": "github.com/davecgh/go-spew/spew",
 			"revision": "4d4bfba8f1d1027c4fdbe371823030df51419987",
 			"revisionTime": "2017-01-30T11:31:45Z"
+		},
+		{
+			"checksumSHA1": "pXA0VXOMBMY18/4WFJjqnsT51jo=",
+			"path": "github.com/dchest/uniuri",
+			"revision": "8902c56451e9b58ff940bbe5fec35d5f9c04584a",
+			"revisionTime": "2016-02-12T16:43:26Z"
 		},
 		{
 			"checksumSHA1": "zmCk+lgIeiOf0Ng9aFP9aFy8ksE=",

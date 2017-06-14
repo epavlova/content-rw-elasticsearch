@@ -12,7 +12,6 @@ import (
 	"sync"
 	"time"
 	"github.com/dchest/uniuri"
-	"github.com/lytics/logrus"
 )
 
 const (
@@ -136,7 +135,7 @@ func (indexer *contentIndexer) handleMessage(msg consumer.Message) {
 	tid := msg.Headers[transactionIDHeader]
 	if tid == "" {
 		tid = "tid_force_publish" + uniuri.NewLen(10) + "_content-rw-elasticsearch"
-		logrus.Infof("Generated tid: %d", tid)
+		log.Infof("Generated tid: %d", tid)
 	}
 
 	if strings.Contains(tid, syntheticRequestPrefix) {
