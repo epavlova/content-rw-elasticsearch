@@ -197,7 +197,7 @@ var contentTypeMap = map[string]contentType{
 	},
 }
 
-func convertToESContentModel(enrichedContent enrichedContentModel, contentType string) esContentModel {
+func convertToESContentModel(enrichedContent enrichedContentModel, contentType string, tid string) esContentModel {
 	esModel := esContentModel{}
 
 	esModel.IndexDate = new(string)
@@ -268,7 +268,7 @@ func convertToESContentModel(enrichedContent enrichedContentModel, contentType s
 	esModel.URL = new(string)
 	*esModel.URL = apiURLPrefix + enrichedContent.Content.UUID
 
-	esModel.PublishReference = enrichedContent.Content.PublishReference
+	esModel.PublishReference = tid
 
 	primaryThemeCount := 0
 
