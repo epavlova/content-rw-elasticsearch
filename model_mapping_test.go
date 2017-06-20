@@ -14,11 +14,13 @@ func TestConvertToESContentModel(t *testing.T) {
 	tests := []struct {
 		inputFile  string
 		outputFile string
+		tid string
 	}{
-		{"testdata/exampleEnrichedContentModel.json", "testdata/exampleElasticModel.json"},
-		{"testdata/testInput1.json", "testdata/testOutput1.json"},
-		{"testdata/testInput2.json", "testdata/testOutput2.json"},
-		{"testdata/testInput3.json", "testdata/testOutput3.json"},
+		{"testdata/exampleEnrichedContentModel.json", "testdata/exampleElasticModel.json", "tid_1"},
+		{"testdata/testInput1.json", "testdata/testOutput1.json", "tid_1"},
+		{"testdata/testInput2.json", "testdata/testOutput2.json", "tid_1"},
+		{"testdata/testInput3.json", "testdata/testOutput3.json", "tid_1"},
+		{"testdata/testInputMultipleAbouts.json", "testdata/testOutputMultipleAbouts.json", "tid_1"},
 	}
 
 	for _, test := range tests {
@@ -30,7 +32,7 @@ func TestConvertToESContentModel(t *testing.T) {
 		assert.NoError(err, "Unexpected error")
 
 		startTime := time.Now().UnixNano() / 1000000
-		esModel := convertToESContentModel(ecModel, "article")
+		esModel := convertToESContentModel(ecModel, "article", test.tid)
 
 		endTime := time.Now().UnixNano() / 1000000
 
@@ -49,6 +51,8 @@ func TestConvertToESContentModel(t *testing.T) {
 		err = json.Unmarshal([]byte(expectedJSON), &expectedESModel)
 		assert.NoError(err, "Unexpected error")
 
+		//the publishRef field is actually overwritten with the x-request-header received from the message, instead of the one read from doc-store
+		expectedESModel.PublishReference = test.tid
 		assert.Equal(expectedESModel, esModel)
 	}
 }

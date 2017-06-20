@@ -11,6 +11,7 @@ import (
 	"strings"
 	"sync"
 	"time"
+	"github.com/dchest/uniuri"
 )
 
 const (
@@ -25,7 +26,7 @@ const (
 	methodeOrigin          = "methode-web-pub"
 	wordpressOrigin        = "wordpress"
 	videoOrigin            = "next-video-editor"
-	blogPostType           = "blogPost"
+	blogType               = "blog"
 	articleType            = "article"
 	videoType              = "video"
 )
@@ -132,6 +133,10 @@ func (indexer *contentIndexer) startMessageConsumer(config consumer.QueueConfig)
 func (indexer *contentIndexer) handleMessage(msg consumer.Message) {
 
 	tid := msg.Headers[transactionIDHeader]
+	if tid == "" {
+		tid = "tid_" + uniuri.NewLen(10) + "_content-rw-elasticsearch"
+		log.Infof("Generated tid: %d", tid)
+	}
 
 	if strings.Contains(tid, syntheticRequestPrefix) {
 		log.Infof("[%s] Ignoring synthetic message", tid)
@@ -150,14 +155,18 @@ func (indexer *contentIndexer) handleMessage(msg consumer.Message) {
 		return
 	}
 
-	uuid := combinedPostPublicationEvent.Content.UUID
+	if combinedPostPublicationEvent.Content.UUID == "" {
+		log.Infof("[%s] Ignoring message with no content for UUID: %s", tid, combinedPostPublicationEvent.UUID)
+		return
+	}
+
+	uuid := combinedPostPublicationEvent.UUID
 	log.Infof("[%s] Processing combined post publication event for uuid [%s]", tid, uuid)
 
 	var contentType string
-
 	for _, identifier := range combinedPostPublicationEvent.Content.Identifiers {
 		if strings.HasPrefix(identifier.Authority, blogsAuthority) {
-			contentType = blogPostType
+			contentType = blogType
 		} else if strings.HasPrefix(identifier.Authority, articleAuthority) {
 			contentType = articleType
 		} else if strings.HasPrefix(identifier.Authority, videoAuthority) {
@@ -170,7 +179,7 @@ func (indexer *contentIndexer) handleMessage(msg consumer.Message) {
 		if strings.Contains(origin, methodeOrigin) {
 			contentType = articleType
 		} else if strings.Contains(origin, wordpressOrigin) {
-			contentType = blogPostType
+			contentType = blogType
 		} else if strings.Contains(origin, videoOrigin) {
 			contentType = videoType
 		} else {
@@ -182,15 +191,15 @@ func (indexer *contentIndexer) handleMessage(msg consumer.Message) {
 	if combinedPostPublicationEvent.Content.MarkedDeleted {
 		_, err = indexer.esServiceInstance.deleteData(contentTypeMap[contentType].collection, uuid)
 		if err != nil {
-			log.Errorf(err.Error())
+			log.Errorf("[%s] Failed to index content with UUID %s. Error: [%s]", tid, uuid, err.Error())
 			return
 		}
 	} else {
-		payload := convertToESContentModel(combinedPostPublicationEvent, contentType)
+		payload := convertToESContentModel(combinedPostPublicationEvent, contentType, tid)
 
 		_, err = indexer.esServiceInstance.writeData(contentTypeMap[contentType].collection, uuid, payload)
 		if err != nil {
-			log.Errorf(err.Error())
+			log.Errorf("[%s] Failed to index content with UUID %s. Error: [%s]", tid, uuid, err.Error())
 			return
 		}
 	}

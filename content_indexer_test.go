@@ -261,6 +261,26 @@ func TestHandleWriteMessageUnknownType(t *testing.T) {
 	serviceMock.AssertExpectations(t)
 }
 
+func TestHandleWriteMessageNoUUIDForMetadataPublish(t *testing.T) {
+	assert := assert.New(t)
+
+	hook := &logHook{}
+	logrus.AddHook(hook)
+
+	inputJSON, err := ioutil.ReadFile("testdata/testInput4.json")
+	assert.NoError(err, "Unexpected error")
+
+	serviceMock := &esServiceMock{}
+
+	indexer := contentIndexer{esServiceInstance: serviceMock}
+	indexer.handleMessage(consumer.Message{Body: string(inputJSON), Headers: map[string]string{originHeader: methodeOrigin}})
+
+	serviceMock.AssertNotCalled(t, "writeData", mock.Anything, "b17756fe-0f62-4cf1-9deb-ca7a2ff80172", mock.Anything)
+	serviceMock.AssertNotCalled(t, "deleteData", mock.Anything, "b17756fe-0f62-4cf1-9deb-ca7a2ff80172")
+	serviceMock.AssertExpectations(t)
+	assert.Equal("info", hook.LastEntry().Level.String(), "Wrong log")
+}
+
 func TestHandleWriteMessageNoType(t *testing.T) {
 	assert := assert.New(t)
 
