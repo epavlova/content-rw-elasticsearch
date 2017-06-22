@@ -3,7 +3,7 @@
 	"ignore": "test",
 	"package": [
 		{
-			"checksumSHA1": "VOKQCjTlBvkO+iQ7qGUVQZJcwJg=",
+			"checksumSHA1": "huWiT3IqaHYWQcBWcYmEPkjFFyE=",
 			"path": "github.com/Financial-Times/content-rw-elasticsearch",
 			"revision": "28ec46fb13c51b69d977242e46bcfe5c6340ca77",
 			"revisionTime": "2017-06-14T14:04:47Z"
@@ -23,10 +23,10 @@
 		{
 			"checksumSHA1": "mirNgwWRdRte0ku/g4u4fNbzQP0=",
 			"path": "github.com/Financial-Times/message-queue-gonsumer/consumer",
-			"revision": "0a481ff94df47f766a74867475247eaf1ed40107",
-			"revisionTime": "2017-05-26T12:08:30Z",
-			"version": "0.4.0-xp-remove-kafka-topic-check-rc.1",
-			"versionExact": "0.4.0-xp-remove-kafka-topic-check-rc.1"
+			"revision": "6f96a5cb1e34c4baa8bc64f56524a7f2e0092ed3",
+			"revisionTime": "2017-06-22T11:17:49Z",
+			"version": "0.4.0",
+			"versionExact": "0.4.0"
 		},
 		{
 			"checksumSHA1": "fqpohN7Qp2qj7TLMbUxh/cK4oH0=",
