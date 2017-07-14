@@ -86,7 +86,7 @@ func (indexer *contentIndexer) stop() {
 }
 
 func (indexer *contentIndexer) serveAdminEndpoints(appSystemCode string, appName string, port string, queueConfig consumer.QueueConfig) {
-	healthService := newHealthService(indexer.esServiceInstance, queueConfig.Topic, queueConfig.Addrs[0])
+	healthService := newHealthService(&queueConfig, indexer.esServiceInstance)
 
 	serveMux := http.NewServeMux()
 
