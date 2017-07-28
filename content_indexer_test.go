@@ -1,15 +1,14 @@
 package main
 
 import (
+	"github.com/Financial-Times/go-logger"
 	"github.com/Financial-Times/message-queue-gonsumer/consumer"
-	"github.com/Sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"gopkg.in/olivere/elastic.v2"
 	"io/ioutil"
 	"net/url"
 	"strings"
-	"sync"
 	"testing"
 	"time"
 )
@@ -75,36 +74,6 @@ func (client elasticClientMock) PerformRequest(method, path string, params url.V
 	return args.Get(0).(*elastic.Response), args.Error(1)
 }
 
-type logHook struct {
-	sync.Mutex
-	Entries []*logrus.Entry
-}
-
-func (hook *logHook) Fire(e *logrus.Entry) error {
-	hook.Lock()
-	defer hook.Unlock()
-	hook.Entries = append(hook.Entries, e)
-	return nil
-}
-
-func (hook *logHook) Levels() []logrus.Level {
-	return logrus.AllLevels
-}
-
-func (hook *logHook) LastEntry() (l *logrus.Entry) {
-	hook.Lock()
-	defer hook.Unlock()
-	if i := len(hook.Entries) - 1; i >= 0 {
-		return hook.Entries[i]
-	}
-	return nil
-}
-
-// Reset removes all Entries from this test hook.
-func (hook *logHook) Reset() {
-	hook.Entries = make([]*logrus.Entry, 0)
-}
-
 func TestStartClient(t *testing.T) {
 	assert := assert.New(t)
 
@@ -143,8 +112,7 @@ func TestStartClient(t *testing.T) {
 func TestStartClientError(t *testing.T) {
 	assert := assert.New(t)
 
-	hook := &logHook{}
-	logrus.AddHook(hook)
+	hook := logger.NewTestHook("content-rw-elasticsearch")
 
 	accessConfig := esAccessConfig{
 		accessKey:  "key",
@@ -264,8 +232,7 @@ func TestHandleWriteMessageUnknownType(t *testing.T) {
 func TestHandleWriteMessageNoUUIDForMetadataPublish(t *testing.T) {
 	assert := assert.New(t)
 
-	hook := &logHook{}
-	logrus.AddHook(hook)
+	hook := logger.NewTestHook("content-rw-elasticsearch")
 
 	inputJSON, err := ioutil.ReadFile("testdata/testInput4.json")
 	assert.NoError(err, "Unexpected error")
@@ -284,8 +251,7 @@ func TestHandleWriteMessageNoUUIDForMetadataPublish(t *testing.T) {
 func TestHandleWriteMessageNoType(t *testing.T) {
 	assert := assert.New(t)
 
-	hook := &logHook{}
-	logrus.AddHook(hook)
+	hook := logger.NewTestHook("content-rw-elasticsearch")
 
 	inputJSON, err := ioutil.ReadFile("testdata/exampleEnrichedContentModel.json")
 	assert.NoError(err, "Unexpected error")
@@ -304,8 +270,7 @@ func TestHandleWriteMessageNoType(t *testing.T) {
 func TestHandleWriteMessageError(t *testing.T) {
 	assert := assert.New(t)
 
-	hook := &logHook{}
-	logrus.AddHook(hook)
+	hook := logger.NewTestHook("content-rw-elasticsearch")
 
 	inputJSON, err := ioutil.ReadFile("testdata/exampleEnrichedContentModel.json")
 	assert.NoError(err, "Unexpected error")
@@ -341,8 +306,7 @@ func TestHandleDeleteMessage(t *testing.T) {
 func TestHandleDeleteMessageError(t *testing.T) {
 	assert := assert.New(t)
 
-	hook := &logHook{}
-	logrus.AddHook(hook)
+	hook := logger.NewTestHook("content-rw-elasticsearch")
 
 	inputJSON, err := ioutil.ReadFile("testdata/exampleEnrichedContentModel.json")
 	assert.NoError(err, "Unexpected error")
@@ -362,8 +326,7 @@ func TestHandleDeleteMessageError(t *testing.T) {
 func TestHandleMessageJsonError(t *testing.T) {
 	assert := assert.New(t)
 
-	hook := &logHook{}
-	logrus.AddHook(hook)
+	hook := logger.NewTestHook("content-rw-elasticsearch")
 
 	serviceMock := &esServiceMock{}
 
@@ -378,8 +341,7 @@ func TestHandleMessageJsonError(t *testing.T) {
 func TestHandleSyntheticMessage(t *testing.T) {
 	assert := assert.New(t)
 
-	hook := &logHook{}
-	logrus.AddHook(hook)
+	hook := logger.NewTestHook("content-rw-elasticsearch")
 
 	serviceMock := &esServiceMock{}
 	indexer := &contentIndexer{esServiceInstance: serviceMock}

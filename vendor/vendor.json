@@ -15,6 +15,12 @@
 			"revisionTime": "2017-03-24T12:21:32Z"
 		},
 		{
+			"checksumSHA1": "T9E6mPxhcdH8pCDczvXcWTvALcc=",
+			"path": "github.com/Financial-Times/go-logger",
+			"revision": "bd0622ea9923a1a014013e7712e6a097720755a8",
+			"revisionTime": "2017-07-27T13:48:46Z"
+		},
+		{
 			"checksumSHA1": "zUpINnstJChGK0LAtkt7jBc3RY0=",
 			"path": "github.com/Financial-Times/http-handlers-go/httphandlers",
 			"revision": "bb69c454da9050fe1c4b92fe1345a01583ee70be",
@@ -61,10 +67,16 @@
 			"versionExact": "1.0.1"
 		},
 		{
-			"checksumSHA1": "ZKxETlJdB2XubMrZnXB0FQimVA8=",
+			"checksumSHA1": "cT6+XPBZiXsFbb7cXT6AYNrZyuM=",
 			"path": "github.com/Sirupsen/logrus",
-			"revision": "10f801ebc38b33738c9d17d50860f484a0988ff5",
-			"revisionTime": "2017-03-17T14:32:14Z"
+			"revision": "3f603f494d61c73457fb234161d8982b9f0f0b71",
+			"revisionTime": "2017-02-07T18:34:08Z"
+		},
+		{
+			"checksumSHA1": "Lglgc8iIRhqbqd8fpAZKpo/eqeY=",
+			"path": "github.com/Sirupsen/logrus/hooks/test",
+			"revision": "3f603f494d61c73457fb234161d8982b9f0f0b71",
+			"revisionTime": "2017-02-07T18:34:08Z"
 		},
 		{
 			"checksumSHA1": "OFu4xJEIjiI8Suu+j/gabfp+y6Q=",
