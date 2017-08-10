@@ -2,7 +2,9 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	health "github.com/Financial-Times/go-fthealth/v1_1"
+	"github.com/Financial-Times/go-logger"
 	"github.com/Financial-Times/message-queue-gonsumer/consumer"
 	status "github.com/Financial-Times/service-status-go/httphandlers"
 	"github.com/dchest/uniuri"
@@ -11,8 +13,6 @@ import (
 	"strings"
 	"sync"
 	"time"
-	"github.com/Financial-Times/go-logger"
-	"fmt"
 )
 
 const (
@@ -195,7 +195,7 @@ func (indexer *contentIndexer) handleMessage(msg consumer.Message) {
 			logger.ErrorEventWithUUID(tid, uuid, "Failed to index content", err)
 			return
 		}
-		logger.MonitoringEventWithUUID("ContentDeleteElasticsearch", tid, uuid, "Annotations", "Successfully deleted")
+		logger.MonitoringEventWithUUID("ContentDeleteElasticsearch", tid, uuid, "", "Successfully deleted")
 	} else {
 		payload := convertToESContentModel(combinedPostPublicationEvent, contentType, tid)
 
@@ -204,7 +204,7 @@ func (indexer *contentIndexer) handleMessage(msg consumer.Message) {
 			logger.ErrorEventWithUUID(tid, uuid, "Failed to index content", err)
 			return
 		}
-		logger.MonitoringEventWithUUID("ContentWriteElasticsearch", tid, uuid, "Annotations", "Successfully saved")
+		logger.MonitoringEventWithUUID("ContentWriteElasticsearch", tid, uuid, "", "Successfully saved")
 	}
 }
 
