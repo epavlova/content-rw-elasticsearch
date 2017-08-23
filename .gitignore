@@ -1,5 +1,5 @@
 *.iml
 *.exe
 .idea
-content-rw-elasticsearch
+/content-rw-elasticsearch
 vendor/*/
