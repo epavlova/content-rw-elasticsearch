@@ -1,13 +1,20 @@
 package main
 
 import (
+	"github.com/Financial-Times/go-logger"
 	"github.com/Financial-Times/message-queue-gonsumer/consumer"
-	log "github.com/Sirupsen/logrus"
 	"github.com/jawher/mow.cli"
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 )
+
+const appNameDefaultValue = "content-rw-elasticsearch"
+
+func init() {
+	logger.InitDefaultLogger(appNameDefaultValue)
+}
 
 func main() {
 	app := cli.App("content-rw-elasticsearch", "Service for loading contents into elasticsearch")
@@ -21,7 +28,7 @@ func main() {
 
 	appName := app.String(cli.StringOpt{
 		Name:   "app-name",
-		Value:  "Content RW Elasticsearch",
+		Value:  appNameDefaultValue,
 		Desc:   "Application name",
 		EnvVar: "APP_NAME",
 	})
@@ -100,22 +107,21 @@ func main() {
 		ConcurrentProcessing: *kafkaConcurrentProcessing,
 	}
 
-	log.SetLevel(log.InfoLevel)
-	log.Infof("[Startup] Content RW Elasticsearch is starting ")
+	logger.Info("[Startup] Application is starting")
 
 	app.Action = func() {
 		indexer := contentIndexer{}
 		indexer.start(*appSystemCode, *appName, *indexName, *port, accessConfig, queueConfig)
 		waitForSignal()
-		log.Infof("[Shutdown] Content RW Elasticsearch is shutting down")
+		logger.Info("[Shutdown] Application is shutting down")
 		indexer.stop()
 	}
 	err := app.Run(os.Args)
 	if err != nil {
-		log.Errorf("App could not start, error=[%s]\n", err)
+		logger.WithError(err).WithTime(time.Now()).Fatal("App could not start")
 		return
 	}
-	log.Infof("[Shutdown] Content RW Elasticsearch shutdown complete")
+	logger.Info("[Shutdown] Shutdown complete")
 }
 
 func waitForSignal() {

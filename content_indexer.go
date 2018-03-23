@@ -3,15 +3,15 @@ package main
 import (
 	"encoding/json"
 	health "github.com/Financial-Times/go-fthealth/v1_1"
+	"github.com/Financial-Times/go-logger"
 	"github.com/Financial-Times/message-queue-gonsumer/consumer"
 	status "github.com/Financial-Times/service-status-go/httphandlers"
-	log "github.com/Sirupsen/logrus"
+	"github.com/dchest/uniuri"
 	"net"
 	"net/http"
 	"strings"
 	"sync"
 	"time"
-	"github.com/dchest/uniuri"
 )
 
 const (
@@ -49,11 +49,11 @@ func (indexer *contentIndexer) start(appSystemCode string, appName string, index
 		for {
 			ec, err := newAmazonClient(accessConfig)
 			if err == nil {
-				log.Infof("connected to Elasticsearch")
+				logger.Info("Connected to Elasticsearch")
 				channel <- ec
 				return
 			}
-			log.Errorf("could not connect to Elasticsearch: %s", err.Error())
+			logger.Error("Could not connect to Elasticsearch")
 			time.Sleep(time.Minute)
 		}
 	}()
@@ -80,7 +80,7 @@ func (indexer *contentIndexer) stop() {
 		indexer.mu.Unlock()
 	}()
 	if err := indexer.server.Close(); err != nil {
-		log.Errorf("Unable to stop http server: %v", err)
+		logger.WithError(err).Error("Unable to stop http server")
 	}
 	indexer.wg.Wait()
 }
@@ -101,7 +101,7 @@ func (indexer *contentIndexer) serveAdminEndpoints(appSystemCode string, appName
 	indexer.wg.Add(1)
 	go func() {
 		if err := indexer.server.ListenAndServe(); err != nil {
-			log.Infof("HTTP server closing with message: %v", err)
+			logger.WithError(err).Error("HTTP server is closing")
 		}
 		indexer.wg.Done()
 	}()
@@ -135,33 +135,33 @@ func (indexer *contentIndexer) handleMessage(msg consumer.Message) {
 	tid := msg.Headers[transactionIDHeader]
 	if tid == "" {
 		tid = "tid_" + uniuri.NewLen(10) + "_content-rw-elasticsearch"
-		log.Infof("Generated tid: %d", tid)
+		logger.WithTransactionID(tid).Info("Generated tid")
 	}
 
 	if strings.Contains(tid, syntheticRequestPrefix) {
-		log.Infof("[%s] Ignoring synthetic message", tid)
+		logger.WithTransactionID(tid).Info("Ignoring synthetic message")
 		return
 	}
 
 	var combinedPostPublicationEvent enrichedContentModel
 	err := json.Unmarshal([]byte(msg.Body), &combinedPostPublicationEvent)
 	if err != nil {
-		log.Errorf("[%s] Cannot unmarshal message body:[%v]", tid, err.Error())
+		logger.WithTransactionID(tid).WithError(err).Error("Cannot unmarshal message body")
 		return
 	}
 
 	if !contains(allowedTypes, combinedPostPublicationEvent.Content.Type) {
-		log.Infof("[%s] Ignoring message of type %s", tid, combinedPostPublicationEvent.Content.Type)
+		logger.WithTransactionID(tid).Infof("Ignoring message of type %s", combinedPostPublicationEvent.Content.Type)
 		return
 	}
 
 	if combinedPostPublicationEvent.Content.UUID == "" {
-		log.Infof("[%s] Ignoring message with no content for UUID: %s", tid, combinedPostPublicationEvent.UUID)
+		logger.WithTransactionID(tid).WithUUID(combinedPostPublicationEvent.UUID).Info("Ignoring message with no content for UUID")
 		return
 	}
 
 	uuid := combinedPostPublicationEvent.UUID
-	log.Infof("[%s] Processing combined post publication event for uuid [%s]", tid, uuid)
+	logger.WithTransactionID(tid).WithUUID(uuid).Info("Processing combined post publication event")
 
 	var contentType string
 	for _, identifier := range combinedPostPublicationEvent.Content.Identifiers {
@@ -183,7 +183,7 @@ func (indexer *contentIndexer) handleMessage(msg consumer.Message) {
 		} else if strings.Contains(origin, videoOrigin) {
 			contentType = videoType
 		} else {
-			log.Errorf("[%s] Failed to index content with UUID %s. Could not infer type of content.", tid, uuid)
+			logger.WithTransactionID(tid).WithUUID(uuid).WithError(err).Error("Failed to index content. Could not infer type of content")
 			return
 		}
 	}
@@ -191,17 +191,19 @@ func (indexer *contentIndexer) handleMessage(msg consumer.Message) {
 	if combinedPostPublicationEvent.Content.MarkedDeleted {
 		_, err = indexer.esServiceInstance.deleteData(contentTypeMap[contentType].collection, uuid)
 		if err != nil {
-			log.Errorf("[%s] Failed to index content with UUID %s. Error: [%s]", tid, uuid, err.Error())
+			logger.WithTransactionID(tid).WithUUID(uuid).WithError(err).Error("Failed to index content")
 			return
 		}
+		logger.WithMonitoringEvent("ContentDeleteElasticsearch", tid, "").WithUUID(uuid).Info("Successfully deleted")
 	} else {
 		payload := convertToESContentModel(combinedPostPublicationEvent, contentType, tid)
 
 		_, err = indexer.esServiceInstance.writeData(contentTypeMap[contentType].collection, uuid, payload)
 		if err != nil {
-			log.Errorf("[%s] Failed to index content with UUID %s. Error: [%s]", tid, uuid, err.Error())
+			logger.WithTransactionID(tid).WithUUID(uuid).WithError(err).Error("Failed to index content")
 			return
 		}
+		logger.WithMonitoringEvent("ContentWriteElasticsearch", tid, "").WithUUID(uuid).Info("Successfully saved")
 	}
 }
 

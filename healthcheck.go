@@ -10,7 +10,7 @@ import (
 	health "github.com/Financial-Times/go-fthealth/v1_1"
 	"github.com/Financial-Times/message-queue-gonsumer/consumer"
 	"github.com/Financial-Times/service-status-go/gtg"
-	log "github.com/Sirupsen/logrus"
+	"github.com/Financial-Times/go-logger"
 )
 
 type healthService struct {
@@ -150,6 +150,6 @@ func (service *healthService) HealthDetails(writer http.ResponseWriter, req *htt
 
 	_, err = writer.Write(response)
 	if err != nil {
-		log.Errorf(err.Error())
+		logger.WithError(err).Error(err.Error())
 	}
 }
