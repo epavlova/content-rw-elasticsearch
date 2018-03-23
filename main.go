@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 )
 
 const appNameDefaultValue = "content-rw-elasticsearch"
@@ -106,21 +107,21 @@ func main() {
 		ConcurrentProcessing: *kafkaConcurrentProcessing,
 	}
 
-	logger.Infof(map[string]interface{}{}, "[Startup] Application is starting")
+	logger.Info("[Startup] Application is starting")
 
 	app.Action = func() {
 		indexer := contentIndexer{}
 		indexer.start(*appSystemCode, *appName, *indexName, *port, accessConfig, queueConfig)
 		waitForSignal()
-		logger.Infof(map[string]interface{}{}, "[Shutdown] Application is shutting down")
+		logger.Info("[Shutdown] Application is shutting down")
 		indexer.stop()
 	}
 	err := app.Run(os.Args)
 	if err != nil {
-		logger.FatalEvent("App could not start", err)
+		logger.WithError(err).WithTime(time.Now()).Fatal("App could not start")
 		return
 	}
-	logger.Infof(map[string]interface{}{}, "[Shutdown] Shutdown complete")
+	logger.Info("[Shutdown] Shutdown complete")
 }
 
 func waitForSignal() {

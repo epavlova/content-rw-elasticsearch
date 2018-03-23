@@ -47,6 +47,6 @@ var newAmazonClient = func(config esAccessConfig) (esClientI, error) {
 		elastic.SetScheme("https"),
 		elastic.SetHttpClient(signingClient),
 		elastic.SetSniff(false), //needs to be disabled due to EAS behavior. Healthcheck still operates as normal.
-		elastic.SetErrorLog(logger.NewLogger()),
+		elastic.SetErrorLog(logger.Logger()),
 	)
 }

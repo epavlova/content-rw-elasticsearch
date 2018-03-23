@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/Financial-Times/go-logger"
+	logTest "github.com/Financial-Times/go-logger/test"
 	"github.com/Financial-Times/message-queue-gonsumer/consumer"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -11,6 +11,9 @@ import (
 	"strings"
 	"testing"
 	"time"
+	"github.com/stretchr/testify/require"
+	"github.com/Financial-Times/go-logger"
+	"fmt"
 )
 
 type esServiceMock struct {
@@ -112,7 +115,7 @@ func TestStartClient(t *testing.T) {
 func TestStartClientError(t *testing.T) {
 	assert := assert.New(t)
 
-	hook := logger.NewTestHook("content-rw-elasticsearch")
+	hook := logTest.NewTestHook("content-rw-elasticsearch")
 
 	accessConfig := esAccessConfig{
 		accessKey:  "key",
@@ -139,6 +142,7 @@ func TestStartClientError(t *testing.T) {
 
 	time.Sleep(100 * time.Millisecond)
 
+	require.NotNil(t, hook.LastEntry())
 	assert.Equal("error", hook.LastEntry().Level.String(), "Wrong log")
 	assert.NotNil(indexer.esServiceInstance, "Elastic Service should be initialized")
 	assert.Equal("index", (indexer.esServiceInstance).(*esService).indexName, "Wrong index")
@@ -232,7 +236,7 @@ func TestHandleWriteMessageUnknownType(t *testing.T) {
 func TestHandleWriteMessageNoUUIDForMetadataPublish(t *testing.T) {
 	assert := assert.New(t)
 
-	hook := logger.NewTestHook("content-rw-elasticsearch")
+	hook := logTest.NewTestHook("content-rw-elasticsearch")
 
 	inputJSON, err := ioutil.ReadFile("testdata/testInput4.json")
 	assert.NoError(err, "Unexpected error")
@@ -245,13 +249,15 @@ func TestHandleWriteMessageNoUUIDForMetadataPublish(t *testing.T) {
 	serviceMock.AssertNotCalled(t, "writeData", mock.Anything, "b17756fe-0f62-4cf1-9deb-ca7a2ff80172", mock.Anything)
 	serviceMock.AssertNotCalled(t, "deleteData", mock.Anything, "b17756fe-0f62-4cf1-9deb-ca7a2ff80172")
 	serviceMock.AssertExpectations(t)
+
+	require.NotNil(t, hook.LastEntry())
 	assert.Equal("info", hook.LastEntry().Level.String(), "Wrong log")
 }
 
 func TestHandleWriteMessageNoType(t *testing.T) {
 	assert := assert.New(t)
 
-	hook := logger.NewTestHook("content-rw-elasticsearch")
+	hook := logTest.NewTestHook("content-rw-elasticsearch")
 
 	inputJSON, err := ioutil.ReadFile("testdata/exampleEnrichedContentModel.json")
 	assert.NoError(err, "Unexpected error")
@@ -264,13 +270,14 @@ func TestHandleWriteMessageNoType(t *testing.T) {
 
 	serviceMock.AssertNotCalled(t, "writeData", mock.Anything, mock.Anything, mock.Anything)
 	serviceMock.AssertNotCalled(t, "deleteData", mock.Anything, mock.Anything)
+	require.NotNil(t, hook.LastEntry())
 	assert.Equal("error", hook.LastEntry().Level.String(), "Wrong log")
 }
 
 func TestHandleWriteMessageError(t *testing.T) {
 	assert := assert.New(t)
 
-	hook := logger.NewTestHook("content-rw-elasticsearch")
+	hook := logTest.NewTestHook("content-rw-elasticsearch")
 
 	inputJSON, err := ioutil.ReadFile("testdata/exampleEnrichedContentModel.json")
 	assert.NoError(err, "Unexpected error")
@@ -283,6 +290,7 @@ func TestHandleWriteMessageError(t *testing.T) {
 	indexer.handleMessage(consumer.Message{Body: string(inputJSON)})
 
 	serviceMock.AssertExpectations(t)
+	require.NotNil(t, hook.LastEntry())
 	assert.Equal("error", hook.LastEntry().Level.String(), "Wrong log")
 }
 
@@ -306,7 +314,7 @@ func TestHandleDeleteMessage(t *testing.T) {
 func TestHandleDeleteMessageError(t *testing.T) {
 	assert := assert.New(t)
 
-	hook := logger.NewTestHook("content-rw-elasticsearch")
+	hook := logTest.NewTestHook("content-rw-elasticsearch")
 
 	inputJSON, err := ioutil.ReadFile("testdata/exampleEnrichedContentModel.json")
 	assert.NoError(err, "Unexpected error")
@@ -320,19 +328,21 @@ func TestHandleDeleteMessageError(t *testing.T) {
 	indexer.handleMessage(consumer.Message{Body: input})
 
 	serviceMock.AssertExpectations(t)
+	require.NotNil(t, hook.LastEntry())
 	assert.Equal("error", hook.LastEntry().Level.String(), "Wrong log")
 }
 
 func TestHandleMessageJsonError(t *testing.T) {
 	assert := assert.New(t)
 
-	hook := logger.NewTestHook("content-rw-elasticsearch")
+	hook := logTest.NewTestHook("content-rw-elasticsearch")
 
 	serviceMock := &esServiceMock{}
 
 	indexer := &contentIndexer{esServiceInstance: serviceMock}
 	indexer.handleMessage(consumer.Message{Body: "malformed json"})
 
+	require.NotNil(t, hook.LastEntry())
 	assert.Equal("error", hook.LastEntry().Level.String(), "Wrong log")
 	serviceMock.AssertNotCalled(t, "writeData", mock.Anything, mock.Anything, mock.Anything)
 	serviceMock.AssertNotCalled(t, "deleteData", mock.Anything, mock.Anything)
@@ -341,12 +351,13 @@ func TestHandleMessageJsonError(t *testing.T) {
 func TestHandleSyntheticMessage(t *testing.T) {
 	assert := assert.New(t)
 
-	hook := logger.NewTestHook("content-rw-elasticsearch")
+	hook := logTest.NewTestHook("content-rw-elasticsearch")
 
 	serviceMock := &esServiceMock{}
 	indexer := &contentIndexer{esServiceInstance: serviceMock}
 	indexer.handleMessage(consumer.Message{Headers: map[string]string{"X-Request-Id": "SYNTHETIC-REQ-MON_WuLjbRpCgh"}})
 
+	require.NotNil(t, hook.LastEntry())
 	assert.Equal("info", hook.LastEntry().Level.String(), "Wrong log")
 	serviceMock.AssertNotCalled(t, "writeData", mock.Anything, mock.Anything, mock.Anything)
 	serviceMock.AssertNotCalled(t, "deleteData", mock.Anything, mock.Anything)

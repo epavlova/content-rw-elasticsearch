@@ -150,6 +150,6 @@ func (service *healthService) HealthDetails(writer http.ResponseWriter, req *htt
 
 	_, err = writer.Write(response)
 	if err != nil {
-		logger.Errorf(map[string]interface{}{}, err.Error(), err)
+		logger.WithError(err).Error(err.Error())
 	}
 }

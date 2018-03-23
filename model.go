@@ -259,7 +259,7 @@ func convertToESContentModel(enrichedContent enrichedContentModel, contentType s
 		}
 
 		if err != nil {
-			logger.Warnf(map[string]interface{}{"error": err}, "Couldn't generate image uuid for the image set with uuid %s: image field won't be populated.", enrichedContent.Content.MainImage)
+			logger.WithError(err).Warnf("Couldn't generate image uuid for the image set with uuid %s: image field won't be populated.", enrichedContent.Content.MainImage)
 		}
 
 		*esModel.ThumbnailURL = strings.Replace(imageServiceURL, imagePlaceholder, imageID.String(), -1)
@@ -278,7 +278,7 @@ func convertToESContentModel(enrichedContent enrichedContentModel, contentType s
 		if len(annotation.Thing.TmeIDs) != 0 {
 			tmeIDs = append(tmeIDs, annotation.Thing.TmeIDs...)
 		} else {
-			logger.Warnf(map[string]interface{}{}, "Indexing content with uuid %s - TME id missing for concept with id %s, using thing id instead", enrichedContent.Content.UUID, fallbackID)
+			logger.Warnf("Indexing content with uuid %s - TME id missing for concept with id %s, using thing id instead", enrichedContent.Content.UUID, fallbackID)
 		}
 		for _, taxonomy := range annotation.Thing.Types {
 			switch taxonomy {
