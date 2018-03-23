@@ -15,6 +15,12 @@
 			"revisionTime": "2018-03-15T14:43:45Z"
 		},
 		{
+			"checksumSHA1": "IZSWcIapbmDO8RlrPVyrgjn91QI=",
+			"path": "github.com/Financial-Times/go-logger/test",
+			"revision": "fb86ab056054cb9b58d295bd2ffbeac0123900e5",
+			"revisionTime": "2017-10-16T13:51:52Z"
+		},
+		{
 			"checksumSHA1": "v+iZMRghLJr+LHe8ihEViOFE+9g=",
 			"path": "github.com/Financial-Times/message-queue-gonsumer/consumer",
 			"revision": "6f96a5cb1e34c4baa8bc64f56524a7f2e0092ed3",
@@ -81,10 +87,20 @@
 			"revisionTime": "2017-01-30T11:31:45Z"
 		},
 		{
-			"checksumSHA1": "2wkr10xSuBbHXOzdr5/een4EHwk=",
+			"checksumSHA1": "8nOCTgKSFATcBfOV4+uKtXCrZv4=",
 			"path": "github.com/sirupsen/logrus",
-			"revision": "90150a8ed11b6ce285e77e8af2b0109559ce4777",
-			"revisionTime": "2018-03-15T01:07:03Z"
+			"revision": "f006c2ac4710855cf0f916dd6b77acf6b048dc6e",
+			"revisionTime": "2017-08-15T20:20:55Z",
+			"version": "v1.0.3",
+			"versionExact": "v1.0.3"
+		},
+		{
+			"checksumSHA1": "bEYPw3QRqpj0ID7Q2FAr0xnF1Xw=",
+			"path": "github.com/sirupsen/logrus/hooks/test",
+			"revision": "f006c2ac4710855cf0f916dd6b77acf6b048dc6e",
+			"revisionTime": "2017-08-15T20:20:55Z",
+			"version": "v1.0.3",
+			"versionExact": "v1.0.3"
 		},
 		{
 			"checksumSHA1": "oNcjSQf1zGY27b9xipsqb2L4/RY=",
