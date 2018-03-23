@@ -11,14 +11,18 @@
 		{
 			"checksumSHA1": "yco8EvtwVNKDpHLLemPvVh2PAqw=",
 			"path": "github.com/Financial-Times/go-logger",
-			"revision": "4449eb4cf54b570fb1c42b4597f310f6b03b001d",
-			"revisionTime": "2018-03-23T12:23:58Z"
+			"revision": "febee6537e90971bab6f6fe60b71b4a0562dcab3",
+			"revisionTime": "2018-03-23T12:41:13Z",
+			"version": "0.0.4",
+			"versionExact": "0.0.4"
 		},
 		{
 			"checksumSHA1": "IZSWcIapbmDO8RlrPVyrgjn91QI=",
 			"path": "github.com/Financial-Times/go-logger/test",
-			"revision": "4449eb4cf54b570fb1c42b4597f310f6b03b001d",
-			"revisionTime": "2018-03-23T12:23:58Z"
+			"revision": "febee6537e90971bab6f6fe60b71b4a0562dcab3",
+			"revisionTime": "2018-03-23T12:41:13Z",
+			"version": "0.0.4",
+			"versionExact": "0.0.4"
 		},
 		{
 			"checksumSHA1": "v+iZMRghLJr+LHe8ihEViOFE+9g=",
