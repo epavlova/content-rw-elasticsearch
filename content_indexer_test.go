@@ -12,8 +12,6 @@ import (
 	"testing"
 	"time"
 	"github.com/stretchr/testify/require"
-	"github.com/Financial-Times/go-logger"
-	"fmt"
 )
 
 type esServiceMock struct {
