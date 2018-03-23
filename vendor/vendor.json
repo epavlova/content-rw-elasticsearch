@@ -11,14 +11,14 @@
 		{
 			"checksumSHA1": "yco8EvtwVNKDpHLLemPvVh2PAqw=",
 			"path": "github.com/Financial-Times/go-logger",
-			"revision": "0be8a1588ade8801ad4852222e11fca8e47eb153",
-			"revisionTime": "2018-03-15T14:43:45Z"
+			"revision": "4449eb4cf54b570fb1c42b4597f310f6b03b001d",
+			"revisionTime": "2018-03-23T12:23:58Z"
 		},
 		{
 			"checksumSHA1": "IZSWcIapbmDO8RlrPVyrgjn91QI=",
 			"path": "github.com/Financial-Times/go-logger/test",
-			"revision": "fb86ab056054cb9b58d295bd2ffbeac0123900e5",
-			"revisionTime": "2017-10-16T13:51:52Z"
+			"revision": "4449eb4cf54b570fb1c42b4597f310f6b03b001d",
+			"revisionTime": "2018-03-23T12:23:58Z"
 		},
 		{
 			"checksumSHA1": "v+iZMRghLJr+LHe8ihEViOFE+9g=",
@@ -87,20 +87,20 @@
 			"revisionTime": "2017-01-30T11:31:45Z"
 		},
 		{
-			"checksumSHA1": "8nOCTgKSFATcBfOV4+uKtXCrZv4=",
+			"checksumSHA1": "hXa0Yg8QcjnzQrd7823NalQitS8=",
 			"path": "github.com/sirupsen/logrus",
-			"revision": "f006c2ac4710855cf0f916dd6b77acf6b048dc6e",
-			"revisionTime": "2017-08-15T20:20:55Z",
-			"version": "v1.0.3",
-			"versionExact": "v1.0.3"
+			"revision": "c155da19408a8799da419ed3eeb0cb5db0ad5dbc",
+			"revisionTime": "2018-03-11T22:51:37Z",
+			"version": "v1.0.5",
+			"versionExact": "v1.0.5"
 		},
 		{
 			"checksumSHA1": "bEYPw3QRqpj0ID7Q2FAr0xnF1Xw=",
 			"path": "github.com/sirupsen/logrus/hooks/test",
-			"revision": "f006c2ac4710855cf0f916dd6b77acf6b048dc6e",
-			"revisionTime": "2017-08-15T20:20:55Z",
-			"version": "v1.0.3",
-			"versionExact": "v1.0.3"
+			"revision": "c155da19408a8799da419ed3eeb0cb5db0ad5dbc",
+			"revisionTime": "2018-03-11T22:51:37Z",
+			"version": "v1.0.5",
+			"versionExact": "v1.0.5"
 		},
 		{
 			"checksumSHA1": "oNcjSQf1zGY27b9xipsqb2L4/RY=",
@@ -116,16 +116,28 @@
 			"revisionTime": "2017-01-30T11:31:45Z"
 		},
 		{
-			"checksumSHA1": "ziYrpyU5zo1q9+n1kaXqkR3kP2s=",
+			"checksumSHA1": "jOpeEFMbb70Y0RGoAnj0aYtLZWg=",
 			"path": "github.com/stretchr/testify/assert",
-			"revision": "4d4bfba8f1d1027c4fdbe371823030df51419987",
-			"revisionTime": "2017-01-30T11:31:45Z"
+			"revision": "b91bfb9ebec76498946beb6af7c0230c7cc7ba6c",
+			"revisionTime": "2017-12-30T17:54:59Z",
+			"version": "v1.2.0",
+			"versionExact": "v1.2.0"
 		},
 		{
-			"checksumSHA1": "wjNVpZHpkT96ygOH5xN4rDfZdjE=",
+			"checksumSHA1": "BTZ7ijqCXbpBeeDvex+TlnhkoDQ=",
 			"path": "github.com/stretchr/testify/mock",
-			"revision": "4d4bfba8f1d1027c4fdbe371823030df51419987",
-			"revisionTime": "2017-01-30T11:31:45Z"
+			"revision": "b91bfb9ebec76498946beb6af7c0230c7cc7ba6c",
+			"revisionTime": "2017-12-30T17:54:59Z",
+			"version": "v1.2.0",
+			"versionExact": "v1.2.0"
+		},
+		{
+			"checksumSHA1": "ya1eEQdc0qWt9OZGJaph/6oZStI=",
+			"path": "github.com/stretchr/testify/require",
+			"revision": "b91bfb9ebec76498946beb6af7c0230c7cc7ba6c",
+			"revisionTime": "2017-12-30T17:54:59Z",
+			"version": "v1.2.0",
+			"versionExact": "v1.2.0"
 		},
 		{
 			"checksumSHA1": "hRpSBofTFAM50mVLe4sID2rP2v8=",
