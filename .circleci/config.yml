@@ -62,6 +62,7 @@ jobs:
       - image: bankrs/golang-dredd:go1.8.3-dredd4.4.0
         environment:
           GOPATH: /go
+          ELASTICSEARCH_SAPI_ENDPOINT: http://localhost:9000
       - image: peteclarkft/ersatz:stable
     steps:
       - checkout
