@@ -1,6 +1,6 @@
 version: "1.0.0"
 fixtures:
-  /_cluster/health/{index}:
+  /_cluster/health/:
     get:
       body:
         cluster_name: "070529446553:upp-sapi-v1-k8s-dev"
@@ -16,4 +16,7 @@ fixtures:
         number_of_pending_tasks: 0
       headers:
         content-type: application/json
+      status: 200
+  /:
+    get:
       status: 200
