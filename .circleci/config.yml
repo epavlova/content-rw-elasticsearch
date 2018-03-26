@@ -59,11 +59,11 @@ jobs:
   dredd:
     working_directory: /go/src/github.com/Financial-Times/content-rw-elasticsearch
     docker:
+      - image: peteclarkft/ersatz:stable
       - image: bankrs/golang-dredd:go1.8.3-dredd4.4.0
         environment:
           GOPATH: /go
           ELASTICSEARCH_SAPI_ENDPOINT: http://localhost:9000
-      - image: peteclarkft/ersatz:stable
     steps:
       - checkout
       - run:
@@ -76,6 +76,9 @@ jobs:
       - run:
           name: Go Build
           command: go build -v
+      - run:
+          name: Check ersatz is up and running
+          command: curl --retry-connrefused --retry 5 --retry-delay 3 http://localhost:9000/
       - run:
           name: Dredd API Testing
           command: dredd

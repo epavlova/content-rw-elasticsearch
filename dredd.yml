@@ -3,7 +3,7 @@ hookfiles: ./_ft/dredd-hooks.js
 language: nodejs
 sandbox: false
 server: ./content-rw-elasticsearch
-server-wait: 10
+server-wait: 6
 init: false
 custom: {}
 names: false
