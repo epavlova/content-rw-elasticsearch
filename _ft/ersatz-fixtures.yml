@@ -1,0 +1,19 @@
+version: "1.0.0"
+fixtures:
+  /_cluster/health/{index}:
+    get:
+      body:
+        cluster_name: "070529446553:upp-sapi-v1-k8s-dev"
+        status: "red"
+        timed_out: false
+        number_of_nodes: 7
+        number_of_data_nodes: 4
+        active_primary_shards: 0
+        active_shards: 0
+        relocating_shards: 0
+        initializing_shards: 0
+        unassigned_shards: 0
+        number_of_pending_tasks: 0
+      headers:
+        content-type: application/json
+      status: 200
