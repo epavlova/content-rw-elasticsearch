@@ -62,6 +62,7 @@ jobs:
       - image: bankrs/golang-dredd:go1.8.3-dredd4.4.0
         environment:
           GOPATH: /go
+      - image: peteclarkft/ersatz:stable
     steps:
       - checkout
       - run:
