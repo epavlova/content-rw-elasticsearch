@@ -135,7 +135,6 @@ func (service *healthService) gtgCheck() gtg.Status {
 func (service *healthService) HealthDetails(writer http.ResponseWriter, req *http.Request) {
 
 	writer.Header().Set("Content-Type", "application/json")
-
 	output, err := service.esHealthService.getClusterHealth()
 	if err != nil {
 		writer.WriteHeader(http.StatusInternalServerError)
