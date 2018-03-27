@@ -4,8 +4,8 @@ var fs = require('fs');
 
 const defaultFixtures = './_ft/ersatz-fixtures.yml';
 
-hooks.beforeAll(function(t, done) {
-    if(!fs.existsSync(defaultFixtures)){
+hooks.beforeAll(function (t, done) {
+    if (!fs.existsSync(defaultFixtures)) {
         console.log('No fixtures found, skipping hook.');
         done();
         return;
@@ -23,13 +23,17 @@ hooks.beforeAll(function(t, done) {
         }
     };
 
-    var req = http.request(options, function(res) {
+    var req = http.request(options, function (res) {
         res.setEncoding('utf8');
     });
 
     req.write(contents);
     req.end();
-    done();
+    hooks.log("Waiting before releasing")
+    setTimeout(function () {
+        done();
+    }, 2000)
+
 });
 
 hooks.beforeEach(function (transaction) {

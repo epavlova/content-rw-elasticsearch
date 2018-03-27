@@ -1,7 +1,7 @@
 version: "1.0.0"
 fixtures:
   /:
-    head:
+    get:
       status: 200
   /_cluster/health/:
     get:
