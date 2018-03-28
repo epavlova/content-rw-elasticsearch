@@ -13,6 +13,7 @@ import (
 	health "github.com/Financial-Times/go-fthealth/v1_1"
 	status "github.com/Financial-Times/service-status-go/httphandlers"
 	"sync"
+	"net"
 )
 
 const appNameDefaultValue = "content-rw-elasticsearch"
@@ -114,8 +115,22 @@ func main() {
 			SecretKey: *secretKey,
 			Endpoint:  *esEndpoint,
 		}
+
+		client := &http.Client{
+			Transport: &http.Transport{
+				Proxy: http.ProxyFromEnvironment,
+				DialContext: (&net.Dialer{
+					Timeout:   30 * time.Second,
+					KeepAlive: 30 * time.Second,
+				}).DialContext,
+				MaxIdleConnsPerHost:   20,
+				TLSHandshakeTimeout:   3 * time.Second,
+				ExpectContinueTimeout: 1 * time.Second,
+			},
+		}
+
 		service := es.NewService(*indexName)
-		indexer := NewContentIndexer(service)
+		indexer := NewContentIndexer(service, client)
 		indexer.start(*appSystemCode, *appName, *indexName, *port, accessConfig, queueConfig)
 		serveAdminEndpoints(service, *appSystemCode, *appName, *port, queueConfig)
 		indexer.stop()

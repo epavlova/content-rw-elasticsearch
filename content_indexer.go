@@ -5,7 +5,6 @@ import (
 	"github.com/Financial-Times/go-logger"
 	"github.com/Financial-Times/message-queue-gonsumer/consumer"
 	"github.com/dchest/uniuri"
-	"net"
 	"net/http"
 	"strings"
 	"sync"
@@ -36,12 +35,13 @@ var allowedTypes = []string{"Article", "Video", "MediaResource", ""}
 type contentIndexer struct {
 	esServiceInstance es.ServiceI
 	messageConsumer   consumer.MessageConsumer
+	Client            *http.Client
 	wg                sync.WaitGroup
 	mu                sync.Mutex
 }
 
-func NewContentIndexer(service es.ServiceI) *contentIndexer {
-	return &contentIndexer{esServiceInstance: service}
+func NewContentIndexer(service es.ServiceI, client *http.Client) *contentIndexer {
+	return &contentIndexer{esServiceInstance: service, Client: client}
 }
 
 func (indexer *contentIndexer) start(appSystemCode string, appName string, indexName string, port string, accessConfig es.AccessConfig, queueConfig consumer.QueueConfig) {
@@ -80,20 +80,8 @@ func (indexer *contentIndexer) stop() {
 }
 
 func (indexer *contentIndexer) startMessageConsumer(config consumer.QueueConfig) {
-	client := &http.Client{
-		Transport: &http.Transport{
-			Proxy: http.ProxyFromEnvironment,
-			DialContext: (&net.Dialer{
-				Timeout:   30 * time.Second,
-				KeepAlive: 30 * time.Second,
-			}).DialContext,
-			MaxIdleConnsPerHost:   20,
-			TLSHandshakeTimeout:   3 * time.Second,
-			ExpectContinueTimeout: 1 * time.Second,
-		},
-	}
 	indexer.mu.Lock()
-	indexer.messageConsumer = consumer.NewConsumer(config, indexer.handleMessage, client)
+	indexer.messageConsumer = consumer.NewConsumer(config, indexer.handleMessage, indexer.Client)
 	indexer.mu.Unlock()
 
 	//this is a blocking method
