@@ -155,6 +155,7 @@ func serveAdminEndpoints(indexer *contentIndexer, appSystemCode string, appName 
 	if err := server.Close(); err != nil {
 		logger.WithError(err).Error("Unable to stop http server")
 	}
+	indexer.wg.Wait()
 }
 
 

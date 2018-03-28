@@ -70,14 +70,12 @@ func (indexer *contentIndexer) start(appSystemCode string, appName string, index
 }
 
 func (indexer *contentIndexer) stop() {
-	go func() {
-		indexer.mu.Lock()
-		if indexer.messageConsumer != nil {
-			indexer.messageConsumer.Stop()
-		}
-		indexer.mu.Unlock()
-	}()
-	indexer.wg.Wait()
+	indexer.mu.Lock()
+	if indexer.messageConsumer != nil {
+		indexer.messageConsumer.Stop()
+	}
+	indexer.mu.Unlock()
+
 }
 
 func (indexer *contentIndexer) startMessageConsumer(config consumer.QueueConfig) {
