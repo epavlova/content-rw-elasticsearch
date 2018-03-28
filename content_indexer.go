@@ -40,6 +40,10 @@ type contentIndexer struct {
 	mu                sync.Mutex
 }
 
+func NewContentIndexer(indexName string) *contentIndexer {
+	return &contentIndexer{esServiceInstance: es.NewService(indexName)}
+}
+
 func (indexer *contentIndexer) start(appSystemCode string, appName string, indexName string, port string, accessConfig es.AccessConfig, queueConfig consumer.QueueConfig) {
 	channel := make(chan es.ClientI)
 	go func() {

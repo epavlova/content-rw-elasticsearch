@@ -113,8 +113,7 @@ func main() {
 			SecretKey: *secretKey,
 			Endpoint:  *esEndpoint,
 		}
-		service := es.NewService(*indexName)
-		indexer := &contentIndexer{esServiceInstance: service}
+		indexer := NewContentIndexer(*indexName)
 		indexer.start(*appSystemCode, *appName, *indexName, *port, accessConfig, queueConfig)
 
 		serveAdminEndpoints(indexer,*appSystemCode, *appName, *port, queueConfig)

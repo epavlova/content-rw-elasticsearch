@@ -97,7 +97,7 @@ func TestStartClient(t *testing.T) {
 		return &elasticClientMock{}, nil
 	}
 
-	indexer := contentIndexer{}
+	indexer := NewContentIndexer("index")
 
 	indexer.start("app", "name", "index", "1984", accessConfig, queueConfig)
 	defer indexer.stop()
@@ -134,7 +134,7 @@ func TestStartClientError(t *testing.T) {
 		return nil, elastic.ErrNoClient
 	}
 
-	indexer := contentIndexer{}
+	indexer := NewContentIndexer("index")
 
 	indexer.start("app", "name", "index", "1984", accessConfig, queueConfig)
 	defer indexer.stop()
