@@ -2,10 +2,8 @@ package main
 
 import (
 	"encoding/json"
-	health "github.com/Financial-Times/go-fthealth/v1_1"
 	"github.com/Financial-Times/go-logger"
 	"github.com/Financial-Times/message-queue-gonsumer/consumer"
-	status "github.com/Financial-Times/service-status-go/httphandlers"
 	"github.com/dchest/uniuri"
 	"net"
 	"net/http"
@@ -37,7 +35,6 @@ var allowedTypes = []string{"Article", "Video", "MediaResource", ""}
 
 type contentIndexer struct {
 	esServiceInstance es.ServiceI
-	server            *http.Server
 	messageConsumer   consumer.MessageConsumer
 	wg                sync.WaitGroup
 	mu                sync.Mutex
@@ -59,9 +56,6 @@ func (indexer *contentIndexer) start(appSystemCode string, appName string, index
 		}
 	}()
 
-	//create writer service
-	indexer.esServiceInstance = es.NewService(indexName)
-
 	go func() {
 		for ec := range channel {
 			indexer.esServiceInstance.SetClient(ec)
@@ -69,7 +63,6 @@ func (indexer *contentIndexer) start(appSystemCode string, appName string, index
 		}
 	}()
 
-	indexer.serveAdminEndpoints(appSystemCode, appName, port, queueConfig)
 }
 
 func (indexer *contentIndexer) stop() {
@@ -80,32 +73,7 @@ func (indexer *contentIndexer) stop() {
 		}
 		indexer.mu.Unlock()
 	}()
-	if err := indexer.server.Close(); err != nil {
-		logger.WithError(err).Error("Unable to stop http server")
-	}
 	indexer.wg.Wait()
-}
-
-func (indexer *contentIndexer) serveAdminEndpoints(appSystemCode string, appName string, port string, queueConfig consumer.QueueConfig) {
-	healthService := newHealthService(&queueConfig, indexer.esServiceInstance)
-
-	serveMux := http.NewServeMux()
-
-	hc := health.HealthCheck{SystemCode: appSystemCode, Name: appName, Description: "Content Read Writer for Elasticsearch", Checks: healthService.checks}
-	serveMux.HandleFunc(healthPath, health.Handler(hc))
-	serveMux.HandleFunc(healthDetailsPath, healthService.HealthDetails)
-	serveMux.HandleFunc(status.GTGPath, status.NewGoodToGoHandler(healthService.gtgCheck))
-	serveMux.HandleFunc(status.BuildInfoPath, status.BuildInfoHandler)
-
-	indexer.server = &http.Server{Addr: ":" + port, Handler: serveMux}
-
-	indexer.wg.Add(1)
-	go func() {
-		if err := indexer.server.ListenAndServe(); err != nil {
-			logger.WithError(err).Error("HTTP server is closing")
-		}
-		indexer.wg.Done()
-	}()
 }
 
 func (indexer *contentIndexer) startMessageConsumer(config consumer.QueueConfig) {

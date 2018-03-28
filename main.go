@@ -9,6 +9,9 @@ import (
 	"syscall"
 	"time"
 	"github.com/Financial-Times/content-rw-elasticsearch/es"
+	"net/http"
+	health "github.com/Financial-Times/go-fthealth/v1_1"
+	status "github.com/Financial-Times/service-status-go/httphandlers"
 )
 
 const appNameDefaultValue = "content-rw-elasticsearch"
@@ -110,11 +113,12 @@ func main() {
 			SecretKey: *secretKey,
 			Endpoint:  *esEndpoint,
 		}
-
-		indexer := contentIndexer{}
+		service := es.NewService(*indexName)
+		indexer := &contentIndexer{esServiceInstance: service}
 		indexer.start(*appSystemCode, *appName, *indexName, *port, accessConfig, queueConfig)
-		waitForSignal()
-		logger.Info("[Shutdown] Application is shutting down")
+
+		serveAdminEndpoints(indexer,*appSystemCode, *appName, *port, queueConfig)
+
 		indexer.stop()
 	}
 	err := app.Run(os.Args)
@@ -124,6 +128,36 @@ func main() {
 	}
 	logger.Info("[Shutdown] Shutdown complete")
 }
+
+func serveAdminEndpoints(indexer *contentIndexer, appSystemCode string, appName string, port string, queueConfig consumer.QueueConfig) {
+	healthService := newHealthService(&queueConfig, indexer.esServiceInstance)
+
+	serveMux := http.NewServeMux()
+
+	hc := health.HealthCheck{SystemCode: appSystemCode, Name: appName, Description: "Content Read Writer for Elasticsearch", Checks: healthService.checks}
+	serveMux.HandleFunc(healthPath, health.Handler(hc))
+	serveMux.HandleFunc(healthDetailsPath, healthService.HealthDetails)
+	serveMux.HandleFunc(status.GTGPath, status.NewGoodToGoHandler(healthService.gtgCheck))
+	serveMux.HandleFunc(status.BuildInfoPath, status.BuildInfoHandler)
+
+	server := &http.Server{Addr: ":" + port, Handler: serveMux}
+
+	indexer.wg.Add(1)
+	go func() {
+		if err := server.ListenAndServe(); err != nil {
+			logger.WithError(err).Error("HTTP server is closing")
+		}
+		indexer.wg.Done()
+	}()
+
+	waitForSignal()
+	logger.Info("[Shutdown] Application is shutting down")
+
+	if err := server.Close(); err != nil {
+		logger.WithError(err).Error("Unable to stop http server")
+	}
+}
+
 
 func waitForSignal() {
 	ch := make(chan os.Signal)
