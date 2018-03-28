@@ -7,10 +7,13 @@ service:
 replicaCount: 2
 image:
   repository: coco/content-rw-elasticsearch
+  version: "" # should be set explicitly at installation
   pullPolicy: IfNotPresent
 resources:
+  requests:
+    memory: 64Mi
   limits:
-    memory: 256Mi
+    memory: 512Mi
 env:
   KAFKA_TOPIC: ""
   KAFKA_CONCURRENT_PROCESSING: ""
