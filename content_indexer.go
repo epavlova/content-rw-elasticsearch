@@ -12,6 +12,7 @@ import (
 	"strings"
 	"sync"
 	"time"
+	"github.com/Financial-Times/content-rw-elasticsearch/es"
 )
 
 const (
@@ -35,19 +36,19 @@ const (
 var allowedTypes = []string{"Article", "Video", "MediaResource", ""}
 
 type contentIndexer struct {
-	esServiceInstance esServiceI
+	esServiceInstance es.ServiceI
 	server            *http.Server
 	messageConsumer   consumer.MessageConsumer
 	wg                sync.WaitGroup
 	mu                sync.Mutex
 }
 
-func (indexer *contentIndexer) start(appSystemCode string, appName string, indexName string, port string, accessConfig esAccessConfig, queueConfig consumer.QueueConfig) {
-	channel := make(chan esClientI)
+func (indexer *contentIndexer) start(appSystemCode string, appName string, indexName string, port string, accessConfig es.AccessConfig, queueConfig consumer.QueueConfig) {
+	channel := make(chan es.ClientI)
 	go func() {
 		defer close(channel)
 		for {
-			ec, err := newAmazonClient(accessConfig)
+			ec, err := es.NewAmazonClient(accessConfig)
 			if err == nil {
 				logger.Info("Connected to Elasticsearch")
 				channel <- ec
@@ -59,11 +60,11 @@ func (indexer *contentIndexer) start(appSystemCode string, appName string, index
 	}()
 
 	//create writer service
-	indexer.esServiceInstance = newEsService(indexName)
+	indexer.esServiceInstance = es.NewService(indexName)
 
 	go func() {
 		for ec := range channel {
-			indexer.esServiceInstance.setClient(ec)
+			indexer.esServiceInstance.SetClient(ec)
 			indexer.startMessageConsumer(queueConfig)
 		}
 	}()
@@ -189,7 +190,7 @@ func (indexer *contentIndexer) handleMessage(msg consumer.Message) {
 	}
 
 	if combinedPostPublicationEvent.Content.MarkedDeleted {
-		_, err = indexer.esServiceInstance.deleteData(contentTypeMap[contentType].collection, uuid)
+		_, err = indexer.esServiceInstance.DeleteData(contentTypeMap[contentType].collection, uuid)
 		if err != nil {
 			logger.WithTransactionID(tid).WithUUID(uuid).WithError(err).Error("Failed to index content")
 			return
@@ -198,7 +199,7 @@ func (indexer *contentIndexer) handleMessage(msg consumer.Message) {
 	} else {
 		payload := convertToESContentModel(combinedPostPublicationEvent, contentType, tid)
 
-		_, err = indexer.esServiceInstance.writeData(contentTypeMap[contentType].collection, uuid, payload)
+		_, err = indexer.esServiceInstance.WriteData(contentTypeMap[contentType].collection, uuid, payload)
 		if err != nil {
 			logger.WithTransactionID(tid).WithUUID(uuid).WithError(err).Error("Failed to index content")
 			return

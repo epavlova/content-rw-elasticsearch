@@ -11,16 +11,17 @@ import (
 	"github.com/Financial-Times/message-queue-gonsumer/consumer"
 	"github.com/Financial-Times/service-status-go/gtg"
 	"github.com/Financial-Times/go-logger"
+	"github.com/Financial-Times/content-rw-elasticsearch/es"
 )
 
 type healthService struct {
-	esHealthService  esHealthServiceI
+	esHealthService  es.HealthServiceI
 	consumerInstance consumer.MessageConsumer
 	httpClient       *http.Client
 	checks           []health.Check
 }
 
-func newHealthService(config *consumer.QueueConfig, esHealthService esHealthServiceI) *healthService {
+func newHealthService(config *consumer.QueueConfig, esHealthService es.HealthServiceI) *healthService {
 	client := &http.Client{
 		Transport: &http.Transport{
 			Proxy: http.ProxyFromEnvironment,
@@ -59,7 +60,7 @@ func (service *healthService) clusterIsHealthyCheck() health.Check {
 }
 
 func (service *healthService) healthChecker() (string, error) {
-	output, err := service.esHealthService.getClusterHealth()
+	output, err := service.esHealthService.GetClusterHealth()
 	if err != nil {
 		return "Cluster is not healthy: ", err
 	} else if output.Status != "green" {
@@ -81,7 +82,7 @@ func (service *healthService) connectivityHealthyCheck() health.Check {
 }
 
 func (service *healthService) connectivityChecker() (string, error) {
-	_, err := service.esHealthService.getClusterHealth()
+	_, err := service.esHealthService.GetClusterHealth()
 	if err != nil {
 		return "Could not connect to elasticsearch", err
 	}
@@ -101,7 +102,7 @@ func (service *healthService) schemaHealthyCheck() health.Check {
 }
 
 func (service *healthService) schemaChecker() (string, error) {
-	output, err := service.esHealthService.getSchemaHealth()
+	output, err := service.esHealthService.GetSchemaHealth()
 	if err != nil {
 		return "Could not get schema: ", err
 	} else if output != "ok" {
@@ -135,7 +136,7 @@ func (service *healthService) gtgCheck() gtg.Status {
 func (service *healthService) HealthDetails(writer http.ResponseWriter, req *http.Request) {
 
 	writer.Header().Set("Content-Type", "application/json")
-	output, err := service.esHealthService.getClusterHealth()
+	output, err := service.esHealthService.GetClusterHealth()
 	if err != nil {
 		writer.WriteHeader(http.StatusInternalServerError)
 		return

@@ -8,6 +8,7 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
+	"github.com/Financial-Times/content-rw-elasticsearch/es"
 )
 
 const appNameDefaultValue = "content-rw-elasticsearch"
@@ -61,13 +62,6 @@ func main() {
 		Desc:   "The name of the elaticsearch index",
 		EnvVar: "ELASTICSEARCH_SAPI_INDEX",
 	})
-
-	accessConfig := esAccessConfig{
-		accessKey:  *accessKey,
-		secretKey:  *secretKey,
-		esEndpoint: *esEndpoint,
-	}
-
 	kafkaProxyAddress := app.String(cli.StringOpt{
 		Name:   "kafka-proxy-address",
 		Value:  "http://localhost:8080",
@@ -110,6 +104,13 @@ func main() {
 	logger.Info("[Startup] Application is starting")
 
 	app.Action = func() {
+
+		accessConfig := es.AccessConfig{
+			AccessKey: *accessKey,
+			SecretKey: *secretKey,
+			Endpoint:  *esEndpoint,
+		}
+
 		indexer := contentIndexer{}
 		indexer.start(*appSystemCode, *appName, *indexName, *port, accessConfig, queueConfig)
 		waitForSignal()

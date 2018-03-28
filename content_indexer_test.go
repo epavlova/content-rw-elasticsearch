@@ -12,31 +12,32 @@ import (
 	"testing"
 	"time"
 	"github.com/stretchr/testify/require"
+	"github.com/Financial-Times/content-rw-elasticsearch/es"
 )
 
 type esServiceMock struct {
 	mock.Mock
 }
 
-func (*esServiceMock) getSchemaHealth() (string, error) {
+func (*esServiceMock) GetSchemaHealth() (string, error) {
 	panic("implement me")
 }
 
-func (service *esServiceMock) writeData(conceptType string, uuid string, payload interface{}) (*elastic.IndexResult, error) {
+func (service *esServiceMock) WriteData(conceptType string, uuid string, payload interface{}) (*elastic.IndexResult, error) {
 	args := service.Called(conceptType, uuid, payload)
 	return args.Get(0).(*elastic.IndexResult), args.Error(1)
 }
 
-func (service *esServiceMock) deleteData(conceptType string, uuid string) (*elastic.DeleteResult, error) {
+func (service *esServiceMock) DeleteData(conceptType string, uuid string) (*elastic.DeleteResult, error) {
 	args := service.Called(conceptType, uuid)
 	return args.Get(0).(*elastic.DeleteResult), args.Error(1)
 }
 
-func (service *esServiceMock) setClient(client esClientI) {
+func (service *esServiceMock) SetClient(client es.ClientI) {
 
 }
 
-func (service *esServiceMock) getClusterHealth() (*elastic.ClusterHealthResponse, error) {
+func (service *esServiceMock) GetClusterHealth() (*elastic.ClusterHealthResponse, error) {
 	args := service.Called()
 	return args.Get(0).(*elastic.ClusterHealthResponse), args.Error(1)
 }
@@ -78,10 +79,10 @@ func (client elasticClientMock) PerformRequest(method, path string, params url.V
 func TestStartClient(t *testing.T) {
 	assert := assert.New(t)
 
-	accessConfig := esAccessConfig{
-		accessKey:  "key",
-		secretKey:  "secret",
-		esEndpoint: "endpoint",
+	accessConfig := es.AccessConfig{
+		AccessKey: "key",
+		SecretKey: "secret",
+		Endpoint:  "endpoint",
 	}
 
 	queueConfig := consumer.QueueConfig{
@@ -92,7 +93,7 @@ func TestStartClient(t *testing.T) {
 		ConcurrentProcessing: false,
 	}
 
-	newAmazonClient = func(config esAccessConfig) (esClientI, error) {
+	es.NewAmazonClient = func(config es.AccessConfig) (es.ClientI, error) {
 		return &elasticClientMock{}, nil
 	}
 
@@ -104,10 +105,10 @@ func TestStartClient(t *testing.T) {
 	time.Sleep(100 * time.Millisecond)
 
 	assert.NotNil(indexer.esServiceInstance, "Elastic Service should be initialized")
-	assert.Equal("index", (indexer.esServiceInstance).(*esService).indexName, "Wrong index")
-	(indexer.esServiceInstance).(*esService).Lock()
-	assert.NotNil((indexer.esServiceInstance).(*esService).elasticClient, "Elastic client should be initialized")
-	(indexer.esServiceInstance).(*esService).Unlock()
+	assert.Equal("index", (indexer.esServiceInstance).(*es.Service).IndexName, "Wrong index")
+	(indexer.esServiceInstance).(*es.Service).Lock()
+	assert.NotNil((indexer.esServiceInstance).(*es.Service).ElasticClient, "Elastic client should be initialized")
+	(indexer.esServiceInstance).(*es.Service).Unlock()
 }
 
 func TestStartClientError(t *testing.T) {
@@ -115,10 +116,10 @@ func TestStartClientError(t *testing.T) {
 
 	hook := logTest.NewTestHook("content-rw-elasticsearch")
 
-	accessConfig := esAccessConfig{
-		accessKey:  "key",
-		secretKey:  "secret",
-		esEndpoint: "endpoint",
+	accessConfig := es.AccessConfig{
+		AccessKey: "key",
+		SecretKey: "secret",
+		Endpoint:  "endpoint",
 	}
 
 	queueConfig := consumer.QueueConfig{
@@ -129,7 +130,7 @@ func TestStartClientError(t *testing.T) {
 		ConcurrentProcessing: false,
 	}
 
-	newAmazonClient = func(config esAccessConfig) (esClientI, error) {
+	es.NewAmazonClient = func(config es.AccessConfig) (es.ClientI, error) {
 		return nil, elastic.ErrNoClient
 	}
 
@@ -143,8 +144,8 @@ func TestStartClientError(t *testing.T) {
 	require.NotNil(t, hook.LastEntry())
 	assert.Equal("error", hook.LastEntry().Level.String(), "Wrong log")
 	assert.NotNil(indexer.esServiceInstance, "Elastic Service should be initialized")
-	assert.Equal("index", (indexer.esServiceInstance).(*esService).indexName, "Wrong index")
-	assert.Nil((indexer.esServiceInstance).(*esService).elasticClient, "Elastic client should not be initialized")
+	assert.Equal("index", (indexer.esServiceInstance).(*es.Service).IndexName, "Wrong index")
+	assert.Nil((indexer.esServiceInstance).(*es.Service).ElasticClient, "Elastic client should not be initialized")
 }
 
 func TestHandleWriteMessage(t *testing.T) {
@@ -155,7 +156,7 @@ func TestHandleWriteMessage(t *testing.T) {
 
 	serviceMock := &esServiceMock{}
 
-	serviceMock.On("writeData", "FTCom", "aae9611e-f66c-4fe4-a6c6-2e2bdea69060", mock.Anything).Return(&elastic.IndexResult{}, nil)
+	serviceMock.On("WriteData", "FTCom", "aae9611e-f66c-4fe4-a6c6-2e2bdea69060", mock.Anything).Return(&elastic.IndexResult{}, nil)
 
 	indexer := contentIndexer{esServiceInstance: serviceMock}
 	indexer.handleMessage(consumer.Message{Body: string(inputJSON)})
@@ -172,7 +173,7 @@ func TestHandleWriteMessageBlog(t *testing.T) {
 
 	serviceMock := &esServiceMock{}
 
-	serviceMock.On("writeData", "FTBlogs", "aae9611e-f66c-4fe4-a6c6-2e2bdea69060", mock.Anything).Return(&elastic.IndexResult{}, nil)
+	serviceMock.On("WriteData", "FTBlogs", "aae9611e-f66c-4fe4-a6c6-2e2bdea69060", mock.Anything).Return(&elastic.IndexResult{}, nil)
 
 	indexer := contentIndexer{esServiceInstance: serviceMock}
 	indexer.handleMessage(consumer.Message{Body: input})
@@ -189,7 +190,7 @@ func TestHandleWriteMessageBlogWithHeader(t *testing.T) {
 
 	serviceMock := &esServiceMock{}
 
-	serviceMock.On("writeData", "FTBlogs", "aae9611e-f66c-4fe4-a6c6-2e2bdea69060", mock.Anything).Return(&elastic.IndexResult{}, nil)
+	serviceMock.On("WriteData", "FTBlogs", "aae9611e-f66c-4fe4-a6c6-2e2bdea69060", mock.Anything).Return(&elastic.IndexResult{}, nil)
 
 	indexer := contentIndexer{esServiceInstance: serviceMock}
 	indexer.handleMessage(consumer.Message{Body: input, Headers: map[string]string{"Origin-System-Id": "wordpress"}})
@@ -206,7 +207,7 @@ func TestHandleWriteMessageVideo(t *testing.T) {
 
 	serviceMock := &esServiceMock{}
 
-	serviceMock.On("writeData", "FTVideos", "aae9611e-f66c-4fe4-a6c6-2e2bdea69060", mock.Anything).Return(&elastic.IndexResult{}, nil)
+	serviceMock.On("WriteData", "FTVideos", "aae9611e-f66c-4fe4-a6c6-2e2bdea69060", mock.Anything).Return(&elastic.IndexResult{}, nil)
 
 	indexer := contentIndexer{esServiceInstance: serviceMock}
 	indexer.handleMessage(consumer.Message{Body: input})
@@ -226,8 +227,8 @@ func TestHandleWriteMessageUnknownType(t *testing.T) {
 	indexer := contentIndexer{esServiceInstance: serviceMock}
 	indexer.handleMessage(consumer.Message{Body: input})
 
-	serviceMock.AssertNotCalled(t, "writeData", mock.Anything, "aae9611e-f66c-4fe4-a6c6-2e2bdea69060", mock.Anything)
-	serviceMock.AssertNotCalled(t, "deleteData", mock.Anything, "aae9611e-f66c-4fe4-a6c6-2e2bdea69060")
+	serviceMock.AssertNotCalled(t, "WriteData", mock.Anything, "aae9611e-f66c-4fe4-a6c6-2e2bdea69060", mock.Anything)
+	serviceMock.AssertNotCalled(t, "DeleteData", mock.Anything, "aae9611e-f66c-4fe4-a6c6-2e2bdea69060")
 	serviceMock.AssertExpectations(t)
 }
 
@@ -244,8 +245,8 @@ func TestHandleWriteMessageNoUUIDForMetadataPublish(t *testing.T) {
 	indexer := contentIndexer{esServiceInstance: serviceMock}
 	indexer.handleMessage(consumer.Message{Body: string(inputJSON), Headers: map[string]string{originHeader: methodeOrigin}})
 
-	serviceMock.AssertNotCalled(t, "writeData", mock.Anything, "b17756fe-0f62-4cf1-9deb-ca7a2ff80172", mock.Anything)
-	serviceMock.AssertNotCalled(t, "deleteData", mock.Anything, "b17756fe-0f62-4cf1-9deb-ca7a2ff80172")
+	serviceMock.AssertNotCalled(t, "WriteData", mock.Anything, "b17756fe-0f62-4cf1-9deb-ca7a2ff80172", mock.Anything)
+	serviceMock.AssertNotCalled(t, "DeleteData", mock.Anything, "b17756fe-0f62-4cf1-9deb-ca7a2ff80172")
 	serviceMock.AssertExpectations(t)
 
 	require.NotNil(t, hook.LastEntry())
@@ -266,8 +267,8 @@ func TestHandleWriteMessageNoType(t *testing.T) {
 	indexer := contentIndexer{esServiceInstance: serviceMock}
 	indexer.handleMessage(consumer.Message{Body: input})
 
-	serviceMock.AssertNotCalled(t, "writeData", mock.Anything, mock.Anything, mock.Anything)
-	serviceMock.AssertNotCalled(t, "deleteData", mock.Anything, mock.Anything)
+	serviceMock.AssertNotCalled(t, "WriteData", mock.Anything, mock.Anything, mock.Anything)
+	serviceMock.AssertNotCalled(t, "DeleteData", mock.Anything, mock.Anything)
 	require.NotNil(t, hook.LastEntry())
 	assert.Equal("error", hook.LastEntry().Level.String(), "Wrong log")
 }
@@ -282,7 +283,7 @@ func TestHandleWriteMessageError(t *testing.T) {
 
 	serviceMock := &esServiceMock{}
 
-	serviceMock.On("writeData", "FTCom", "aae9611e-f66c-4fe4-a6c6-2e2bdea69060", mock.Anything).Return(&elastic.IndexResult{}, elastic.ErrTimeout)
+	serviceMock.On("WriteData", "FTCom", "aae9611e-f66c-4fe4-a6c6-2e2bdea69060", mock.Anything).Return(&elastic.IndexResult{}, elastic.ErrTimeout)
 
 	indexer := contentIndexer{esServiceInstance: serviceMock}
 	indexer.handleMessage(consumer.Message{Body: string(inputJSON)})
@@ -301,7 +302,7 @@ func TestHandleDeleteMessage(t *testing.T) {
 
 	serviceMock := &esServiceMock{}
 
-	serviceMock.On("deleteData", "FTCom", "aae9611e-f66c-4fe4-a6c6-2e2bdea69060").Return(&elastic.DeleteResult{}, nil)
+	serviceMock.On("DeleteData", "FTCom", "aae9611e-f66c-4fe4-a6c6-2e2bdea69060").Return(&elastic.DeleteResult{}, nil)
 
 	indexer := contentIndexer{esServiceInstance: serviceMock}
 	indexer.handleMessage(consumer.Message{Body: input})
@@ -320,7 +321,7 @@ func TestHandleDeleteMessageError(t *testing.T) {
 
 	serviceMock := &esServiceMock{}
 
-	serviceMock.On("deleteData", "FTCom", "aae9611e-f66c-4fe4-a6c6-2e2bdea69060").Return(&elastic.DeleteResult{}, elastic.ErrTimeout)
+	serviceMock.On("DeleteData", "FTCom", "aae9611e-f66c-4fe4-a6c6-2e2bdea69060").Return(&elastic.DeleteResult{}, elastic.ErrTimeout)
 
 	indexer := contentIndexer{esServiceInstance: serviceMock}
 	indexer.handleMessage(consumer.Message{Body: input})
@@ -342,8 +343,8 @@ func TestHandleMessageJsonError(t *testing.T) {
 
 	require.NotNil(t, hook.LastEntry())
 	assert.Equal("error", hook.LastEntry().Level.String(), "Wrong log")
-	serviceMock.AssertNotCalled(t, "writeData", mock.Anything, mock.Anything, mock.Anything)
-	serviceMock.AssertNotCalled(t, "deleteData", mock.Anything, mock.Anything)
+	serviceMock.AssertNotCalled(t, "WriteData", mock.Anything, mock.Anything, mock.Anything)
+	serviceMock.AssertNotCalled(t, "DeleteData", mock.Anything, mock.Anything)
 }
 
 func TestHandleSyntheticMessage(t *testing.T) {
@@ -357,6 +358,6 @@ func TestHandleSyntheticMessage(t *testing.T) {
 
 	require.NotNil(t, hook.LastEntry())
 	assert.Equal("info", hook.LastEntry().Level.String(), "Wrong log")
-	serviceMock.AssertNotCalled(t, "writeData", mock.Anything, mock.Anything, mock.Anything)
-	serviceMock.AssertNotCalled(t, "deleteData", mock.Anything, mock.Anything)
+	serviceMock.AssertNotCalled(t, "WriteData", mock.Anything, mock.Anything, mock.Anything)
+	serviceMock.AssertNotCalled(t, "DeleteData", mock.Anything, mock.Anything)
 }

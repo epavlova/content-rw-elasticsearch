@@ -1,4 +1,4 @@
-package main
+package es
 
 import (
 	awsauth "github.com/smartystreets/go-aws-auth"
@@ -7,7 +7,7 @@ import (
 	"github.com/Financial-Times/go-logger"
 )
 
-type esClientI interface {
+type ClientI interface {
 	ClusterHealth() *elastic.ClusterHealthService
 	Index() *elastic.IndexService
 	Get() *elastic.GetService
@@ -15,10 +15,10 @@ type esClientI interface {
 	IndexGet() *elastic.IndicesGetService
 }
 
-type esAccessConfig struct {
-	accessKey  string
-	secretKey  string
-	esEndpoint string
+type AccessConfig struct {
+	AccessKey string
+	SecretKey string
+	Endpoint  string
 }
 
 type AWSSigningTransport struct {
@@ -31,19 +31,19 @@ func (a AWSSigningTransport) RoundTrip(req *http.Request) (*http.Response, error
 	return a.HTTPClient.Do(awsauth.Sign4(req, a.Credentials))
 }
 
-var newAmazonClient = func(config esAccessConfig) (esClientI, error) {
+var NewAmazonClient = func(config AccessConfig) (ClientI, error) {
 
 	signingTransport := AWSSigningTransport{
 		Credentials: awsauth.Credentials{
-			AccessKeyID:     config.accessKey,
-			SecretAccessKey: config.secretKey,
+			AccessKeyID:     config.AccessKey,
+			SecretAccessKey: config.SecretKey,
 		},
 		HTTPClient: http.DefaultClient,
 	}
 	signingClient := &http.Client{Transport: http.RoundTripper(signingTransport)}
 
 	return elastic.NewClient(
-		elastic.SetURL(config.esEndpoint),
+		elastic.SetURL(config.Endpoint),
 		elastic.SetScheme("https"),
 		elastic.SetHttpClient(signingClient),
 		elastic.SetSniff(false), //needs to be disabled due to EAS behavior. Healthcheck still operates as normal.
