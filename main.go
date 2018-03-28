@@ -12,6 +12,7 @@ import (
 	"net/http"
 	health "github.com/Financial-Times/go-fthealth/v1_1"
 	status "github.com/Financial-Times/service-status-go/httphandlers"
+	"sync"
 )
 
 const appNameDefaultValue = "content-rw-elasticsearch"
@@ -113,12 +114,12 @@ func main() {
 			SecretKey: *secretKey,
 			Endpoint:  *esEndpoint,
 		}
-		indexer := NewContentIndexer(*indexName)
+		service := es.NewService(*indexName)
+		indexer := NewContentIndexer(service)
 		indexer.start(*appSystemCode, *appName, *indexName, *port, accessConfig, queueConfig)
-
-		serveAdminEndpoints(indexer,*appSystemCode, *appName, *port, queueConfig)
-
+		serveAdminEndpoints(service, *appSystemCode, *appName, *port, queueConfig)
 		indexer.stop()
+		indexer.wg.Wait()
 	}
 	err := app.Run(os.Args)
 	if err != nil {
@@ -128,8 +129,8 @@ func main() {
 	logger.Info("[Shutdown] Shutdown complete")
 }
 
-func serveAdminEndpoints(indexer *contentIndexer, appSystemCode string, appName string, port string, queueConfig consumer.QueueConfig) {
-	healthService := newHealthService(&queueConfig, indexer.esServiceInstance)
+func serveAdminEndpoints(esService es.ServiceI, appSystemCode string, appName string, port string, queueConfig consumer.QueueConfig) {
+	healthService := newHealthService(&queueConfig, esService)
 
 	serveMux := http.NewServeMux()
 
@@ -141,12 +142,13 @@ func serveAdminEndpoints(indexer *contentIndexer, appSystemCode string, appName 
 
 	server := &http.Server{Addr: ":" + port, Handler: serveMux}
 
-	indexer.wg.Add(1)
+	var wg sync.WaitGroup
+	wg.Add(1)
 	go func() {
 		if err := server.ListenAndServe(); err != nil {
 			logger.WithError(err).Error("HTTP server is closing")
 		}
-		indexer.wg.Done()
+		wg.Done()
 	}()
 
 	waitForSignal()
@@ -155,9 +157,8 @@ func serveAdminEndpoints(indexer *contentIndexer, appSystemCode string, appName 
 	if err := server.Close(); err != nil {
 		logger.WithError(err).Error("Unable to stop http server")
 	}
-	indexer.wg.Wait()
+	wg.Wait()
 }
-
 
 func waitForSignal() {
 	ch := make(chan os.Signal)

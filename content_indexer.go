@@ -40,8 +40,8 @@ type contentIndexer struct {
 	mu                sync.Mutex
 }
 
-func NewContentIndexer(indexName string) *contentIndexer {
-	return &contentIndexer{esServiceInstance: es.NewService(indexName)}
+func NewContentIndexer(service es.ServiceI) *contentIndexer {
+	return &contentIndexer{esServiceInstance: service}
 }
 
 func (indexer *contentIndexer) start(appSystemCode string, appName string, indexName string, port string, accessConfig es.AccessConfig, queueConfig consumer.QueueConfig) {
@@ -60,13 +60,14 @@ func (indexer *contentIndexer) start(appSystemCode string, appName string, index
 		}
 	}()
 
+	indexer.wg.Add(1)
 	go func() {
+		defer indexer.wg.Done()
 		for ec := range channel {
 			indexer.esServiceInstance.SetClient(ec)
 			indexer.startMessageConsumer(queueConfig)
 		}
 	}()
-
 }
 
 func (indexer *contentIndexer) stop() {
@@ -95,10 +96,8 @@ func (indexer *contentIndexer) startMessageConsumer(config consumer.QueueConfig)
 	indexer.messageConsumer = consumer.NewConsumer(config, indexer.handleMessage, client)
 	indexer.mu.Unlock()
 
-	indexer.wg.Add(1)
-
+	//this is a blocking method
 	indexer.messageConsumer.Start()
-	indexer.wg.Done()
 }
 
 func (indexer *contentIndexer) handleMessage(msg consumer.Message) {
