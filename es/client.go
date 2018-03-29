@@ -38,7 +38,7 @@ var NewAmazonClient = func(config AccessConfig) (ClientI, error) {
 			AccessKeyID:     config.AccessKey,
 			SecretAccessKey: config.SecretKey,
 		},
-		HTTPClient: http.DefaultClient,
+		HTTPClient: http.DefaultClient, //TODO why default client?
 	}
 	signingClient := &http.Client{Transport: http.RoundTripper(signingTransport)}
 

@@ -24,7 +24,7 @@ const (
 	methodeOrigin          = "methode-web-pub"
 	wordpressOrigin        = "wordpress"
 	videoOrigin            = "next-video-editor"
-	blogType               = "blog"
+
 	articleType            = "article"
 	videoType              = "video"
 )
@@ -40,11 +40,13 @@ type contentIndexer struct {
 	mu                sync.Mutex
 }
 
-func NewContentIndexer(service es.ServiceI, client *http.Client) *contentIndexer {
-	return &contentIndexer{esServiceInstance: service, Client: client}
+func NewContentIndexer(service es.ServiceI, client *http.Client, queueConfig consumer.QueueConfig) *contentIndexer {
+	indexer := &contentIndexer{esServiceInstance: service, Client: client}
+	indexer.messageConsumer = consumer.NewConsumer(queueConfig, indexer.handleMessage, client)
+	return indexer
 }
 
-func (indexer *contentIndexer) start(appSystemCode string, appName string, indexName string, port string, accessConfig es.AccessConfig, queueConfig consumer.QueueConfig) {
+func (indexer *contentIndexer) start(appSystemCode string, appName string, indexName string, port string, accessConfig es.AccessConfig) {
 	channel := make(chan es.ClientI)
 	go func() {
 		defer close(channel)
@@ -60,12 +62,14 @@ func (indexer *contentIndexer) start(appSystemCode string, appName string, index
 		}
 	}()
 
-	indexer.wg.Add(1)
 	go func() {
 		defer indexer.wg.Done()
 		for ec := range channel {
+			indexer.mu.Lock()
+			indexer.wg.Add(1)
+			indexer.mu.Unlock()
 			indexer.esServiceInstance.SetClient(ec)
-			indexer.startMessageConsumer(queueConfig)
+			indexer.startMessageConsumer()
 		}
 	}()
 }
@@ -79,11 +83,7 @@ func (indexer *contentIndexer) stop() {
 
 }
 
-func (indexer *contentIndexer) startMessageConsumer(config consumer.QueueConfig) {
-	indexer.mu.Lock()
-	indexer.messageConsumer = consumer.NewConsumer(config, indexer.handleMessage, indexer.Client)
-	indexer.mu.Unlock()
-
+func (indexer *contentIndexer) startMessageConsumer() {
 	//this is a blocking method
 	indexer.messageConsumer.Start()
 }
@@ -101,7 +101,7 @@ func (indexer *contentIndexer) handleMessage(msg consumer.Message) {
 		return
 	}
 
-	var combinedPostPublicationEvent enrichedContentModel
+	var combinedPostPublicationEvent es.EnrichedContentModel
 	err := json.Unmarshal([]byte(msg.Body), &combinedPostPublicationEvent)
 	if err != nil {
 		logger.WithTransactionID(tid).WithError(err).Error("Cannot unmarshal message body")
@@ -124,7 +124,7 @@ func (indexer *contentIndexer) handleMessage(msg consumer.Message) {
 	var contentType string
 	for _, identifier := range combinedPostPublicationEvent.Content.Identifiers {
 		if strings.HasPrefix(identifier.Authority, blogsAuthority) {
-			contentType = blogType
+			contentType = es.BlogType
 		} else if strings.HasPrefix(identifier.Authority, articleAuthority) {
 			contentType = articleType
 		} else if strings.HasPrefix(identifier.Authority, videoAuthority) {
@@ -137,7 +137,7 @@ func (indexer *contentIndexer) handleMessage(msg consumer.Message) {
 		if strings.Contains(origin, methodeOrigin) {
 			contentType = articleType
 		} else if strings.Contains(origin, wordpressOrigin) {
-			contentType = blogType
+			contentType = es.BlogType
 		} else if strings.Contains(origin, videoOrigin) {
 			contentType = videoType
 		} else {
@@ -147,16 +147,17 @@ func (indexer *contentIndexer) handleMessage(msg consumer.Message) {
 	}
 
 	if combinedPostPublicationEvent.Content.MarkedDeleted {
-		_, err = indexer.esServiceInstance.DeleteData(contentTypeMap[contentType].collection, uuid)
+		_, err = indexer.esServiceInstance.DeleteData(es.ContentTypeMap[contentType].Collection, uuid)
 		if err != nil {
 			logger.WithTransactionID(tid).WithUUID(uuid).WithError(err).Error("Failed to index content")
 			return
 		}
 		logger.WithMonitoringEvent("ContentDeleteElasticsearch", tid, "").WithUUID(uuid).Info("Successfully deleted")
 	} else {
-		payload := convertToESContentModel(combinedPostPublicationEvent, contentType, tid)
+		//TODO move
+		payload := es.ConvertToESContentModel(combinedPostPublicationEvent, contentType, tid)
 
-		_, err = indexer.esServiceInstance.WriteData(contentTypeMap[contentType].collection, uuid, payload)
+		_, err = indexer.esServiceInstance.WriteData(es.ContentTypeMap[contentType].Collection, uuid, payload)
 		if err != nil {
 			logger.WithTransactionID(tid).WithUUID(uuid).WithError(err).Error("Failed to index content")
 			return

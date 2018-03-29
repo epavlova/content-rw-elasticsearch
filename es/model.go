@@ -1,4 +1,4 @@
-package main
+package es
 
 import (
 	"encoding/base64"
@@ -26,15 +26,17 @@ const (
 	tmeRegions        = "GL"
 	tmeGenres         = "Genres"
 	tmeSpecialReports = "SpecialReports"
+
+	BlogType = "blog"
 )
 
-type enrichedContentModel struct {
+type EnrichedContentModel struct {
 	UUID     string       `json:"uuid"`
-	Content  contentModel `json:"content"`
+	Content  ContentModel `json:"content"`
 	Metadata annotations  `json:"metadata"`
 }
 
-type contentModel struct {
+type ContentModel struct {
 	UUID               string       `json:"uuid"`
 	Title              string       `json:"title"`
 	Body               string       `json:"body"`
@@ -174,30 +176,30 @@ type esContentModel struct {
 }
 
 type contentType struct {
-	collection string
-	format     string
-	category   string
+	Collection string
+	Format     string
+	Category   string
 }
 
-var contentTypeMap = map[string]contentType{
+var ContentTypeMap = map[string]contentType{
 	"article": {
-		collection: "FTCom",
-		format:     "Articles",
-		category:   "article",
+		Collection: "FTCom",
+		Format:     "Articles",
+		Category:   "article",
 	},
 	"blog": {
-		collection: "FTBlogs",
-		format:     "Blogs",
-		category:   "blogPost",
+		Collection: "FTBlogs",
+		Format:     "Blogs",
+		Category:   "blogPost",
 	},
 	"video": {
-		collection: "FTVideos",
-		format:     "Videos",
-		category:   "video",
+		Collection: "FTVideos",
+		Format:     "Videos",
+		Category:   "video",
 	},
 }
 
-func convertToESContentModel(enrichedContent enrichedContentModel, contentType string, tid string) esContentModel {
+func ConvertToESContentModel(enrichedContent EnrichedContentModel, contentType string, tid string) esContentModel {
 	esModel := esContentModel{}
 
 	esModel.IndexDate = new(string)
@@ -208,9 +210,9 @@ func convertToESContentModel(enrichedContent enrichedContentModel, contentType s
 	esModel.InternalContentType = new(string)
 	*esModel.InternalContentType = contentType
 	esModel.Category = new(string)
-	*esModel.Category = contentTypeMap[contentType].category
+	*esModel.Category = ContentTypeMap[contentType].Category
 	esModel.Format = new(string)
-	*esModel.Format = contentTypeMap[contentType].format
+	*esModel.Format = ContentTypeMap[contentType].Format
 
 	esModel.UID = &(enrichedContent.Content.UUID)
 
@@ -247,7 +249,7 @@ func convertToESContentModel(enrichedContent enrichedContentModel, contentType s
 		squaredCaptionReplacer,
 		duplicateWhiteSpaceRemover)
 
-	if contentType != blogType && enrichedContent.Content.MainImage != "" {
+	if contentType != BlogType && enrichedContent.Content.MainImage != "" {
 		esModel.ThumbnailURL = new(string)
 
 		var imageID *uuidutils.UUID

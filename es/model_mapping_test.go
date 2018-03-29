@@ -1,4 +1,4 @@
-package main
+package es
 
 import (
 	"encoding/json"
@@ -24,7 +24,7 @@ func TestConvertToESContentModel(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		ecModel := enrichedContentModel{}
+		ecModel := EnrichedContentModel{}
 		inputJSON, err := ioutil.ReadFile(test.inputFile)
 		assert.NoError(err, "Unexpected error")
 
@@ -32,7 +32,7 @@ func TestConvertToESContentModel(t *testing.T) {
 		assert.NoError(err, "Unexpected error")
 
 		startTime := time.Now().UnixNano() / 1000000
-		esModel := convertToESContentModel(ecModel, "article", test.tid)
+		esModel := ConvertToESContentModel(ecModel, "article", test.tid)
 
 		endTime := time.Now().UnixNano() / 1000000
 

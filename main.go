@@ -130,8 +130,8 @@ func main() {
 		}
 
 		service := es.NewService(*indexName)
-		indexer := NewContentIndexer(service, client)
-		indexer.start(*appSystemCode, *appName, *indexName, *port, accessConfig, queueConfig)
+		indexer := NewContentIndexer(service, client, queueConfig)
+		indexer.start(*appSystemCode, *appName, *indexName, *port, accessConfig)
 		serveAdminEndpoints(service, *appSystemCode, *appName, *port, queueConfig)
 		indexer.stop()
 		indexer.wg.Wait()

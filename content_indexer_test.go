@@ -98,9 +98,9 @@ func TestStartClient(t *testing.T) {
 		return &elasticClientMock{}, nil
 	}
 
-	indexer := NewContentIndexer(es.NewService("index"), http.DefaultClient)
+	indexer := NewContentIndexer(es.NewService("index"), http.DefaultClient, queueConfig)
 
-	indexer.start("app", "name", "index", "1984", accessConfig, queueConfig)
+	indexer.start("app", "name", "index", "1984", accessConfig)
 	defer indexer.stop()
 
 	time.Sleep(100 * time.Millisecond)
@@ -135,9 +135,9 @@ func TestStartClientError(t *testing.T) {
 		return nil, elastic.ErrNoClient
 	}
 
-	indexer := NewContentIndexer(es.NewService("index"), http.DefaultClient)
+	indexer := NewContentIndexer(es.NewService("index"), http.DefaultClient, queueConfig)
 
-	indexer.start("app", "name", "index", "1984", accessConfig, queueConfig)
+	indexer.start("app", "name", "index", "1984", accessConfig)
 	defer indexer.stop()
 
 	time.Sleep(100 * time.Millisecond)
@@ -152,7 +152,7 @@ func TestStartClientError(t *testing.T) {
 func TestHandleWriteMessage(t *testing.T) {
 	assert := assert.New(t)
 
-	inputJSON, err := ioutil.ReadFile("testdata/exampleEnrichedContentModel.json")
+	inputJSON, err := ioutil.ReadFile("es/testdata/exampleEnrichedContentModel.json")
 	assert.NoError(err, "Unexpected error")
 
 	serviceMock := &esServiceMock{}
@@ -168,7 +168,7 @@ func TestHandleWriteMessage(t *testing.T) {
 func TestHandleWriteMessageBlog(t *testing.T) {
 	assert := assert.New(t)
 
-	inputJSON, err := ioutil.ReadFile("testdata/exampleEnrichedContentModel.json")
+	inputJSON, err := ioutil.ReadFile("es/testdata/exampleEnrichedContentModel.json")
 	assert.NoError(err, "Unexpected error")
 	input := strings.Replace(string(inputJSON), "FTCOM-METHODE", "FT-LABS-WP1234", 1)
 
@@ -185,7 +185,7 @@ func TestHandleWriteMessageBlog(t *testing.T) {
 func TestHandleWriteMessageBlogWithHeader(t *testing.T) {
 	assert := assert.New(t)
 
-	inputJSON, err := ioutil.ReadFile("testdata/exampleEnrichedContentModel.json")
+	inputJSON, err := ioutil.ReadFile("es/testdata/exampleEnrichedContentModel.json")
 	assert.NoError(err, "Unexpected error")
 	input := strings.Replace(string(inputJSON), "FTCOM-METHODE", "invalid", 1)
 
@@ -202,7 +202,7 @@ func TestHandleWriteMessageBlogWithHeader(t *testing.T) {
 func TestHandleWriteMessageVideo(t *testing.T) {
 	assert := assert.New(t)
 
-	inputJSON, err := ioutil.ReadFile("testdata/exampleEnrichedContentModel.json")
+	inputJSON, err := ioutil.ReadFile("es/testdata/exampleEnrichedContentModel.json")
 	assert.NoError(err, "Unexpected error")
 	input := strings.Replace(string(inputJSON), "FTCOM-METHODE", "NEXT-VIDEO-EDITOR", 1)
 
@@ -219,7 +219,7 @@ func TestHandleWriteMessageVideo(t *testing.T) {
 func TestHandleWriteMessageUnknownType(t *testing.T) {
 	assert := assert.New(t)
 
-	inputJSON, err := ioutil.ReadFile("testdata/exampleEnrichedContentModel.json")
+	inputJSON, err := ioutil.ReadFile("es/testdata/exampleEnrichedContentModel.json")
 	assert.NoError(err, "Unexpected error")
 	input := strings.Replace(string(inputJSON), `"Article"`, `"Content"`, 1)
 
@@ -238,7 +238,7 @@ func TestHandleWriteMessageNoUUIDForMetadataPublish(t *testing.T) {
 
 	hook := logTest.NewTestHook("content-rw-elasticsearch")
 
-	inputJSON, err := ioutil.ReadFile("testdata/testInput4.json")
+	inputJSON, err := ioutil.ReadFile("es/testdata/testInput4.json")
 	assert.NoError(err, "Unexpected error")
 
 	serviceMock := &esServiceMock{}
@@ -259,7 +259,7 @@ func TestHandleWriteMessageNoType(t *testing.T) {
 
 	hook := logTest.NewTestHook("content-rw-elasticsearch")
 
-	inputJSON, err := ioutil.ReadFile("testdata/exampleEnrichedContentModel.json")
+	inputJSON, err := ioutil.ReadFile("es/testdata/exampleEnrichedContentModel.json")
 	assert.NoError(err, "Unexpected error")
 	input := strings.Replace(string(inputJSON), "FTCOM-METHODE", "invalid", 1)
 
@@ -279,7 +279,7 @@ func TestHandleWriteMessageError(t *testing.T) {
 
 	hook := logTest.NewTestHook("content-rw-elasticsearch")
 
-	inputJSON, err := ioutil.ReadFile("testdata/exampleEnrichedContentModel.json")
+	inputJSON, err := ioutil.ReadFile("es/testdata/exampleEnrichedContentModel.json")
 	assert.NoError(err, "Unexpected error")
 
 	serviceMock := &esServiceMock{}
@@ -297,7 +297,7 @@ func TestHandleWriteMessageError(t *testing.T) {
 func TestHandleDeleteMessage(t *testing.T) {
 	assert := assert.New(t)
 
-	inputJSON, err := ioutil.ReadFile("testdata/exampleEnrichedContentModel.json")
+	inputJSON, err := ioutil.ReadFile("es/testdata/exampleEnrichedContentModel.json")
 	assert.NoError(err, "Unexpected error")
 	input := strings.Replace(string(inputJSON), `"marked_deleted": false`, `"marked_deleted": true`, 1)
 
@@ -316,7 +316,7 @@ func TestHandleDeleteMessageError(t *testing.T) {
 
 	hook := logTest.NewTestHook("content-rw-elasticsearch")
 
-	inputJSON, err := ioutil.ReadFile("testdata/exampleEnrichedContentModel.json")
+	inputJSON, err := ioutil.ReadFile("es/testdata/exampleEnrichedContentModel.json")
 	assert.NoError(err, "Unexpected error")
 	input := strings.Replace(string(inputJSON), `"marked_deleted": false`, `"marked_deleted": true`, 1)
 
