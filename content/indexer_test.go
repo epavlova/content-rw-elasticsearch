@@ -1,20 +1,21 @@
 package content
 
 import (
+	"io/ioutil"
+	"net/http"
+	"net/url"
+	"strings"
+	"sync"
+	"testing"
+	"time"
+
+	"github.com/Financial-Times/content-rw-elasticsearch/es"
 	logTest "github.com/Financial-Times/go-logger/test"
 	"github.com/Financial-Times/message-queue-gonsumer/consumer"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	"gopkg.in/olivere/elastic.v2"
-	"io/ioutil"
-	"net/url"
-	"strings"
-	"testing"
-	"time"
 	"github.com/stretchr/testify/require"
-	"github.com/Financial-Times/content-rw-elasticsearch/es"
-	"net/http"
-	"sync"
+	"gopkg.in/olivere/elastic.v2"
 )
 
 type esServiceMock struct {

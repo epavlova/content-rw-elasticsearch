@@ -1,10 +1,11 @@
 package es
 
 import (
+	"net/http"
+
+	"github.com/Financial-Times/go-logger"
 	awsauth "github.com/smartystreets/go-aws-auth"
 	"gopkg.in/olivere/elastic.v2"
-	"net/http"
-	"github.com/Financial-Times/go-logger"
 )
 
 type ClientI interface {

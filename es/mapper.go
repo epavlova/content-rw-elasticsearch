@@ -2,10 +2,11 @@ package es
 
 import (
 	"encoding/base64"
-	"github.com/Financial-Times/uuid-utils-go"
 	"strings"
 	"time"
+
 	"github.com/Financial-Times/go-logger"
+	"github.com/Financial-Times/uuid-utils-go"
 )
 
 const (
@@ -29,7 +30,6 @@ const (
 
 	BlogType = "blog"
 )
-
 
 var ContentTypeMap = map[string]contentType{
 	"article": {

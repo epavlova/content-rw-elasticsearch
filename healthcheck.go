@@ -7,11 +7,11 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/Financial-Times/content-rw-elasticsearch/es"
 	health "github.com/Financial-Times/go-fthealth/v1_1"
+	"github.com/Financial-Times/go-logger"
 	"github.com/Financial-Times/message-queue-gonsumer/consumer"
 	"github.com/Financial-Times/service-status-go/gtg"
-	"github.com/Financial-Times/go-logger"
-	"github.com/Financial-Times/content-rw-elasticsearch/es"
 )
 
 type healthService struct {

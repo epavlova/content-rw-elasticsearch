@@ -100,9 +100,9 @@ type IndexModel struct {
 }
 
 type EnrichedContent struct {
-	UUID     string       `json:"uuid"`
-	Content  Content `json:"content"`
-	Metadata annotations  `json:"metadata"`
+	UUID     string      `json:"uuid"`
+	Content  Content     `json:"content"`
+	Metadata annotations `json:"metadata"`
 }
 
 type Content struct {

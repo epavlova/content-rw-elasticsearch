@@ -2,14 +2,15 @@ package content
 
 import (
 	"encoding/json"
-	"github.com/Financial-Times/go-logger"
-	"github.com/Financial-Times/message-queue-gonsumer/consumer"
-	"github.com/dchest/uniuri"
 	"net/http"
 	"strings"
 	"sync"
 	"time"
+
 	"github.com/Financial-Times/content-rw-elasticsearch/es"
+	"github.com/Financial-Times/go-logger"
+	"github.com/Financial-Times/message-queue-gonsumer/consumer"
+	"github.com/dchest/uniuri"
 )
 
 const (

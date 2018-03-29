@@ -2,10 +2,11 @@ package es
 
 import (
 	"encoding/json"
-	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestConvertToESContentModel(t *testing.T) {
@@ -14,7 +15,7 @@ func TestConvertToESContentModel(t *testing.T) {
 	tests := []struct {
 		inputFile  string
 		outputFile string
-		tid string
+		tid        string
 	}{
 		{"../testdata/exampleEnrichedContentModel.json", "../testdata/exampleElasticModel.json", "tid_1"},
 		{"../testdata/testInput1.json", "../testdata/testOutput1.json", "tid_1"},
