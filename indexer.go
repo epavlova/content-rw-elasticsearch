@@ -1,4 +1,4 @@
-package content
+package main
 
 import (
 	"encoding/json"
@@ -29,27 +29,26 @@ const (
 var allowedTypes = []string{"Article", "Video", "MediaResource", ""}
 
 type Indexer struct {
-	esServiceInstance es.ServiceI
+	esService         es.ServiceI
 	messageConsumer   consumer.MessageConsumer
-	Mapper            es.Mapper
-	Client            *http.Client
-	ConnectToESClient func(config es.AccessConfig, c *http.Client) (es.ClientI, error)
+	mapper            es.Mapper
+	connectToESClient func(config es.AccessConfig, c *http.Client) (es.ClientI, error)
 	wg                sync.WaitGroup
 	mu                sync.Mutex
 }
 
 func NewContentIndexer(service es.ServiceI, mapper es.Mapper, client *http.Client, queueConfig consumer.QueueConfig, wg *sync.WaitGroup, connectToClient func(config es.AccessConfig, c *http.Client) (es.ClientI, error)) *Indexer {
-	indexer := &Indexer{esServiceInstance: service, Mapper: mapper, Client: client, ConnectToESClient: connectToClient, wg: *wg}
+	indexer := &Indexer{esService: service, mapper: mapper, connectToESClient: connectToClient, wg: *wg}
 	indexer.messageConsumer = consumer.NewConsumer(queueConfig, indexer.handleMessage, client)
 	return indexer
 }
 
-func (indexer *Indexer) Start(appSystemCode string, appName string, indexName string, port string, accessConfig es.AccessConfig) {
+func (indexer *Indexer) Start(appSystemCode string, appName string, indexName string, port string, accessConfig es.AccessConfig, httpClient *http.Client) {
 	channel := make(chan es.ClientI)
 	go func() {
 		defer close(channel)
 		for {
-			ec, err := indexer.ConnectToESClient(accessConfig, indexer.Client)
+			ec, err := indexer.connectToESClient(accessConfig, httpClient)
 			if err == nil {
 				logger.Info("Connected to Elasticsearch")
 				channel <- ec
@@ -66,7 +65,7 @@ func (indexer *Indexer) Start(appSystemCode string, appName string, indexName st
 			indexer.mu.Lock()
 			indexer.wg.Add(1)
 			indexer.mu.Unlock()
-			indexer.esServiceInstance.SetClient(ec)
+			indexer.esService.SetClient(ec)
 			indexer.startMessageConsumer()
 		}
 	}()
@@ -144,16 +143,16 @@ func (indexer *Indexer) handleMessage(msg consumer.Message) {
 	}
 
 	if combinedPostPublicationEvent.Content.MarkedDeleted {
-		_, err = indexer.esServiceInstance.DeleteData(es.ContentTypeMap[contentType].Collection, uuid)
+		_, err = indexer.esService.DeleteData(es.ContentTypeMap[contentType].Collection, uuid)
 		if err != nil {
 			logger.WithTransactionID(tid).WithUUID(uuid).WithError(err).Error("Failed to index content")
 			return
 		}
 		logger.WithMonitoringEvent("ContentDeleteElasticsearch", tid, "").WithUUID(uuid).Info("Successfully deleted")
 	} else {
-		payload := indexer.Mapper.MapContent(combinedPostPublicationEvent, contentType, tid)
+		payload := indexer.mapper.MapContent(combinedPostPublicationEvent, contentType, tid)
 
-		_, err = indexer.esServiceInstance.WriteData(es.ContentTypeMap[contentType].Collection, uuid, payload)
+		_, err = indexer.esService.WriteData(es.ContentTypeMap[contentType].Collection, uuid, payload)
 		if err != nil {
 			logger.WithTransactionID(tid).WithUUID(uuid).WithError(err).Error("Failed to index content")
 			return

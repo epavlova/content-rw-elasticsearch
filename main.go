@@ -9,7 +9,6 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/Financial-Times/content-rw-elasticsearch/content"
 	"github.com/Financial-Times/content-rw-elasticsearch/es"
 	health "github.com/Financial-Times/go-fthealth/v1_1"
 	"github.com/Financial-Times/go-logger"
@@ -138,9 +137,9 @@ func main() {
 		service := es.NewService(*indexName)
 		mapper := es.NewContentMapper()
 		var wg sync.WaitGroup
-		indexer := content.NewContentIndexer(service, mapper, client, queueConfig, &wg, es.NewClient)
+		indexer := NewContentIndexer(service, mapper, client, queueConfig, &wg, es.NewClient)
 
-		indexer.Start(*appSystemCode, *appName, *indexName, *port, accessConfig)
+		indexer.Start(*appSystemCode, *appName, *indexName, *port, accessConfig, client)
 
 		healthService := newHealthService(&queueConfig, service, client)
 		serveAdminEndpoints(healthService, *appSystemCode, *appName, *port)
