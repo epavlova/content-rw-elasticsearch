@@ -100,7 +100,7 @@ func TestStartClient(t *testing.T) {
 		return &elasticClientMock{}, nil
 	}
 	var wg sync.WaitGroup
-	indexer := NewContentIndexer(es.NewService("index"), es.NewContentMapper(), http.DefaultClient, queueConfig, &wg, NewClient)
+	indexer := NewIndexer(es.NewService("index"), es.NewContentMapper(), http.DefaultClient, queueConfig, &wg, NewClient)
 
 	indexer.Start("app", "name", "index", "1984", accessConfig, http.DefaultClient)
 	defer indexer.Stop()
@@ -138,7 +138,7 @@ func TestStartClientError(t *testing.T) {
 	}
 
 	var wg sync.WaitGroup
-	indexer := NewContentIndexer(es.NewService("index"), es.NewContentMapper(), http.DefaultClient, queueConfig, &wg, NewClient)
+	indexer := NewIndexer(es.NewService("index"), es.NewContentMapper(), http.DefaultClient, queueConfig, &wg, NewClient)
 
 	indexer.Start("app", "name", "index", "1984", accessConfig, http.DefaultClient)
 	defer indexer.Stop()
