@@ -3,9 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"net"
 	"net/http"
-	"time"
 
 	"github.com/Financial-Times/content-rw-elasticsearch/es"
 	health "github.com/Financial-Times/go-fthealth/v1_1"
@@ -21,19 +19,7 @@ type healthService struct {
 	checks           []health.Check
 }
 
-func newHealthService(config *consumer.QueueConfig, esHealthService es.HealthServiceI) *healthService {
-	client := &http.Client{
-		Transport: &http.Transport{
-			Proxy: http.ProxyFromEnvironment,
-			DialContext: (&net.Dialer{
-				Timeout:   30 * time.Second,
-				KeepAlive: 30 * time.Second,
-			}).DialContext,
-			MaxIdleConnsPerHost:   20,
-			TLSHandshakeTimeout:   3 * time.Second,
-			ExpectContinueTimeout: 1 * time.Second,
-		},
-	}
+func newHealthService(config *consumer.QueueConfig, esHealthService es.HealthServiceI, client *http.Client) *healthService {
 	consumerInstance := consumer.NewConsumer(*config, func(m consumer.Message) {}, client)
 	service := &healthService{
 		esHealthService:  esHealthService,

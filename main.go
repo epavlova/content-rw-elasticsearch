@@ -141,7 +141,10 @@ func main() {
 		indexer := content.NewContentIndexer(service, mapper, client, queueConfig, &wg, es.NewClient)
 
 		indexer.Start(*appSystemCode, *appName, *indexName, *port, accessConfig)
-		serveAdminEndpoints(service, *appSystemCode, *appName, *port, queueConfig)
+
+		healthService := newHealthService(&queueConfig, service, client)
+		serveAdminEndpoints(healthService, *appSystemCode, *appName, *port)
+
 		indexer.Stop()
 		wg.Wait()
 	}
@@ -153,9 +156,7 @@ func main() {
 	logger.Info("[Shutdown] Shutdown complete")
 }
 
-func serveAdminEndpoints(esService es.ServiceI, appSystemCode string, appName string, port string, queueConfig consumer.QueueConfig) {
-	healthService := newHealthService(&queueConfig, esService)
-
+func serveAdminEndpoints(healthService *healthService, appSystemCode string, appName string, port string) {
 	serveMux := http.NewServeMux()
 
 	hc := health.HealthCheck{SystemCode: appSystemCode, Name: appName, Description: "Content Read Writer for Elasticsearch", Checks: healthService.checks}

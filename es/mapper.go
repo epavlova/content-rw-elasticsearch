@@ -28,7 +28,9 @@ const (
 	tmeGenres         = "Genres"
 	tmeSpecialReports = "SpecialReports"
 
-	BlogType = "blog"
+	ArticleType = "article"
+	VideoType   = "video"
+	BlogType    = "blog"
 )
 
 var ContentTypeMap = map[string]contentType{

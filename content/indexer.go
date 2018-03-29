@@ -23,9 +23,6 @@ const (
 	methodeOrigin          = "methode-web-pub"
 	wordpressOrigin        = "wordpress"
 	videoOrigin            = "next-video-editor"
-
-	articleType = "article"
-	videoType   = "video"
 )
 
 // Empty type added for older content. Placeholders - which are subject of exclusion - have type Content.
@@ -36,13 +33,13 @@ type Indexer struct {
 	messageConsumer   consumer.MessageConsumer
 	Mapper            es.Mapper
 	Client            *http.Client
-	ConnectToClient   func(config es.AccessConfig, c *http.Client) (es.ClientI, error)
+	ConnectToESClient func(config es.AccessConfig, c *http.Client) (es.ClientI, error)
 	wg                sync.WaitGroup
 	mu                sync.Mutex
 }
 
 func NewContentIndexer(service es.ServiceI, mapper es.Mapper, client *http.Client, queueConfig consumer.QueueConfig, wg *sync.WaitGroup, connectToClient func(config es.AccessConfig, c *http.Client) (es.ClientI, error)) *Indexer {
-	indexer := &Indexer{esServiceInstance: service, Mapper: mapper, Client: client, ConnectToClient: connectToClient, wg: *wg}
+	indexer := &Indexer{esServiceInstance: service, Mapper: mapper, Client: client, ConnectToESClient: connectToClient, wg: *wg}
 	indexer.messageConsumer = consumer.NewConsumer(queueConfig, indexer.handleMessage, client)
 	return indexer
 }
@@ -52,7 +49,7 @@ func (indexer *Indexer) Start(appSystemCode string, appName string, indexName st
 	go func() {
 		defer close(channel)
 		for {
-			ec, err := indexer.ConnectToClient(accessConfig, indexer.Client)
+			ec, err := indexer.ConnectToESClient(accessConfig, indexer.Client)
 			if err == nil {
 				logger.Info("Connected to Elasticsearch")
 				channel <- ec
@@ -90,7 +87,6 @@ func (indexer *Indexer) startMessageConsumer() {
 }
 
 func (indexer *Indexer) handleMessage(msg consumer.Message) {
-
 	tid := msg.Headers[transactionIDHeader]
 	if tid == "" {
 		tid = "tid_" + uniuri.NewLen(10) + "_content-rw-elasticsearch"
@@ -127,20 +123,20 @@ func (indexer *Indexer) handleMessage(msg consumer.Message) {
 		if strings.HasPrefix(identifier.Authority, blogsAuthority) {
 			contentType = es.BlogType
 		} else if strings.HasPrefix(identifier.Authority, articleAuthority) {
-			contentType = articleType
+			contentType = es.ArticleType
 		} else if strings.HasPrefix(identifier.Authority, videoAuthority) {
-			contentType = videoType
+			contentType = es.VideoType
 		}
 	}
 
 	if contentType == "" {
 		origin := msg.Headers[originHeader]
 		if strings.Contains(origin, methodeOrigin) {
-			contentType = articleType
+			contentType = es.ArticleType
 		} else if strings.Contains(origin, wordpressOrigin) {
 			contentType = es.BlogType
 		} else if strings.Contains(origin, videoOrigin) {
-			contentType = videoType
+			contentType = es.VideoType
 		} else {
 			logger.WithTransactionID(tid).WithUUID(uuid).WithError(err).Error("Failed to index content. Could not infer type of content")
 			return

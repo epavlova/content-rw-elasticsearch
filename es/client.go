@@ -33,7 +33,6 @@ func (a AWSSigningTransport) RoundTrip(req *http.Request) (*http.Response, error
 }
 
 func NewClient(config AccessConfig, c *http.Client) (ClientI, error) {
-
 	signingTransport := AWSSigningTransport{
 		Credentials: awsauth.Credentials{
 			AccessKeyID:     config.AccessKey,
