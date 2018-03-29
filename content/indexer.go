@@ -1,4 +1,4 @@
-package main
+package content
 
 import (
 	"encoding/json"
@@ -13,8 +13,6 @@ import (
 )
 
 const (
-	healthPath             = "/__health"
-	healthDetailsPath      = "/__health-details"
 	syntheticRequestPrefix = "SYNTHETIC-REQ-MON"
 	transactionIDHeader    = "X-Request-Id"
 	blogsAuthority         = "http://api.ft.com/system/FT-LABS-WP"
@@ -25,33 +23,35 @@ const (
 	wordpressOrigin        = "wordpress"
 	videoOrigin            = "next-video-editor"
 
-	articleType            = "article"
-	videoType              = "video"
+	articleType = "article"
+	videoType   = "video"
 )
 
 // Empty type added for older content. Placeholders - which are subject of exclusion - have type Content.
 var allowedTypes = []string{"Article", "Video", "MediaResource", ""}
 
-type contentIndexer struct {
+type Indexer struct {
 	esServiceInstance es.ServiceI
 	messageConsumer   consumer.MessageConsumer
+	Mapper            es.Mapper
 	Client            *http.Client
+	ConnectToClient   func(config es.AccessConfig, c *http.Client) (es.ClientI, error)
 	wg                sync.WaitGroup
 	mu                sync.Mutex
 }
 
-func NewContentIndexer(service es.ServiceI, client *http.Client, queueConfig consumer.QueueConfig) *contentIndexer {
-	indexer := &contentIndexer{esServiceInstance: service, Client: client}
+func NewContentIndexer(service es.ServiceI, mapper es.Mapper, client *http.Client, queueConfig consumer.QueueConfig, wg *sync.WaitGroup, connectToClient func(config es.AccessConfig, c *http.Client) (es.ClientI, error)) *Indexer {
+	indexer := &Indexer{esServiceInstance: service, Mapper: mapper, Client: client, ConnectToClient: connectToClient, wg: *wg}
 	indexer.messageConsumer = consumer.NewConsumer(queueConfig, indexer.handleMessage, client)
 	return indexer
 }
 
-func (indexer *contentIndexer) start(appSystemCode string, appName string, indexName string, port string, accessConfig es.AccessConfig) {
+func (indexer *Indexer) Start(appSystemCode string, appName string, indexName string, port string, accessConfig es.AccessConfig) {
 	channel := make(chan es.ClientI)
 	go func() {
 		defer close(channel)
 		for {
-			ec, err := es.NewAmazonClient(accessConfig)
+			ec, err := indexer.ConnectToClient(accessConfig, indexer.Client)
 			if err == nil {
 				logger.Info("Connected to Elasticsearch")
 				channel <- ec
@@ -74,7 +74,7 @@ func (indexer *contentIndexer) start(appSystemCode string, appName string, index
 	}()
 }
 
-func (indexer *contentIndexer) stop() {
+func (indexer *Indexer) Stop() {
 	indexer.mu.Lock()
 	if indexer.messageConsumer != nil {
 		indexer.messageConsumer.Stop()
@@ -83,12 +83,12 @@ func (indexer *contentIndexer) stop() {
 
 }
 
-func (indexer *contentIndexer) startMessageConsumer() {
+func (indexer *Indexer) startMessageConsumer() {
 	//this is a blocking method
 	indexer.messageConsumer.Start()
 }
 
-func (indexer *contentIndexer) handleMessage(msg consumer.Message) {
+func (indexer *Indexer) handleMessage(msg consumer.Message) {
 
 	tid := msg.Headers[transactionIDHeader]
 	if tid == "" {
@@ -101,7 +101,7 @@ func (indexer *contentIndexer) handleMessage(msg consumer.Message) {
 		return
 	}
 
-	var combinedPostPublicationEvent es.EnrichedContentModel
+	var combinedPostPublicationEvent es.EnrichedContent
 	err := json.Unmarshal([]byte(msg.Body), &combinedPostPublicationEvent)
 	if err != nil {
 		logger.WithTransactionID(tid).WithError(err).Error("Cannot unmarshal message body")
@@ -154,8 +154,7 @@ func (indexer *contentIndexer) handleMessage(msg consumer.Message) {
 		}
 		logger.WithMonitoringEvent("ContentDeleteElasticsearch", tid, "").WithUUID(uuid).Info("Successfully deleted")
 	} else {
-		//TODO move
-		payload := es.ConvertToESContentModel(combinedPostPublicationEvent, contentType, tid)
+		payload := indexer.Mapper.MapContent(combinedPostPublicationEvent, contentType, tid)
 
 		_, err = indexer.esServiceInstance.WriteData(es.ContentTypeMap[contentType].Collection, uuid, payload)
 		if err != nil {

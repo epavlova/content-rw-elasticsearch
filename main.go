@@ -14,9 +14,14 @@ import (
 	status "github.com/Financial-Times/service-status-go/httphandlers"
 	"sync"
 	"net"
+	"github.com/Financial-Times/content-rw-elasticsearch/content"
 )
 
-const appNameDefaultValue = "content-rw-elasticsearch"
+const (
+	appNameDefaultValue = "content-rw-elasticsearch"
+	healthPath          = "/__health"
+	healthDetailsPath   = "/__health-details"
+)
 
 func init() {
 	logger.InitDefaultLogger(appNameDefaultValue)
@@ -130,11 +135,14 @@ func main() {
 		}
 
 		service := es.NewService(*indexName)
-		indexer := NewContentIndexer(service, client, queueConfig)
-		indexer.start(*appSystemCode, *appName, *indexName, *port, accessConfig)
+		mapper := es.NewContentMapper()
+		var wg sync.WaitGroup
+		indexer := content.NewContentIndexer(service, mapper, client, queueConfig, &wg, es.NewClient)
+
+		indexer.Start(*appSystemCode, *appName, *indexName, *port, accessConfig)
 		serveAdminEndpoints(service, *appSystemCode, *appName, *port, queueConfig)
-		indexer.stop()
-		indexer.wg.Wait()
+		indexer.Stop()
+		wg.Wait()
 	}
 	err := app.Run(os.Args)
 	if err != nil {

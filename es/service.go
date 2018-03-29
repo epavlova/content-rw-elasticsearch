@@ -34,7 +34,7 @@ type HealthServiceI interface {
 	GetSchemaHealth() (string, error)
 }
 
-func NewService(indexName string) ServiceI {
+func NewService(indexName string) *Service {
 	return &Service{IndexName: indexName}
 }
 

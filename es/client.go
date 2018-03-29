@@ -31,14 +31,14 @@ func (a AWSSigningTransport) RoundTrip(req *http.Request) (*http.Response, error
 	return a.HTTPClient.Do(awsauth.Sign4(req, a.Credentials))
 }
 
-var NewAmazonClient = func(config AccessConfig) (ClientI, error) {
+func NewClient(config AccessConfig, c *http.Client) (ClientI, error) {
 
 	signingTransport := AWSSigningTransport{
 		Credentials: awsauth.Credentials{
 			AccessKeyID:     config.AccessKey,
 			SecretAccessKey: config.SecretKey,
 		},
-		HTTPClient: http.DefaultClient, //TODO why default client?
+		HTTPClient: c,
 	}
 	signingClient := &http.Client{Transport: http.RoundTripper(signingTransport)}
 

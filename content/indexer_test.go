@@ -1,4 +1,4 @@
-package main
+package content
 
 import (
 	logTest "github.com/Financial-Times/go-logger/test"
@@ -14,6 +14,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/Financial-Times/content-rw-elasticsearch/es"
 	"net/http"
+	"sync"
 )
 
 type esServiceMock struct {
@@ -94,14 +95,14 @@ func TestStartClient(t *testing.T) {
 		ConcurrentProcessing: false,
 	}
 
-	es.NewAmazonClient = func(config es.AccessConfig) (es.ClientI, error) {
+	var NewClient = func(config es.AccessConfig, c *http.Client) (es.ClientI, error) {
 		return &elasticClientMock{}, nil
 	}
+	var wg sync.WaitGroup
+	indexer := NewContentIndexer(es.NewService("index"), es.NewContentMapper(), http.DefaultClient, queueConfig, &wg, NewClient)
 
-	indexer := NewContentIndexer(es.NewService("index"), http.DefaultClient, queueConfig)
-
-	indexer.start("app", "name", "index", "1984", accessConfig)
-	defer indexer.stop()
+	indexer.Start("app", "name", "index", "1984", accessConfig)
+	defer indexer.Stop()
 
 	time.Sleep(100 * time.Millisecond)
 
@@ -131,14 +132,15 @@ func TestStartClientError(t *testing.T) {
 		ConcurrentProcessing: false,
 	}
 
-	es.NewAmazonClient = func(config es.AccessConfig) (es.ClientI, error) {
+	var NewClient = func(config es.AccessConfig, c *http.Client) (es.ClientI, error) {
 		return nil, elastic.ErrNoClient
 	}
 
-	indexer := NewContentIndexer(es.NewService("index"), http.DefaultClient, queueConfig)
+	var wg sync.WaitGroup
+	indexer := NewContentIndexer(es.NewService("index"), es.NewContentMapper(), http.DefaultClient, queueConfig, &wg, NewClient)
 
-	indexer.start("app", "name", "index", "1984", accessConfig)
-	defer indexer.stop()
+	indexer.Start("app", "name", "index", "1984", accessConfig)
+	defer indexer.Stop()
 
 	time.Sleep(100 * time.Millisecond)
 
@@ -152,14 +154,14 @@ func TestStartClientError(t *testing.T) {
 func TestHandleWriteMessage(t *testing.T) {
 	assert := assert.New(t)
 
-	inputJSON, err := ioutil.ReadFile("es/testdata/exampleEnrichedContentModel.json")
+	inputJSON, err := ioutil.ReadFile("../testdata/exampleEnrichedContentModel.json")
 	assert.NoError(err, "Unexpected error")
 
 	serviceMock := &esServiceMock{}
 
 	serviceMock.On("WriteData", "FTCom", "aae9611e-f66c-4fe4-a6c6-2e2bdea69060", mock.Anything).Return(&elastic.IndexResult{}, nil)
 
-	indexer := contentIndexer{esServiceInstance: serviceMock}
+	indexer := Indexer{esServiceInstance: serviceMock, Mapper: es.NewContentMapper()}
 	indexer.handleMessage(consumer.Message{Body: string(inputJSON)})
 
 	serviceMock.AssertExpectations(t)
@@ -168,7 +170,7 @@ func TestHandleWriteMessage(t *testing.T) {
 func TestHandleWriteMessageBlog(t *testing.T) {
 	assert := assert.New(t)
 
-	inputJSON, err := ioutil.ReadFile("es/testdata/exampleEnrichedContentModel.json")
+	inputJSON, err := ioutil.ReadFile("../testdata/exampleEnrichedContentModel.json")
 	assert.NoError(err, "Unexpected error")
 	input := strings.Replace(string(inputJSON), "FTCOM-METHODE", "FT-LABS-WP1234", 1)
 
@@ -176,7 +178,7 @@ func TestHandleWriteMessageBlog(t *testing.T) {
 
 	serviceMock.On("WriteData", "FTBlogs", "aae9611e-f66c-4fe4-a6c6-2e2bdea69060", mock.Anything).Return(&elastic.IndexResult{}, nil)
 
-	indexer := contentIndexer{esServiceInstance: serviceMock}
+	indexer := Indexer{esServiceInstance: serviceMock, Mapper: es.NewContentMapper()}
 	indexer.handleMessage(consumer.Message{Body: input})
 
 	serviceMock.AssertExpectations(t)
@@ -185,7 +187,7 @@ func TestHandleWriteMessageBlog(t *testing.T) {
 func TestHandleWriteMessageBlogWithHeader(t *testing.T) {
 	assert := assert.New(t)
 
-	inputJSON, err := ioutil.ReadFile("es/testdata/exampleEnrichedContentModel.json")
+	inputJSON, err := ioutil.ReadFile("../testdata/exampleEnrichedContentModel.json")
 	assert.NoError(err, "Unexpected error")
 	input := strings.Replace(string(inputJSON), "FTCOM-METHODE", "invalid", 1)
 
@@ -193,7 +195,7 @@ func TestHandleWriteMessageBlogWithHeader(t *testing.T) {
 
 	serviceMock.On("WriteData", "FTBlogs", "aae9611e-f66c-4fe4-a6c6-2e2bdea69060", mock.Anything).Return(&elastic.IndexResult{}, nil)
 
-	indexer := contentIndexer{esServiceInstance: serviceMock}
+	indexer := Indexer{esServiceInstance: serviceMock, Mapper: es.NewContentMapper()}
 	indexer.handleMessage(consumer.Message{Body: input, Headers: map[string]string{"Origin-System-Id": "wordpress"}})
 
 	serviceMock.AssertExpectations(t)
@@ -202,7 +204,7 @@ func TestHandleWriteMessageBlogWithHeader(t *testing.T) {
 func TestHandleWriteMessageVideo(t *testing.T) {
 	assert := assert.New(t)
 
-	inputJSON, err := ioutil.ReadFile("es/testdata/exampleEnrichedContentModel.json")
+	inputJSON, err := ioutil.ReadFile("../testdata/exampleEnrichedContentModel.json")
 	assert.NoError(err, "Unexpected error")
 	input := strings.Replace(string(inputJSON), "FTCOM-METHODE", "NEXT-VIDEO-EDITOR", 1)
 
@@ -210,7 +212,7 @@ func TestHandleWriteMessageVideo(t *testing.T) {
 
 	serviceMock.On("WriteData", "FTVideos", "aae9611e-f66c-4fe4-a6c6-2e2bdea69060", mock.Anything).Return(&elastic.IndexResult{}, nil)
 
-	indexer := contentIndexer{esServiceInstance: serviceMock}
+	indexer := Indexer{esServiceInstance: serviceMock, Mapper: es.NewContentMapper()}
 	indexer.handleMessage(consumer.Message{Body: input})
 
 	serviceMock.AssertExpectations(t)
@@ -219,13 +221,13 @@ func TestHandleWriteMessageVideo(t *testing.T) {
 func TestHandleWriteMessageUnknownType(t *testing.T) {
 	assert := assert.New(t)
 
-	inputJSON, err := ioutil.ReadFile("es/testdata/exampleEnrichedContentModel.json")
+	inputJSON, err := ioutil.ReadFile("../testdata/exampleEnrichedContentModel.json")
 	assert.NoError(err, "Unexpected error")
 	input := strings.Replace(string(inputJSON), `"Article"`, `"Content"`, 1)
 
 	serviceMock := &esServiceMock{}
 
-	indexer := contentIndexer{esServiceInstance: serviceMock}
+	indexer := Indexer{esServiceInstance: serviceMock, Mapper: es.NewContentMapper()}
 	indexer.handleMessage(consumer.Message{Body: input})
 
 	serviceMock.AssertNotCalled(t, "WriteData", mock.Anything, "aae9611e-f66c-4fe4-a6c6-2e2bdea69060", mock.Anything)
@@ -238,12 +240,12 @@ func TestHandleWriteMessageNoUUIDForMetadataPublish(t *testing.T) {
 
 	hook := logTest.NewTestHook("content-rw-elasticsearch")
 
-	inputJSON, err := ioutil.ReadFile("es/testdata/testInput4.json")
+	inputJSON, err := ioutil.ReadFile("../testdata/testInput4.json")
 	assert.NoError(err, "Unexpected error")
 
 	serviceMock := &esServiceMock{}
 
-	indexer := contentIndexer{esServiceInstance: serviceMock}
+	indexer := Indexer{esServiceInstance: serviceMock, Mapper: es.NewContentMapper()}
 	indexer.handleMessage(consumer.Message{Body: string(inputJSON), Headers: map[string]string{originHeader: methodeOrigin}})
 
 	serviceMock.AssertNotCalled(t, "WriteData", mock.Anything, "b17756fe-0f62-4cf1-9deb-ca7a2ff80172", mock.Anything)
@@ -259,13 +261,13 @@ func TestHandleWriteMessageNoType(t *testing.T) {
 
 	hook := logTest.NewTestHook("content-rw-elasticsearch")
 
-	inputJSON, err := ioutil.ReadFile("es/testdata/exampleEnrichedContentModel.json")
+	inputJSON, err := ioutil.ReadFile("../testdata/exampleEnrichedContentModel.json")
 	assert.NoError(err, "Unexpected error")
 	input := strings.Replace(string(inputJSON), "FTCOM-METHODE", "invalid", 1)
 
 	serviceMock := &esServiceMock{}
 
-	indexer := contentIndexer{esServiceInstance: serviceMock}
+	indexer := Indexer{esServiceInstance: serviceMock, Mapper: es.NewContentMapper()}
 	indexer.handleMessage(consumer.Message{Body: input})
 
 	serviceMock.AssertNotCalled(t, "WriteData", mock.Anything, mock.Anything, mock.Anything)
@@ -279,14 +281,14 @@ func TestHandleWriteMessageError(t *testing.T) {
 
 	hook := logTest.NewTestHook("content-rw-elasticsearch")
 
-	inputJSON, err := ioutil.ReadFile("es/testdata/exampleEnrichedContentModel.json")
+	inputJSON, err := ioutil.ReadFile("../testdata/exampleEnrichedContentModel.json")
 	assert.NoError(err, "Unexpected error")
 
 	serviceMock := &esServiceMock{}
 
 	serviceMock.On("WriteData", "FTCom", "aae9611e-f66c-4fe4-a6c6-2e2bdea69060", mock.Anything).Return(&elastic.IndexResult{}, elastic.ErrTimeout)
 
-	indexer := contentIndexer{esServiceInstance: serviceMock}
+	indexer := Indexer{esServiceInstance: serviceMock, Mapper: es.NewContentMapper()}
 	indexer.handleMessage(consumer.Message{Body: string(inputJSON)})
 
 	serviceMock.AssertExpectations(t)
@@ -297,7 +299,7 @@ func TestHandleWriteMessageError(t *testing.T) {
 func TestHandleDeleteMessage(t *testing.T) {
 	assert := assert.New(t)
 
-	inputJSON, err := ioutil.ReadFile("es/testdata/exampleEnrichedContentModel.json")
+	inputJSON, err := ioutil.ReadFile("../testdata/exampleEnrichedContentModel.json")
 	assert.NoError(err, "Unexpected error")
 	input := strings.Replace(string(inputJSON), `"marked_deleted": false`, `"marked_deleted": true`, 1)
 
@@ -305,7 +307,7 @@ func TestHandleDeleteMessage(t *testing.T) {
 
 	serviceMock.On("DeleteData", "FTCom", "aae9611e-f66c-4fe4-a6c6-2e2bdea69060").Return(&elastic.DeleteResult{}, nil)
 
-	indexer := contentIndexer{esServiceInstance: serviceMock}
+	indexer := Indexer{esServiceInstance: serviceMock, Mapper: es.NewContentMapper()}
 	indexer.handleMessage(consumer.Message{Body: input})
 
 	serviceMock.AssertExpectations(t)
@@ -316,7 +318,7 @@ func TestHandleDeleteMessageError(t *testing.T) {
 
 	hook := logTest.NewTestHook("content-rw-elasticsearch")
 
-	inputJSON, err := ioutil.ReadFile("es/testdata/exampleEnrichedContentModel.json")
+	inputJSON, err := ioutil.ReadFile("../testdata/exampleEnrichedContentModel.json")
 	assert.NoError(err, "Unexpected error")
 	input := strings.Replace(string(inputJSON), `"marked_deleted": false`, `"marked_deleted": true`, 1)
 
@@ -324,7 +326,7 @@ func TestHandleDeleteMessageError(t *testing.T) {
 
 	serviceMock.On("DeleteData", "FTCom", "aae9611e-f66c-4fe4-a6c6-2e2bdea69060").Return(&elastic.DeleteResult{}, elastic.ErrTimeout)
 
-	indexer := contentIndexer{esServiceInstance: serviceMock}
+	indexer := Indexer{esServiceInstance: serviceMock, Mapper: es.NewContentMapper()}
 	indexer.handleMessage(consumer.Message{Body: input})
 
 	serviceMock.AssertExpectations(t)
@@ -339,7 +341,7 @@ func TestHandleMessageJsonError(t *testing.T) {
 
 	serviceMock := &esServiceMock{}
 
-	indexer := &contentIndexer{esServiceInstance: serviceMock}
+	indexer := &Indexer{esServiceInstance: serviceMock}
 	indexer.handleMessage(consumer.Message{Body: "malformed json"})
 
 	require.NotNil(t, hook.LastEntry())
@@ -354,7 +356,7 @@ func TestHandleSyntheticMessage(t *testing.T) {
 	hook := logTest.NewTestHook("content-rw-elasticsearch")
 
 	serviceMock := &esServiceMock{}
-	indexer := &contentIndexer{esServiceInstance: serviceMock}
+	indexer := &Indexer{esServiceInstance: serviceMock, Mapper: es.NewContentMapper()}
 	indexer.handleMessage(consumer.Message{Headers: map[string]string{"X-Request-Id": "SYNTHETIC-REQ-MON_WuLjbRpCgh"}})
 
 	require.NotNil(t, hook.LastEntry())

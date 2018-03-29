@@ -1,82 +1,6 @@
 package es
 
-import (
-	"encoding/base64"
-	"github.com/Financial-Times/uuid-utils-go"
-	"strings"
-	"time"
-	"github.com/Financial-Times/go-logger"
-)
-
-const (
-	primaryClassification = "isPrimarilyClassifiedBy"
-	about                 = "about"
-	hasAuthor             = "hasAuthor"
-	apiURLPrefix          = "https://www.ft.com/content/"
-	imageServiceURL       = "https://www.ft.com/__origami/service/image/v2/images/raw/http%3A%2F%2Fprod-upp-image-read.ft.com%2F[image_uuid]?source=search&fit=scale-down&width=167"
-	imagePlaceholder      = "[image_uuid]"
-
-	tmeOrganisations  = "ON"
-	tmePeople         = "PN"
-	tmeAuthors        = "Authors"
-	tmeBrands         = "Brands"
-	tmeSubjects       = "Subjects"
-	tmeSections       = "Sections"
-	tmeTopics         = "Topics"
-	tmeRegions        = "GL"
-	tmeGenres         = "Genres"
-	tmeSpecialReports = "SpecialReports"
-
-	BlogType = "blog"
-)
-
-type EnrichedContentModel struct {
-	UUID     string       `json:"uuid"`
-	Content  ContentModel `json:"content"`
-	Metadata annotations  `json:"metadata"`
-}
-
-type ContentModel struct {
-	UUID               string       `json:"uuid"`
-	Title              string       `json:"title"`
-	Body               string       `json:"body"`
-	Identifiers        []identifier `json:"identifiers"`
-	PublishedDate      string       `json:"publishedDate"`
-	LastModified       string       `json:"lastModified"`
-	FirstPublishedDate string       `json:"firstPublishedDate"`
-	MarkedDeleted      bool         `json:"marked_deleted"`
-	Byline             string       `json:"byline"`
-	Standfirst         string       `json:"standfirst"`
-	Description        string       `json:"description"`
-	MainImage          string       `json:"mainImage"`
-	PublishReference   string       `json:"publishReference"`
-	Type               string       `json:"type"`
-}
-
-type identifier struct {
-	Authority       string `json:"authority"`
-	IdentifierValue string `json:"identifierValue"`
-}
-
-type annotations []annotation
-
-//Annotation is the main struct used to create and return annotations
-type annotation struct {
-	Thing thing `json:"thing,omitempty"`
-}
-
-//Thing represents a concept being linked to
-type thing struct {
-	ID        string   `json:"id,omitempty"`
-	PrefLabel string   `json:"prefLabel,omitempty"`
-	Types     []string `json:"types,omitempty"`
-	Predicate string   `json:"predicate,omitempty"`
-
-	//INFO from the public-annotations-api
-	TmeIDs []string `json:"tmeIDs,omitempty"`
-}
-
-type esContentModel struct {
+type IndexModel struct {
 	UID                   *string  `json:"uid"`
 	LastMetadataPublish   *string  `json:"last_metadata_publish"`
 	IndexDate             *string  `json:"index_date"`
@@ -175,212 +99,54 @@ type esContentModel struct {
 	PublishReference           string   `json:"publishReference"`
 }
 
+type EnrichedContent struct {
+	UUID     string       `json:"uuid"`
+	Content  Content `json:"content"`
+	Metadata annotations  `json:"metadata"`
+}
+
+type Content struct {
+	UUID               string       `json:"uuid"`
+	Title              string       `json:"title"`
+	Body               string       `json:"body"`
+	Identifiers        []identifier `json:"identifiers"`
+	PublishedDate      string       `json:"publishedDate"`
+	LastModified       string       `json:"lastModified"`
+	FirstPublishedDate string       `json:"firstPublishedDate"`
+	MarkedDeleted      bool         `json:"marked_deleted"`
+	Byline             string       `json:"byline"`
+	Standfirst         string       `json:"standfirst"`
+	Description        string       `json:"description"`
+	MainImage          string       `json:"mainImage"`
+	PublishReference   string       `json:"publishReference"`
+	Type               string       `json:"type"`
+}
+
+type identifier struct {
+	Authority       string `json:"authority"`
+	IdentifierValue string `json:"identifierValue"`
+}
+
+type annotations []annotation
+
+//Annotation is the main struct used to create and return annotations
+type annotation struct {
+	Thing thing `json:"thing,omitempty"`
+}
+
+//Thing represents a concept being linked to
+type thing struct {
+	ID        string   `json:"id,omitempty"`
+	PrefLabel string   `json:"prefLabel,omitempty"`
+	Types     []string `json:"types,omitempty"`
+	Predicate string   `json:"predicate,omitempty"`
+
+	//INFO from the public-annotations-api
+	TmeIDs []string `json:"tmeIDs,omitempty"`
+}
+
 type contentType struct {
 	Collection string
 	Format     string
 	Category   string
-}
-
-var ContentTypeMap = map[string]contentType{
-	"article": {
-		Collection: "FTCom",
-		Format:     "Articles",
-		Category:   "article",
-	},
-	"blog": {
-		Collection: "FTBlogs",
-		Format:     "Blogs",
-		Category:   "blogPost",
-	},
-	"video": {
-		Collection: "FTVideos",
-		Format:     "Videos",
-		Category:   "video",
-	},
-}
-
-func ConvertToESContentModel(enrichedContent EnrichedContentModel, contentType string, tid string) esContentModel {
-	esModel := esContentModel{}
-
-	esModel.IndexDate = new(string)
-	*esModel.IndexDate = time.Now().UTC().Format("2006-01-02T15:04:05.999Z")
-
-	esModel.ContentType = new(string)
-	*esModel.ContentType = contentType
-	esModel.InternalContentType = new(string)
-	*esModel.InternalContentType = contentType
-	esModel.Category = new(string)
-	*esModel.Category = ContentTypeMap[contentType].Category
-	esModel.Format = new(string)
-	*esModel.Format = ContentTypeMap[contentType].Format
-
-	esModel.UID = &(enrichedContent.Content.UUID)
-
-	esModel.LeadHeadline = new(string)
-	*esModel.LeadHeadline = transformText(enrichedContent.Content.Title,
-		htmlEntityTransformer,
-		tagsRemover,
-		outerSpaceTrimmer,
-		duplicateWhiteSpaceRemover)
-
-	esModel.Byline = new(string)
-	*esModel.Byline = transformText(enrichedContent.Content.Byline,
-		htmlEntityTransformer,
-		tagsRemover,
-		outerSpaceTrimmer,
-		duplicateWhiteSpaceRemover)
-
-	if enrichedContent.Content.PublishedDate != "" {
-		esModel.LastPublish = &(enrichedContent.Content.PublishedDate)
-	}
-	if enrichedContent.Content.FirstPublishedDate != "" {
-		esModel.InitialPublish = &(enrichedContent.Content.FirstPublishedDate)
-	}
-	esModel.Body = new(string)
-
-	*esModel.Body = transformText(enrichedContent.Content.Body,
-		interactiveGraphicsMarkupTagRemover,
-		pullTagTransformer,
-		htmlEntityTransformer,
-		scriptTagRemover,
-		tagsRemover,
-		outerSpaceTrimmer,
-		embed1Replacer,
-		squaredCaptionReplacer,
-		duplicateWhiteSpaceRemover)
-
-	if contentType != BlogType && enrichedContent.Content.MainImage != "" {
-		esModel.ThumbnailURL = new(string)
-
-		var imageID *uuidutils.UUID
-
-		//Generate the actual image UUID from the received image set UUID
-		imageSetUUID, err := uuidutils.NewUUIDFromString(enrichedContent.Content.MainImage)
-		if err == nil {
-			imageID, err = uuidutils.NewUUIDDeriverWith(uuidutils.IMAGE_SET).From(imageSetUUID)
-		}
-
-		if err != nil {
-			logger.WithError(err).Warnf("Couldn't generate image uuid for the image set with uuid %s: image field won't be populated.", enrichedContent.Content.MainImage)
-		}
-
-		*esModel.ThumbnailURL = strings.Replace(imageServiceURL, imagePlaceholder, imageID.String(), -1)
-	}
-
-	esModel.URL = new(string)
-	*esModel.URL = apiURLPrefix + enrichedContent.Content.UUID
-
-	esModel.PublishReference = tid
-
-	primaryThemeCount := 0
-
-	for _, annotation := range enrichedContent.Metadata {
-		fallbackID := annotation.Thing.ID
-		tmeIDs := []string{fallbackID}
-		if len(annotation.Thing.TmeIDs) != 0 {
-			tmeIDs = append(tmeIDs, annotation.Thing.TmeIDs...)
-		} else {
-			logger.Warnf("Indexing content with uuid %s - TME id missing for concept with id %s, using thing id instead", enrichedContent.Content.UUID, fallbackID)
-		}
-		for _, taxonomy := range annotation.Thing.Types {
-			switch taxonomy {
-			case "http://www.ft.com/ontology/organisation/Organisation":
-				esModel.CmrOrgnames = appendIfNotExists(esModel.CmrOrgnames, annotation.Thing.PrefLabel)
-				esModel.CmrOrgnamesIds = appendIfNotExists(esModel.CmrOrgnamesIds, getCmrID(tmeOrganisations, tmeIDs))
-				if strings.HasSuffix(annotation.Thing.Predicate, about) {
-					setPrimaryTheme(&esModel, &primaryThemeCount, annotation.Thing.PrefLabel, getCmrID(tmeOrganisations, tmeIDs))
-				}
-			case "http://www.ft.com/ontology/person/Person":
-				cmrID := getCmrID(tmePeople, tmeIDs)
-				authorCmrID := getCmrID(tmeAuthors, tmeIDs)
-				// if it's only author, skip adding to people
-				if cmrID != fallbackID || authorCmrID == fallbackID {
-					esModel.CmrPeople = appendIfNotExists(esModel.CmrPeople, annotation.Thing.PrefLabel)
-					esModel.CmrPeopleIds = appendIfNotExists(esModel.CmrPeopleIds, cmrID)
-				}
-				if strings.HasSuffix(annotation.Thing.Predicate, hasAuthor) {
-					if authorCmrID != fallbackID {
-						esModel.CmrAuthors = appendIfNotExists(esModel.CmrAuthors, annotation.Thing.PrefLabel)
-						esModel.CmrAuthorsIds = appendIfNotExists(esModel.CmrAuthorsIds, authorCmrID)
-					}
-				}
-				if strings.HasSuffix(annotation.Thing.Predicate, about) {
-					setPrimaryTheme(&esModel, &primaryThemeCount, annotation.Thing.PrefLabel, getCmrID(tmePeople, tmeIDs))
-				}
-			case "http://www.ft.com/ontology/company/Company":
-				esModel.CmrCompanynames = appendIfNotExists(esModel.CmrCompanynames, annotation.Thing.PrefLabel)
-				esModel.CmrCompanynamesIds = appendIfNotExists(esModel.CmrCompanynamesIds, getCmrID(tmeOrganisations, tmeIDs))
-			case "http://www.ft.com/ontology/product/Brand":
-				esModel.CmrBrands = appendIfNotExists(esModel.CmrBrands, annotation.Thing.PrefLabel)
-				esModel.CmrBrandsIds = appendIfNotExists(esModel.CmrBrandsIds, getCmrID(tmeBrands, tmeIDs))
-			case "http://www.ft.com/ontology/Subject":
-				esModel.CmrSubjects = appendIfNotExists(esModel.CmrSubjects, annotation.Thing.PrefLabel)
-				esModel.CmrSubjectsIds = appendIfNotExists(esModel.CmrSubjectsIds, getCmrID(tmeSubjects, tmeIDs))
-			case "http://www.ft.com/ontology/Section":
-				esModel.CmrSections = appendIfNotExists(esModel.CmrSections, annotation.Thing.PrefLabel)
-				esModel.CmrSectionsIds = appendIfNotExists(esModel.CmrSectionsIds, getCmrID(tmeSections, tmeIDs))
-				if strings.HasSuffix(annotation.Thing.Predicate, primaryClassification) {
-					esModel.CmrPrimarysection = new(string)
-					*esModel.CmrPrimarysection = annotation.Thing.PrefLabel
-					esModel.CmrPrimarysectionID = new(string)
-					*esModel.CmrPrimarysectionID = getCmrID(tmeSections, tmeIDs)
-				}
-			case "http://www.ft.com/ontology/Topic":
-				esModel.CmrTopics = appendIfNotExists(esModel.CmrTopics, annotation.Thing.PrefLabel)
-				esModel.CmrTopicsIds = appendIfNotExists(esModel.CmrTopicsIds, getCmrID(tmeTopics, tmeIDs))
-				if strings.HasSuffix(annotation.Thing.Predicate, about) {
-					setPrimaryTheme(&esModel, &primaryThemeCount, annotation.Thing.PrefLabel, getCmrID(tmeTopics, tmeIDs))
-				}
-			case "http://www.ft.com/ontology/Location":
-				esModel.CmrRegions = appendIfNotExists(esModel.CmrRegions, annotation.Thing.PrefLabel)
-				esModel.CmrRegionsIds = appendIfNotExists(esModel.CmrRegionsIds, getCmrID(tmeRegions, tmeIDs))
-				if strings.HasSuffix(annotation.Thing.Predicate, about) {
-					setPrimaryTheme(&esModel, &primaryThemeCount, annotation.Thing.PrefLabel, getCmrID(tmeRegions, tmeIDs))
-				}
-			case "http://www.ft.com/ontology/Genre":
-				esModel.CmrGenres = appendIfNotExists(esModel.CmrGenres, annotation.Thing.PrefLabel)
-				esModel.CmrGenreIds = appendIfNotExists(esModel.CmrGenreIds, getCmrID(tmeGenres, tmeIDs))
-			case "http://www.ft.com/ontology/SpecialReport":
-				esModel.CmrSpecialreports = appendIfNotExists(esModel.CmrSpecialreports, annotation.Thing.PrefLabel)
-				esModel.CmrSpecialreportsIds = appendIfNotExists(esModel.CmrSpecialreportsIds, getCmrID(tmeSpecialReports, tmeIDs))
-				if strings.HasSuffix(annotation.Thing.Predicate, primaryClassification) {
-					esModel.CmrPrimarysection = new(string)
-					*esModel.CmrPrimarysection = annotation.Thing.PrefLabel
-					esModel.CmrPrimarysectionID = new(string)
-					*esModel.CmrPrimarysectionID = getCmrID(tmeSpecialReports, tmeIDs)
-				}
-			}
-		}
-	}
-	return esModel
-}
-func setPrimaryTheme(model *esContentModel, pTCount *int, name string, id string) {
-	if *pTCount == 0 {
-		model.CmrPrimarytheme = new(string)
-		*model.CmrPrimarytheme = name
-		model.CmrPrimarythemeID = new(string)
-		*model.CmrPrimarythemeID = id
-	} else {
-		model.CmrPrimarytheme = nil
-		model.CmrPrimarythemeID = nil
-	}
-	*pTCount++
-}
-
-func getCmrID(taxonomy string, tmeIDs []string) string {
-	encodedTaxonomy := base64.StdEncoding.EncodeToString([]byte(taxonomy))
-	for _, tmeID := range tmeIDs {
-		if strings.HasSuffix(tmeID, encodedTaxonomy) {
-			return tmeID
-		}
-	}
-	return tmeIDs[0]
-}
-func appendIfNotExists(s []string, e string) []string {
-	for _, a := range s {
-		if a == e {
-			return s
-		}
-	}
-	return append(s, e)
 }
