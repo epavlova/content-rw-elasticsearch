@@ -1,11 +1,12 @@
-package main
+package mapper
 
 import (
 	"encoding/json"
-	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestConvertToESContentModel(t *testing.T) {
@@ -14,17 +15,16 @@ func TestConvertToESContentModel(t *testing.T) {
 	tests := []struct {
 		inputFile  string
 		outputFile string
-		tid string
+		tid        string
 	}{
-		{"testdata/exampleEnrichedContentModel.json", "testdata/exampleElasticModel.json", "tid_1"},
-		{"testdata/testInput1.json", "testdata/testOutput1.json", "tid_1"},
-		{"testdata/testInput2.json", "testdata/testOutput2.json", "tid_1"},
-		{"testdata/testInput3.json", "testdata/testOutput3.json", "tid_1"},
-		{"testdata/testInputMultipleAbouts.json", "testdata/testOutputMultipleAbouts.json", "tid_1"},
+		{"../testdata/exampleEnrichedContentModel.json", "../testdata/exampleElasticModel.json", "tid_1"},
+		{"../testdata/testInput1.json", "../testdata/testOutput1.json", "tid_1"},
+		{"../testdata/testInput2.json", "../testdata/testOutput2.json", "tid_1"},
+		{"../testdata/testInput3.json", "../testdata/testOutput3.json", "tid_1"},
+		{"../testdata/testInputMultipleAbouts.json", "../testdata/testOutputMultipleAbouts.json", "tid_1"},
 	}
-
 	for _, test := range tests {
-		ecModel := enrichedContentModel{}
+		ecModel := EnrichedContent{}
 		inputJSON, err := ioutil.ReadFile(test.inputFile)
 		assert.NoError(err, "Unexpected error")
 
@@ -32,7 +32,7 @@ func TestConvertToESContentModel(t *testing.T) {
 		assert.NoError(err, "Unexpected error")
 
 		startTime := time.Now().UnixNano() / 1000000
-		esModel := convertToESContentModel(ecModel, "article", test.tid)
+		esModel := ToIndexModel(ecModel, "article", test.tid)
 
 		endTime := time.Now().UnixNano() / 1000000
 
@@ -47,7 +47,7 @@ func TestConvertToESContentModel(t *testing.T) {
 		expectedJSON, err := ioutil.ReadFile(test.outputFile)
 		assert.NoError(err, "Unexpected error")
 
-		expectedESModel := esContentModel{}
+		expectedESModel := IndexModel{}
 		err = json.Unmarshal([]byte(expectedJSON), &expectedESModel)
 		assert.NoError(err, "Unexpected error")
 

@@ -1,4 +1,4 @@
-package main
+package mapper
 
 import (
 	"html"
@@ -33,9 +33,11 @@ func interactiveGraphicsMarkupTagRemover(input string) string {
 	return interactiveGraphicsRegex.ReplaceAllString(input, "")
 
 }
+
 func pullTagTransformer(input string) string {
 	return pullTagRegex.ReplaceAllString(input, "")
 }
+
 func htmlEntityTransformer(input string) string {
 	text := nbspRegex.ReplaceAllString(input, " ")
 	return html.UnescapeString(text)
@@ -48,6 +50,7 @@ func scriptTagRemover(input string) string {
 func tagsRemover(input string) string {
 	return tagRegex.ReplaceAllString(input, "")
 }
+
 func outerSpaceTrimmer(input string) string {
 	return strings.TrimSpace(input)
 }
@@ -55,10 +58,12 @@ func outerSpaceTrimmer(input string) string {
 func embed1Replacer(input string) string {
 	return embedRegex.ReplaceAllString(input, "")
 }
+
 func squaredCaptionReplacer(input string) string {
 	return squaredCaptionRegex.ReplaceAllString(input, "")
 
 }
+
 func duplicateWhiteSpaceRemover(input string) string {
 	return duplicateWhiteSpaceRegex.ReplaceAllString(input, singleSpace)
 }

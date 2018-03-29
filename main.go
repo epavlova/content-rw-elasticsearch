@@ -1,16 +1,27 @@
 package main
 
 import (
-	"github.com/Financial-Times/go-logger"
-	"github.com/Financial-Times/message-queue-gonsumer/consumer"
-	"github.com/jawher/mow.cli"
+	"net"
+	"net/http"
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
 	"time"
+
+	"github.com/Financial-Times/content-rw-elasticsearch/es"
+	health "github.com/Financial-Times/go-fthealth/v1_1"
+	"github.com/Financial-Times/go-logger"
+	"github.com/Financial-Times/message-queue-gonsumer/consumer"
+	status "github.com/Financial-Times/service-status-go/httphandlers"
+	"github.com/jawher/mow.cli"
 )
 
-const appNameDefaultValue = "content-rw-elasticsearch"
+const (
+	appNameDefaultValue = "content-rw-elasticsearch"
+	healthPath          = "/__health"
+	healthDetailsPath   = "/__health-details"
+)
 
 func init() {
 	logger.InitDefaultLogger(appNameDefaultValue)
@@ -61,13 +72,6 @@ func main() {
 		Desc:   "The name of the elaticsearch index",
 		EnvVar: "ELASTICSEARCH_SAPI_INDEX",
 	})
-
-	accessConfig := esAccessConfig{
-		accessKey:  *accessKey,
-		secretKey:  *secretKey,
-		esEndpoint: *esEndpoint,
-	}
-
 	kafkaProxyAddress := app.String(cli.StringOpt{
 		Name:   "kafka-proxy-address",
 		Value:  "http://localhost:8080",
@@ -110,11 +114,37 @@ func main() {
 	logger.Info("[Startup] Application is starting")
 
 	app.Action = func() {
-		indexer := contentIndexer{}
-		indexer.start(*appSystemCode, *appName, *indexName, *port, accessConfig, queueConfig)
-		waitForSignal()
-		logger.Info("[Shutdown] Application is shutting down")
-		indexer.stop()
+
+		accessConfig := es.AccessConfig{
+			AccessKey: *accessKey,
+			SecretKey: *secretKey,
+			Endpoint:  *esEndpoint,
+		}
+
+		client := &http.Client{
+			Transport: &http.Transport{
+				Proxy: http.ProxyFromEnvironment,
+				DialContext: (&net.Dialer{
+					Timeout:   30 * time.Second,
+					KeepAlive: 30 * time.Second,
+				}).DialContext,
+				MaxIdleConnsPerHost:   20,
+				TLSHandshakeTimeout:   3 * time.Second,
+				ExpectContinueTimeout: 1 * time.Second,
+			},
+		}
+
+		service := es.NewService(*indexName)
+		var wg sync.WaitGroup
+		indexer := NewIndexer(service, client, queueConfig, &wg, es.NewClient)
+
+		indexer.Start(*appSystemCode, *appName, *indexName, *port, accessConfig, client)
+
+		healthService := newHealthService(&queueConfig, service, client)
+		serveAdminEndpoints(healthService, *appSystemCode, *appName, *port)
+
+		indexer.Stop()
+		wg.Wait()
 	}
 	err := app.Run(os.Args)
 	if err != nil {
@@ -122,6 +152,35 @@ func main() {
 		return
 	}
 	logger.Info("[Shutdown] Shutdown complete")
+}
+
+func serveAdminEndpoints(healthService *healthService, appSystemCode string, appName string, port string) {
+	serveMux := http.NewServeMux()
+
+	hc := health.HealthCheck{SystemCode: appSystemCode, Name: appName, Description: "Content Read Writer for Elasticsearch", Checks: healthService.checks}
+	serveMux.HandleFunc(healthPath, health.Handler(hc))
+	serveMux.HandleFunc(healthDetailsPath, healthService.HealthDetails)
+	serveMux.HandleFunc(status.GTGPath, status.NewGoodToGoHandler(healthService.gtgCheck))
+	serveMux.HandleFunc(status.BuildInfoPath, status.BuildInfoHandler)
+
+	server := &http.Server{Addr: ":" + port, Handler: serveMux}
+
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go func() {
+		if err := server.ListenAndServe(); err != nil {
+			logger.WithError(err).Error("HTTP server is closing")
+		}
+		wg.Done()
+	}()
+
+	waitForSignal()
+	logger.Info("[Shutdown] Application is shutting down")
+
+	if err := server.Close(); err != nil {
+		logger.WithError(err).Error("Unable to stop http server")
+	}
+	wg.Wait()
 }
 
 func waitForSignal() {
