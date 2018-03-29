@@ -1,4 +1,4 @@
-package es
+package mapper
 
 type IndexModel struct {
 	UID                   *string  `json:"uid"`

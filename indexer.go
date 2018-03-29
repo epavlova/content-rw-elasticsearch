@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/Financial-Times/content-rw-elasticsearch/es"
+	"github.com/Financial-Times/content-rw-elasticsearch/mapper"
 	"github.com/Financial-Times/go-logger"
 	"github.com/Financial-Times/message-queue-gonsumer/consumer"
 	"github.com/dchest/uniuri"
@@ -31,14 +32,13 @@ var allowedTypes = []string{"Article", "Video", "MediaResource", ""}
 type Indexer struct {
 	esService         es.ServiceI
 	messageConsumer   consumer.MessageConsumer
-	mapper            es.Mapper
 	connectToESClient func(config es.AccessConfig, c *http.Client) (es.ClientI, error)
 	wg                sync.WaitGroup
 	mu                sync.Mutex
 }
 
-func NewIndexer(service es.ServiceI, mapper es.Mapper, client *http.Client, queueConfig consumer.QueueConfig, wg *sync.WaitGroup, connectToClient func(config es.AccessConfig, c *http.Client) (es.ClientI, error)) *Indexer {
-	indexer := &Indexer{esService: service, mapper: mapper, connectToESClient: connectToClient, wg: *wg}
+func NewIndexer(service es.ServiceI, client *http.Client, queueConfig consumer.QueueConfig, wg *sync.WaitGroup, connectToClient func(config es.AccessConfig, c *http.Client) (es.ClientI, error)) *Indexer {
+	indexer := &Indexer{esService: service, connectToESClient: connectToClient, wg: *wg}
 	indexer.messageConsumer = consumer.NewConsumer(queueConfig, indexer.handleMessage, client)
 	return indexer
 }
@@ -97,7 +97,7 @@ func (indexer *Indexer) handleMessage(msg consumer.Message) {
 		return
 	}
 
-	var combinedPostPublicationEvent es.EnrichedContent
+	var combinedPostPublicationEvent mapper.EnrichedContent
 	err := json.Unmarshal([]byte(msg.Body), &combinedPostPublicationEvent)
 	if err != nil {
 		logger.WithTransactionID(tid).WithError(err).Error("Cannot unmarshal message body")
@@ -120,22 +120,22 @@ func (indexer *Indexer) handleMessage(msg consumer.Message) {
 	var contentType string
 	for _, identifier := range combinedPostPublicationEvent.Content.Identifiers {
 		if strings.HasPrefix(identifier.Authority, blogsAuthority) {
-			contentType = es.BlogType
+			contentType = mapper.BlogType
 		} else if strings.HasPrefix(identifier.Authority, articleAuthority) {
-			contentType = es.ArticleType
+			contentType = mapper.ArticleType
 		} else if strings.HasPrefix(identifier.Authority, videoAuthority) {
-			contentType = es.VideoType
+			contentType = mapper.VideoType
 		}
 	}
 
 	if contentType == "" {
 		origin := msg.Headers[originHeader]
 		if strings.Contains(origin, methodeOrigin) {
-			contentType = es.ArticleType
+			contentType = mapper.ArticleType
 		} else if strings.Contains(origin, wordpressOrigin) {
-			contentType = es.BlogType
+			contentType = mapper.BlogType
 		} else if strings.Contains(origin, videoOrigin) {
-			contentType = es.VideoType
+			contentType = mapper.VideoType
 		} else {
 			logger.WithTransactionID(tid).WithUUID(uuid).WithError(err).Error("Failed to index content. Could not infer type of content")
 			return
@@ -143,16 +143,16 @@ func (indexer *Indexer) handleMessage(msg consumer.Message) {
 	}
 
 	if combinedPostPublicationEvent.Content.MarkedDeleted {
-		_, err = indexer.esService.DeleteData(es.ContentTypeMap[contentType].Collection, uuid)
+		_, err = indexer.esService.DeleteData(mapper.ContentTypeMap[contentType].Collection, uuid)
 		if err != nil {
 			logger.WithTransactionID(tid).WithUUID(uuid).WithError(err).Error("Failed to index content")
 			return
 		}
 		logger.WithMonitoringEvent("ContentDeleteElasticsearch", tid, "").WithUUID(uuid).Info("Successfully deleted")
 	} else {
-		payload := indexer.mapper.MapContent(combinedPostPublicationEvent, contentType, tid)
+		payload := mapper.ToIndexModel(combinedPostPublicationEvent, contentType, tid)
 
-		_, err = indexer.esService.WriteData(es.ContentTypeMap[contentType].Collection, uuid, payload)
+		_, err = indexer.esService.WriteData(mapper.ContentTypeMap[contentType].Collection, uuid, payload)
 		if err != nil {
 			logger.WithTransactionID(tid).WithUUID(uuid).WithError(err).Error("Failed to index content")
 			return

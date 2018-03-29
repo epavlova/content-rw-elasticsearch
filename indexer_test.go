@@ -100,7 +100,7 @@ func TestStartClient(t *testing.T) {
 		return &elasticClientMock{}, nil
 	}
 	var wg sync.WaitGroup
-	indexer := NewIndexer(es.NewService("index"), es.NewContentMapper(), http.DefaultClient, queueConfig, &wg, NewClient)
+	indexer := NewIndexer(es.NewService("index"), http.DefaultClient, queueConfig, &wg, NewClient)
 
 	indexer.Start("app", "name", "index", "1984", accessConfig, http.DefaultClient)
 	defer indexer.Stop()
@@ -138,7 +138,7 @@ func TestStartClientError(t *testing.T) {
 	}
 
 	var wg sync.WaitGroup
-	indexer := NewIndexer(es.NewService("index"), es.NewContentMapper(), http.DefaultClient, queueConfig, &wg, NewClient)
+	indexer := NewIndexer(es.NewService("index"), http.DefaultClient, queueConfig, &wg, NewClient)
 
 	indexer.Start("app", "name", "index", "1984", accessConfig, http.DefaultClient)
 	defer indexer.Stop()
@@ -162,7 +162,7 @@ func TestHandleWriteMessage(t *testing.T) {
 
 	serviceMock.On("WriteData", "FTCom", "aae9611e-f66c-4fe4-a6c6-2e2bdea69060", mock.Anything).Return(&elastic.IndexResult{}, nil)
 
-	indexer := Indexer{esService: serviceMock, mapper: es.NewContentMapper()}
+	indexer := Indexer{esService: serviceMock}
 	indexer.handleMessage(consumer.Message{Body: string(inputJSON)})
 
 	serviceMock.AssertExpectations(t)
@@ -179,7 +179,7 @@ func TestHandleWriteMessageBlog(t *testing.T) {
 
 	serviceMock.On("WriteData", "FTBlogs", "aae9611e-f66c-4fe4-a6c6-2e2bdea69060", mock.Anything).Return(&elastic.IndexResult{}, nil)
 
-	indexer := Indexer{esService: serviceMock, mapper: es.NewContentMapper()}
+	indexer := Indexer{esService: serviceMock}
 	indexer.handleMessage(consumer.Message{Body: input})
 
 	serviceMock.AssertExpectations(t)
@@ -196,7 +196,7 @@ func TestHandleWriteMessageBlogWithHeader(t *testing.T) {
 
 	serviceMock.On("WriteData", "FTBlogs", "aae9611e-f66c-4fe4-a6c6-2e2bdea69060", mock.Anything).Return(&elastic.IndexResult{}, nil)
 
-	indexer := Indexer{esService: serviceMock, mapper: es.NewContentMapper()}
+	indexer := Indexer{esService: serviceMock}
 	indexer.handleMessage(consumer.Message{Body: input, Headers: map[string]string{"Origin-System-Id": "wordpress"}})
 
 	serviceMock.AssertExpectations(t)
@@ -213,7 +213,7 @@ func TestHandleWriteMessageVideo(t *testing.T) {
 
 	serviceMock.On("WriteData", "FTVideos", "aae9611e-f66c-4fe4-a6c6-2e2bdea69060", mock.Anything).Return(&elastic.IndexResult{}, nil)
 
-	indexer := Indexer{esService: serviceMock, mapper: es.NewContentMapper()}
+	indexer := Indexer{esService: serviceMock}
 	indexer.handleMessage(consumer.Message{Body: input})
 
 	serviceMock.AssertExpectations(t)
@@ -228,7 +228,7 @@ func TestHandleWriteMessageUnknownType(t *testing.T) {
 
 	serviceMock := &esServiceMock{}
 
-	indexer := Indexer{esService: serviceMock, mapper: es.NewContentMapper()}
+	indexer := Indexer{esService: serviceMock}
 	indexer.handleMessage(consumer.Message{Body: input})
 
 	serviceMock.AssertNotCalled(t, "WriteData", mock.Anything, "aae9611e-f66c-4fe4-a6c6-2e2bdea69060", mock.Anything)
@@ -246,7 +246,7 @@ func TestHandleWriteMessageNoUUIDForMetadataPublish(t *testing.T) {
 
 	serviceMock := &esServiceMock{}
 
-	indexer := Indexer{esService: serviceMock, mapper: es.NewContentMapper()}
+	indexer := Indexer{esService: serviceMock}
 	indexer.handleMessage(consumer.Message{Body: string(inputJSON), Headers: map[string]string{originHeader: methodeOrigin}})
 
 	serviceMock.AssertNotCalled(t, "WriteData", mock.Anything, "b17756fe-0f62-4cf1-9deb-ca7a2ff80172", mock.Anything)
@@ -268,7 +268,7 @@ func TestHandleWriteMessageNoType(t *testing.T) {
 
 	serviceMock := &esServiceMock{}
 
-	indexer := Indexer{esService: serviceMock, mapper: es.NewContentMapper()}
+	indexer := Indexer{esService: serviceMock}
 	indexer.handleMessage(consumer.Message{Body: input})
 
 	serviceMock.AssertNotCalled(t, "WriteData", mock.Anything, mock.Anything, mock.Anything)
@@ -289,7 +289,7 @@ func TestHandleWriteMessageError(t *testing.T) {
 
 	serviceMock.On("WriteData", "FTCom", "aae9611e-f66c-4fe4-a6c6-2e2bdea69060", mock.Anything).Return(&elastic.IndexResult{}, elastic.ErrTimeout)
 
-	indexer := Indexer{esService: serviceMock, mapper: es.NewContentMapper()}
+	indexer := Indexer{esService: serviceMock}
 	indexer.handleMessage(consumer.Message{Body: string(inputJSON)})
 
 	serviceMock.AssertExpectations(t)
@@ -308,7 +308,7 @@ func TestHandleDeleteMessage(t *testing.T) {
 
 	serviceMock.On("DeleteData", "FTCom", "aae9611e-f66c-4fe4-a6c6-2e2bdea69060").Return(&elastic.DeleteResult{}, nil)
 
-	indexer := Indexer{esService: serviceMock, mapper: es.NewContentMapper()}
+	indexer := Indexer{esService: serviceMock}
 	indexer.handleMessage(consumer.Message{Body: input})
 
 	serviceMock.AssertExpectations(t)
@@ -327,7 +327,7 @@ func TestHandleDeleteMessageError(t *testing.T) {
 
 	serviceMock.On("DeleteData", "FTCom", "aae9611e-f66c-4fe4-a6c6-2e2bdea69060").Return(&elastic.DeleteResult{}, elastic.ErrTimeout)
 
-	indexer := Indexer{esService: serviceMock, mapper: es.NewContentMapper()}
+	indexer := Indexer{esService: serviceMock}
 	indexer.handleMessage(consumer.Message{Body: input})
 
 	serviceMock.AssertExpectations(t)
@@ -357,7 +357,7 @@ func TestHandleSyntheticMessage(t *testing.T) {
 	hook := logTest.NewTestHook("content-rw-elasticsearch")
 
 	serviceMock := &esServiceMock{}
-	indexer := &Indexer{esService: serviceMock, mapper: es.NewContentMapper()}
+	indexer := &Indexer{esService: serviceMock}
 	indexer.handleMessage(consumer.Message{Headers: map[string]string{"X-Request-Id": "SYNTHETIC-REQ-MON_WuLjbRpCgh"}})
 
 	require.NotNil(t, hook.LastEntry())

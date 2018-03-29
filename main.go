@@ -135,9 +135,8 @@ func main() {
 		}
 
 		service := es.NewService(*indexName)
-		mapper := es.NewContentMapper()
 		var wg sync.WaitGroup
-		indexer := NewIndexer(service, mapper, client, queueConfig, &wg, es.NewClient)
+		indexer := NewIndexer(service, client, queueConfig, &wg, es.NewClient)
 
 		indexer.Start(*appSystemCode, *appName, *indexName, *port, accessConfig, client)
 

@@ -1,4 +1,4 @@
-package es
+package mapper
 
 import (
 	"encoding/base64"
@@ -51,18 +51,7 @@ var ContentTypeMap = map[string]contentType{
 	},
 }
 
-type Mapper interface {
-	MapContent(enrichedContent EnrichedContent, contentType string, tid string) IndexModel
-}
-
-type ContentMapper struct {
-}
-
-func NewContentMapper() *ContentMapper {
-	return &ContentMapper{}
-}
-
-func (mapper *ContentMapper) MapContent(enrichedContent EnrichedContent, contentType string, tid string) IndexModel {
+func ToIndexModel(enrichedContent EnrichedContent, contentType string, tid string) IndexModel {
 	model := IndexModel{}
 
 	model.IndexDate = new(string)

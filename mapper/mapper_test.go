@@ -1,4 +1,4 @@
-package es
+package mapper
 
 import (
 	"encoding/json"
@@ -23,7 +23,6 @@ func TestConvertToESContentModel(t *testing.T) {
 		{"../testdata/testInput3.json", "../testdata/testOutput3.json", "tid_1"},
 		{"../testdata/testInputMultipleAbouts.json", "../testdata/testOutputMultipleAbouts.json", "tid_1"},
 	}
-	mapper := ContentMapper{}
 	for _, test := range tests {
 		ecModel := EnrichedContent{}
 		inputJSON, err := ioutil.ReadFile(test.inputFile)
@@ -33,7 +32,7 @@ func TestConvertToESContentModel(t *testing.T) {
 		assert.NoError(err, "Unexpected error")
 
 		startTime := time.Now().UnixNano() / 1000000
-		esModel := mapper.MapContent(ecModel, "article", test.tid)
+		esModel := ToIndexModel(ecModel, "article", test.tid)
 
 		endTime := time.Now().UnixNano() / 1000000
 
