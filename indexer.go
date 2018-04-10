@@ -8,10 +8,11 @@ import (
 	"time"
 
 	"github.com/Financial-Times/content-rw-elasticsearch/es"
-	"github.com/Financial-Times/content-rw-elasticsearch/mapper"
 	"github.com/Financial-Times/go-logger"
 	"github.com/Financial-Times/message-queue-gonsumer/consumer"
 	"github.com/dchest/uniuri"
+	"github.com/stretchr/stew/slice"
+	"github.com/Financial-Times/content-rw-elasticsearch/content"
 )
 
 const (
@@ -32,13 +33,14 @@ var allowedTypes = []string{"Article", "Video", "MediaResource", ""}
 type Indexer struct {
 	esService         es.ServiceI
 	messageConsumer   consumer.MessageConsumer
+	ConceptGetter     ConceptGetter
 	connectToESClient func(config es.AccessConfig, c *http.Client) (es.ClientI, error)
 	wg                sync.WaitGroup
 	mu                sync.Mutex
 }
 
-func NewIndexer(service es.ServiceI, client *http.Client, queueConfig consumer.QueueConfig, wg *sync.WaitGroup, connectToClient func(config es.AccessConfig, c *http.Client) (es.ClientI, error)) *Indexer {
-	indexer := &Indexer{esService: service, connectToESClient: connectToClient, wg: *wg}
+func NewIndexer(service es.ServiceI, conceptGetter ConceptGetter, client *http.Client, queueConfig consumer.QueueConfig, wg *sync.WaitGroup, connectToClient func(config es.AccessConfig, c *http.Client) (es.ClientI, error)) *Indexer {
+	indexer := &Indexer{esService: service, ConceptGetter: conceptGetter, connectToESClient: connectToClient, wg: *wg}
 	indexer.messageConsumer = consumer.NewConsumer(queueConfig, indexer.handleMessage, client)
 	return indexer
 }
@@ -97,14 +99,14 @@ func (indexer *Indexer) handleMessage(msg consumer.Message) {
 		return
 	}
 
-	var combinedPostPublicationEvent mapper.EnrichedContent
+	var combinedPostPublicationEvent content.EnrichedContent
 	err := json.Unmarshal([]byte(msg.Body), &combinedPostPublicationEvent)
 	if err != nil {
 		logger.WithTransactionID(tid).WithError(err).Error("Cannot unmarshal message body")
 		return
 	}
 
-	if !contains(allowedTypes, combinedPostPublicationEvent.Content.Type) {
+	if !slice.ContainsString(allowedTypes, combinedPostPublicationEvent.Content.Type) {
 		logger.WithTransactionID(tid).Infof("Ignoring message of type %s", combinedPostPublicationEvent.Content.Type)
 		return
 	}
@@ -120,52 +122,43 @@ func (indexer *Indexer) handleMessage(msg consumer.Message) {
 	var contentType string
 	for _, identifier := range combinedPostPublicationEvent.Content.Identifiers {
 		if strings.HasPrefix(identifier.Authority, blogsAuthority) {
-			contentType = mapper.BlogType
+			contentType = BlogType
 		} else if strings.HasPrefix(identifier.Authority, articleAuthority) {
-			contentType = mapper.ArticleType
+			contentType = ArticleType
 		} else if strings.HasPrefix(identifier.Authority, videoAuthority) {
-			contentType = mapper.VideoType
+			contentType = VideoType
 		}
 	}
 
 	if contentType == "" {
 		origin := msg.Headers[originHeader]
 		if strings.Contains(origin, methodeOrigin) {
-			contentType = mapper.ArticleType
+			contentType = ArticleType
 		} else if strings.Contains(origin, wordpressOrigin) {
-			contentType = mapper.BlogType
+			contentType = BlogType
 		} else if strings.Contains(origin, videoOrigin) {
-			contentType = mapper.VideoType
+			contentType = VideoType
 		} else {
 			logger.WithTransactionID(tid).WithUUID(uuid).WithError(err).Error("Failed to index content. Could not infer type of content")
 			return
 		}
 	}
 
-	if combinedPostPublicationEvent.Content.MarkedDeleted {
-		_, err = indexer.esService.DeleteData(mapper.ContentTypeMap[contentType].Collection, uuid)
+	if combinedPostPublicationEvent.MarkedDeleted == "true" {
+		_, err = indexer.esService.DeleteData(ContentTypeMap[contentType].Collection, uuid)
 		if err != nil {
-			logger.WithTransactionID(tid).WithUUID(uuid).WithError(err).Error("Failed to index content")
+			logger.WithTransactionID(tid).WithUUID(uuid).WithError(err).Error("Failed to delete indexed content")
 			return
 		}
 		logger.WithMonitoringEvent("ContentDeleteElasticsearch", tid, "").WithUUID(uuid).Info("Successfully deleted")
 	} else {
-		payload := mapper.ToIndexModel(combinedPostPublicationEvent, contentType, tid)
+		payload := indexer.ToIndexModel(combinedPostPublicationEvent, contentType, tid)
 
-		_, err = indexer.esService.WriteData(mapper.ContentTypeMap[contentType].Collection, uuid, payload)
+		_, err = indexer.esService.WriteData(ContentTypeMap[contentType].Collection, uuid, payload)
 		if err != nil {
 			logger.WithTransactionID(tid).WithUUID(uuid).WithError(err).Error("Failed to index content")
 			return
 		}
 		logger.WithMonitoringEvent("ContentWriteElasticsearch", tid, "").WithUUID(uuid).Info("Successfully saved")
 	}
-}
-
-func contains(list []string, elem string) bool {
-	for _, a := range list {
-		if a == elem {
-			return true
-		}
-	}
-	return false
 }

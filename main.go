@@ -36,14 +36,12 @@ func main() {
 		Desc:   "System Code of the application",
 		EnvVar: "APP_SYSTEM_CODE",
 	})
-
 	appName := app.String(cli.StringOpt{
 		Name:   "app-name",
 		Value:  appNameDefaultValue,
 		Desc:   "Application name",
 		EnvVar: "APP_NAME",
 	})
-
 	port := app.String(cli.StringOpt{
 		Name:   "port",
 		Value:  "8080",
@@ -102,6 +100,12 @@ func main() {
 		Desc:   "Whether the consumer uses concurrent processing for the messages",
 		EnvVar: "KAFKA_CONCURRENT_PROCESSING",
 	})
+	publicConcordancesEndpoint := app.String(cli.StringOpt{
+		Name:   "public-concordances-endpoint",
+		Value:  "http://public-concordances-api:8080",
+		Desc:   "Endpoint to concord ids with",
+		EnvVar: "PUBLIC_CONCORDANCES_ENDPOINT",
+	})
 
 	queueConfig := consumer.QueueConfig{
 		Addrs:                []string{*kafkaProxyAddress},
@@ -121,7 +125,7 @@ func main() {
 			Endpoint:  *esEndpoint,
 		}
 
-		client := &http.Client{
+		httpClient := &http.Client{
 			Transport: &http.Transport{
 				Proxy: http.ProxyFromEnvironment,
 				DialContext: (&net.Dialer{
@@ -136,11 +140,12 @@ func main() {
 
 		service := es.NewService(*indexName)
 		var wg sync.WaitGroup
-		indexer := NewIndexer(service, client, queueConfig, &wg, es.NewClient)
+		concordanceApiService := NewConcordanceApiService(*publicConcordancesEndpoint, httpClient)
+		indexer := NewIndexer(service, concordanceApiService, httpClient, queueConfig, &wg, es.NewClient)
 
-		indexer.Start(*appSystemCode, *appName, *indexName, *port, accessConfig, client)
+		indexer.Start(*appSystemCode, *appName, *indexName, *port, accessConfig, httpClient)
 
-		healthService := newHealthService(&queueConfig, service, client)
+		healthService := newHealthService(&queueConfig, service, httpClient)
 		serveAdminEndpoints(healthService, *appSystemCode, *appName, *port)
 
 		indexer.Stop()
