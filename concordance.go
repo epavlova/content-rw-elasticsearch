@@ -78,7 +78,7 @@ func (c *ConcordanceApiService) GetConcepts(tid string, ids []string) (map[strin
 		return nil, err
 	}
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("Calling Concordance API returned HTTP status %s", resp.StatusCode)
+		return nil, fmt.Errorf("calling Concordance API returned HTTP status %v", resp.StatusCode)
 	}
 
 	var concordancesResp concordancesResponse

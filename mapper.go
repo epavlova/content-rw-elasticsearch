@@ -12,16 +12,19 @@ import (
 )
 
 const (
-	primaryClassification = "isPrimarilyClassifiedBy"
-	about                 = "about"
-	mentions              = "mentions"
-	hasDisplayTag         = "hasDisplayTag"
-	hasAuthor             = "hasAuthor"
-	hasContributor        = "hasContributor"
-	webURLPrefix          = "https://www.ft.com/content/"
-	apiURLPrefix          = "http://api.ft.com/content/"
-	imageServiceURL       = "https://www.ft.com/__origami/service/image/v2/images/raw/http%3A%2F%2Fprod-upp-image-read.ft.com%2F[image_uuid]?source=search&fit=scale-down&width=167"
-	imagePlaceholder      = "[image_uuid]"
+	isPrimaryClassifiedBy  = "http://www.ft.com/ontology/classification/isPrimarilyClassifiedBy"
+	isClassifiedBy         = "http://www.ft.com/ontology/classification/isClassifiedBy"
+	implicitlyClassifiedBy = "http://www.ft.com/ontology/implicitlyClassifiedBy"
+	about                  = "http://www.ft.com/ontology/annotation/about"
+	implicitlyAbout        = "http://www.ft.com/ontology/implicitlyAbout"
+	mentions               = "http://www.ft.com/ontology/annotation/mentions"
+	hasDisplayTag          = "http://www.ft.com/ontology/hasDisplayTag"
+	hasAuthor              = "http://www.ft.com/ontology/annotation/hasAuthor"
+	hasContributor         = "http://www.ft.com/ontology/hasContributor"
+	webURLPrefix           = "https://www.ft.com/content/"
+	apiURLPrefix           = "http://api.ft.com/content/"
+	imageServiceURL        = "https://www.ft.com/__origami/service/image/v2/images/raw/http%3A%2F%2Fprod-upp-image-read.ft.com%2F[image_uuid]?source=search&fit=scale-down&width=167"
+	imagePlaceholder       = "[image_uuid]"
 
 	tmeOrganisations  = "ON"
 	tmePeople         = "PN"
@@ -32,7 +35,6 @@ const (
 	tmeTopics         = "Topics"
 	tmeRegions        = "GL"
 	tmeGenres         = "Genres"
-	tmeSpecialReports = "SpecialReports"
 
 	ArticleType = "article"
 	VideoType   = "video"
@@ -58,7 +60,6 @@ var ContentTypeMap = map[string]content.ContentType{
 }
 
 func (indexer *Indexer) ToIndexModel(enrichedContent content.EnrichedContent, contentType string, tid string) content.IndexModel {
-
 	model := content.IndexModel{}
 
 	model.IndexDate = new(string)
@@ -147,17 +148,24 @@ func (indexer *Indexer) ToIndexModel(enrichedContent content.EnrichedContent, co
 		anns = append(anns, a.Thing)
 	}
 
+	if len(ids) == 0 {
+		//TODO confirm
+		return model
+	}
+
 	concepts, err := indexer.ConceptGetter.GetConcepts(tid, ids)
 	if err != nil {
 		logger.WithError(err).WithTransactionID(tid).Error(err)
-		return content.IndexModel{}
+		//TODO confirm
+		return model
 	}
 
 	for _, annotation := range anns {
+		//TODO confirm strip
 		fallbackID := strings.TrimPrefix(annotation.ID, thingURIPrefix)
 		concordedModel, found := concepts[annotation.ID]
 		if !found {
-			//TODO no concept means no response for that given id. what to do?
+			//TODO is this possible?
 			continue
 		}
 		tmeIDs := []string{fallbackID}
@@ -166,12 +174,15 @@ func (indexer *Indexer) ToIndexModel(enrichedContent content.EnrichedContent, co
 		} else {
 			logger.Warnf("Indexing content with uuid %s - TME id missing for concept with id %s, using thing id instead", enrichedContent.Content.UUID, fallbackID)
 		}
+
+		handleSectionMapping(annotation, &model, tmeIDs)
+
 		for _, taxonomy := range annotation.Types {
 			switch taxonomy {
 			case "http://www.ft.com/ontology/organisation/Organisation":
 				model.CmrOrgnames = appendIfNotExists(model.CmrOrgnames, annotation.PrefLabel)
 				model.CmrOrgnamesIds = appendIfNotExists(model.CmrOrgnamesIds, getCmrID(tmeOrganisations, tmeIDs))
-				if strings.HasSuffix(annotation.Predicate, about) {
+				if annotation.Predicate == about {
 					setPrimaryTheme(&model, &primaryThemeCount, annotation.PrefLabel, getCmrID(tmeOrganisations, tmeIDs))
 				}
 			case "http://www.ft.com/ontology/person/Person":
@@ -182,13 +193,13 @@ func (indexer *Indexer) ToIndexModel(enrichedContent content.EnrichedContent, co
 					model.CmrPeople = appendIfNotExists(model.CmrPeople, annotation.PrefLabel)
 					model.CmrPeopleIds = appendIfNotExists(model.CmrPeopleIds, cmrID)
 				}
-				if strings.HasSuffix(annotation.Predicate, hasAuthor) || strings.HasSuffix(annotation.Predicate, hasContributor) {
+				if annotation.Predicate == hasAuthor || annotation.Predicate == hasContributor {
 					if authorCmrID != fallbackID {
 						model.CmrAuthors = appendIfNotExists(model.CmrAuthors, annotation.PrefLabel)
 						model.CmrAuthorsIds = appendIfNotExists(model.CmrAuthorsIds, authorCmrID)
 					}
 				}
-				if strings.HasSuffix(annotation.Predicate, about) {
+				if annotation.Predicate == about {
 					setPrimaryTheme(&model, &primaryThemeCount, annotation.PrefLabel, getCmrID(tmePeople, tmeIDs))
 				}
 			case "http://www.ft.com/ontology/company/Company":
@@ -200,43 +211,45 @@ func (indexer *Indexer) ToIndexModel(enrichedContent content.EnrichedContent, co
 			case "http://www.ft.com/ontology/Subject":
 				model.CmrSubjects = appendIfNotExists(model.CmrSubjects, annotation.PrefLabel)
 				model.CmrSubjectsIds = appendIfNotExists(model.CmrSubjectsIds, getCmrID(tmeSubjects, tmeIDs))
-			case "http://www.ft.com/ontology/Section":
-				model.CmrSections = appendIfNotExists(model.CmrSections, annotation.PrefLabel)
-				model.CmrSectionsIds = appendIfNotExists(model.CmrSectionsIds, getCmrID(tmeSections, tmeIDs))
-				if strings.HasSuffix(annotation.Predicate, primaryClassification) {
-					model.CmrPrimarysection = new(string)
-					*model.CmrPrimarysection = annotation.PrefLabel
-					model.CmrPrimarysectionID = new(string)
-					*model.CmrPrimarysectionID = getCmrID(tmeSections, tmeIDs)
-				}
 			case "http://www.ft.com/ontology/Topic":
 				model.CmrTopics = appendIfNotExists(model.CmrTopics, annotation.PrefLabel)
 				model.CmrTopicsIds = appendIfNotExists(model.CmrTopicsIds, getCmrID(tmeTopics, tmeIDs))
-				if strings.HasSuffix(annotation.Predicate, about) {
+				if annotation.Predicate == about {
 					setPrimaryTheme(&model, &primaryThemeCount, annotation.PrefLabel, getCmrID(tmeTopics, tmeIDs))
 				}
 			case "http://www.ft.com/ontology/Location":
 				model.CmrRegions = appendIfNotExists(model.CmrRegions, annotation.PrefLabel)
 				model.CmrRegionsIds = appendIfNotExists(model.CmrRegionsIds, getCmrID(tmeRegions, tmeIDs))
-				if strings.HasSuffix(annotation.Predicate, about) {
+				if annotation.Predicate == about {
 					setPrimaryTheme(&model, &primaryThemeCount, annotation.PrefLabel, getCmrID(tmeRegions, tmeIDs))
 				}
 			case "http://www.ft.com/ontology/Genre":
 				model.CmrGenres = appendIfNotExists(model.CmrGenres, annotation.PrefLabel)
 				model.CmrGenreIds = appendIfNotExists(model.CmrGenreIds, getCmrID(tmeGenres, tmeIDs))
-			case "http://www.ft.com/ontology/SpecialReport":
-				model.CmrSpecialreports = appendIfNotExists(model.CmrSpecialreports, annotation.PrefLabel)
-				model.CmrSpecialreportsIds = appendIfNotExists(model.CmrSpecialreportsIds, getCmrID(tmeSpecialReports, tmeIDs))
-				if strings.HasSuffix(annotation.Predicate, primaryClassification) {
-					model.CmrPrimarysection = new(string)
-					*model.CmrPrimarysection = annotation.PrefLabel
-					model.CmrPrimarysectionID = new(string)
-					*model.CmrPrimarysectionID = getCmrID(tmeSpecialReports, tmeIDs)
-				}
 			}
 		}
 	}
 	return model
+}
+
+func handleSectionMapping(annotation content.Thing, model *content.IndexModel, tmeIDs []string) {
+	// handle sections
+	switch annotation.Predicate {
+	case about:
+		fallthrough
+	case implicitlyAbout:
+		fallthrough
+	case isClassifiedBy:
+		fallthrough
+	case implicitlyClassifiedBy:
+		model.CmrSections = appendIfNotExists(model.CmrSections, annotation.PrefLabel)
+		model.CmrSectionsIds = appendIfNotExists(model.CmrSectionsIds, getCmrID(tmeSections, tmeIDs))
+	case isPrimaryClassifiedBy:
+		model.CmrPrimarysection = new(string)
+		*model.CmrPrimarysection = annotation.PrefLabel
+		model.CmrPrimarysectionID = new(string)
+		*model.CmrPrimarysectionID = getCmrID(tmeSections, tmeIDs)
+	}
 }
 func setPrimaryTheme(model *content.IndexModel, pTCount *int, name string, id string) {
 	if *pTCount == 0 {
