@@ -26,15 +26,15 @@ const (
 	imageServiceURL        = "https://www.ft.com/__origami/service/image/v2/images/raw/http%3A%2F%2Fprod-upp-image-read.ft.com%2F[image_uuid]?source=search&fit=scale-down&width=167"
 	imagePlaceholder       = "[image_uuid]"
 
-	tmeOrganisations  = "ON"
-	tmePeople         = "PN"
-	tmeAuthors        = "Authors"
-	tmeBrands         = "Brands"
-	tmeSubjects       = "Subjects"
-	tmeSections       = "Sections"
-	tmeTopics         = "Topics"
-	tmeRegions        = "GL"
-	tmeGenres         = "Genres"
+	tmeOrganisations = "ON"
+	tmePeople        = "PN"
+	tmeAuthors       = "Authors"
+	tmeBrands        = "Brands"
+	tmeSubjects      = "Subjects"
+	tmeSections      = "Sections"
+	tmeTopics        = "Topics"
+	tmeRegions       = "GL"
+	tmeGenres        = "Genres"
 
 	ArticleType = "article"
 	VideoType   = "video"
@@ -122,9 +122,10 @@ func (indexer *Indexer) ToIndexModel(enrichedContent content.EnrichedContent, co
 
 		if err != nil {
 			logger.WithError(err).Warnf("Couldn't generate image uuid for the image set with uuid %s: image field won't be populated.", enrichedContent.Content.MainImage)
+		} else {
+			*model.ThumbnailURL = strings.Replace(imageServiceURL, imagePlaceholder, imageID.String(), -1)
 		}
 
-		*model.ThumbnailURL = strings.Replace(imageServiceURL, imagePlaceholder, imageID.String(), -1)
 	}
 
 	model.URL = new(string)
@@ -149,14 +150,12 @@ func (indexer *Indexer) ToIndexModel(enrichedContent content.EnrichedContent, co
 	}
 
 	if len(ids) == 0 {
-		//TODO confirm
 		return model
 	}
 
 	concepts, err := indexer.ConceptGetter.GetConcepts(tid, ids)
 	if err != nil {
 		logger.WithError(err).WithTransactionID(tid).Error(err)
-		//TODO confirm
 		return model
 	}
 
@@ -165,7 +164,7 @@ func (indexer *Indexer) ToIndexModel(enrichedContent content.EnrichedContent, co
 		fallbackID := strings.TrimPrefix(annotation.ID, thingURIPrefix)
 		concordedModel, found := concepts[annotation.ID]
 		if !found {
-			//TODO is this possible?
+			logger.WithTransactionID(tid).WithUUID(enrichedContent.UUID).Warnf("No concordance found for %v", fallbackID)
 			continue
 		}
 		tmeIDs := []string{fallbackID}
@@ -181,9 +180,9 @@ func (indexer *Indexer) ToIndexModel(enrichedContent content.EnrichedContent, co
 			switch taxonomy {
 			case "http://www.ft.com/ontology/organisation/Organisation":
 				model.CmrOrgnames = appendIfNotExists(model.CmrOrgnames, annotation.PrefLabel)
-				model.CmrOrgnamesIds = appendIfNotExists(model.CmrOrgnamesIds, getCmrID(tmeOrganisations, tmeIDs))
+				model.CmrOrgnamesIds = prepareElasticField(model.CmrOrgnamesIds, tmeIDs)
 				if annotation.Predicate == about {
-					setPrimaryTheme(&model, &primaryThemeCount, annotation.PrefLabel, getCmrID(tmeOrganisations, tmeIDs))
+					setPrimaryTheme(&model, &primaryThemeCount, annotation.PrefLabel, getCmrIDWithFallback(tmeOrganisations, tmeIDs))
 				}
 			case "http://www.ft.com/ontology/person/Person":
 				cmrID := getCmrID(tmePeople, tmeIDs)
@@ -191,7 +190,7 @@ func (indexer *Indexer) ToIndexModel(enrichedContent content.EnrichedContent, co
 				// if it's only author, skip adding to people
 				if cmrID != fallbackID || authorCmrID == fallbackID {
 					model.CmrPeople = appendIfNotExists(model.CmrPeople, annotation.PrefLabel)
-					model.CmrPeopleIds = appendIfNotExists(model.CmrPeopleIds, cmrID)
+					model.CmrPeopleIds = prepareElasticField(model.CmrPeopleIds, tmeIDs)
 				}
 				if annotation.Predicate == hasAuthor || annotation.Predicate == hasContributor {
 					if authorCmrID != fallbackID {
@@ -200,36 +199,50 @@ func (indexer *Indexer) ToIndexModel(enrichedContent content.EnrichedContent, co
 					}
 				}
 				if annotation.Predicate == about {
-					setPrimaryTheme(&model, &primaryThemeCount, annotation.PrefLabel, getCmrID(tmePeople, tmeIDs))
+					setPrimaryTheme(&model, &primaryThemeCount, annotation.PrefLabel, getCmrIDWithFallback(tmePeople, tmeIDs))
 				}
 			case "http://www.ft.com/ontology/company/Company":
 				model.CmrCompanynames = appendIfNotExists(model.CmrCompanynames, annotation.PrefLabel)
-				model.CmrCompanynamesIds = appendIfNotExists(model.CmrCompanynamesIds, getCmrID(tmeOrganisations, tmeIDs))
+				model.CmrCompanynamesIds = prepareElasticField(model.CmrCompanynamesIds, tmeIDs)
 			case "http://www.ft.com/ontology/product/Brand":
 				model.CmrBrands = appendIfNotExists(model.CmrBrands, annotation.PrefLabel)
-				model.CmrBrandsIds = appendIfNotExists(model.CmrBrandsIds, getCmrID(tmeBrands, tmeIDs))
+				model.CmrBrandsIds = prepareElasticField(model.CmrBrandsIds, tmeIDs)
 			case "http://www.ft.com/ontology/Subject":
 				model.CmrSubjects = appendIfNotExists(model.CmrSubjects, annotation.PrefLabel)
-				model.CmrSubjectsIds = appendIfNotExists(model.CmrSubjectsIds, getCmrID(tmeSubjects, tmeIDs))
+				model.CmrSubjectsIds = prepareElasticField(model.CmrSubjectsIds, tmeIDs)
 			case "http://www.ft.com/ontology/Topic":
 				model.CmrTopics = appendIfNotExists(model.CmrTopics, annotation.PrefLabel)
-				model.CmrTopicsIds = appendIfNotExists(model.CmrTopicsIds, getCmrID(tmeTopics, tmeIDs))
+				model.CmrTopicsIds = prepareElasticField(model.CmrTopicsIds, tmeIDs)
 				if annotation.Predicate == about {
-					setPrimaryTheme(&model, &primaryThemeCount, annotation.PrefLabel, getCmrID(tmeTopics, tmeIDs))
+					setPrimaryTheme(&model, &primaryThemeCount, annotation.PrefLabel, getCmrIDWithFallback(tmeTopics, tmeIDs))
 				}
 			case "http://www.ft.com/ontology/Location":
 				model.CmrRegions = appendIfNotExists(model.CmrRegions, annotation.PrefLabel)
-				model.CmrRegionsIds = appendIfNotExists(model.CmrRegionsIds, getCmrID(tmeRegions, tmeIDs))
+				model.CmrRegionsIds = prepareElasticField(model.CmrRegionsIds, tmeIDs)
 				if annotation.Predicate == about {
-					setPrimaryTheme(&model, &primaryThemeCount, annotation.PrefLabel, getCmrID(tmeRegions, tmeIDs))
+					setPrimaryTheme(&model, &primaryThemeCount, annotation.PrefLabel, getCmrIDWithFallback(tmeRegions, tmeIDs))
 				}
 			case "http://www.ft.com/ontology/Genre":
 				model.CmrGenres = appendIfNotExists(model.CmrGenres, annotation.PrefLabel)
-				model.CmrGenreIds = appendIfNotExists(model.CmrGenreIds, getCmrID(tmeGenres, tmeIDs))
+				model.CmrGenreIds = prepareElasticField(model.CmrGenreIds, tmeIDs)
 			}
 		}
 	}
 	return model
+}
+
+func prepareElasticField(elasticField []string, tmeIDs []string) []string {
+	if len(tmeIDs) == 1 {
+		return appendIfNotExists(elasticField, tmeIDs[0])
+	}
+	for i, id := range tmeIDs {
+		if i == 0 {
+			//skip fallback id
+			continue
+		}
+		elasticField = appendIfNotExists(elasticField, id)
+	}
+	return elasticField
 }
 
 func handleSectionMapping(annotation content.Thing, model *content.IndexModel, tmeIDs []string) {
@@ -243,14 +256,20 @@ func handleSectionMapping(annotation content.Thing, model *content.IndexModel, t
 		fallthrough
 	case implicitlyClassifiedBy:
 		model.CmrSections = appendIfNotExists(model.CmrSections, annotation.PrefLabel)
-		model.CmrSectionsIds = appendIfNotExists(model.CmrSectionsIds, getCmrID(tmeSections, tmeIDs))
+		model.CmrSectionsIds = prepareElasticField(model.CmrSectionsIds, tmeIDs)
 	case isPrimaryClassifiedBy:
 		model.CmrPrimarysection = new(string)
 		*model.CmrPrimarysection = annotation.PrefLabel
 		model.CmrPrimarysectionID = new(string)
-		*model.CmrPrimarysectionID = getCmrID(tmeSections, tmeIDs)
+		if len(tmeIDs) == 1 {
+			*model.CmrPrimarysectionID = tmeIDs[0]
+		} else {
+			*model.CmrPrimarysectionID = tmeIDs[1]
+		}
 	}
 }
+
+//TODO confirm
 func setPrimaryTheme(model *content.IndexModel, pTCount *int, name string, id string) {
 	if *pTCount == 0 {
 		model.CmrPrimarytheme = new(string)
@@ -272,6 +291,19 @@ func getCmrID(taxonomy string, tmeIDs []string) string {
 		}
 	}
 	return tmeIDs[0]
+}
+
+func getCmrIDWithFallback(taxonomy string, tmeIDs []string) string {
+	encodedTaxonomy := base64.StdEncoding.EncodeToString([]byte(taxonomy))
+	if len(tmeIDs) == 1 {
+		return tmeIDs[0]
+	}
+	for _, tmeID := range tmeIDs {
+		if strings.HasSuffix(tmeID, encodedTaxonomy) {
+			return tmeID
+		}
+	}
+	return tmeIDs[1]
 }
 
 func appendIfNotExists(s []string, e string) []string {

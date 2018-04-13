@@ -102,7 +102,7 @@ func transformToConceptModel(concordancesResp concordancesResponse) map[string]*
 			concept.TmeIDs = append(concept.TmeIDs, c.Identifier.IdentifierValue)
 		}
 		if c.Identifier.Authority == uppAuthority {
-			_, found := conceptMap[c.Identifier.IdentifierValue]
+			_, found := conceptMap[thingURIPrefix+c.Identifier.IdentifierValue]
 			if !found {
 				conceptMap[thingURIPrefix+c.Identifier.IdentifierValue] = concept
 			}

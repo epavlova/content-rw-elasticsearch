@@ -1,0 +1,121 @@
+{
+  "uid": "35ebcdf5-54b2-4834-8309-ba5ae3d5dd15",
+  "last_metadata_publish": null,
+  "index_date": null,
+  "mark_deleted": false,
+  "story_id": null,
+  "lead_headline": "China internet group Toutiao hit by content crackdown",
+  "byline": "Jane Awesome",
+  "body": "One of China’s biggest tech start-ups has vowed to hire 4,000 new censors",
+  "url": "https://www.ft.com/content/35ebcdf5-54b2-4834-8309-ba5ae3d5dd15",
+  "initial_publish": null,
+  "last_publish": null,
+  "content_type": "article",
+  "provider_name": null,
+  "length_millis": 0,
+  "short_description": null,
+  "thumbnail_url": "",
+  "section_link": null,
+  "secondary_image_id": null,
+  "contributor_rights": null,
+  "source_code": null,
+  "storymodel_id": null,
+  "model_api_url": "http://api.ft.com/content/35ebcdf5-54b2-4834-8309-ba5ae3d5dd15",
+  "model_master_source": null,
+  "model_master_id": null,
+  "model_excerpt": null,
+  "model_resource_uri": null,
+  "cmr_primarysection": null,
+  "cmr_primarytheme": null,
+  "cmr_mediatype": null,
+  "cmr_metadataupdatetime": null,
+  "cmr_primarysection_id": null,
+  "cmr_primarytheme_id": null,
+  "cmr_mediatype_id": null,
+  "cmr_brands": null,
+  "cmr_brands_ids": null,
+  "cmr_specialreports": null,
+  "cmr_specialreports_ids": null,
+  "cmr_sections": [
+    "Tencent Holdings Ltd",
+    "Chinese business & finance",
+    "Asia-Pacific companies",
+    "Fraizer Campbell",
+    "'Îlayh"
+  ],
+  "cmr_sections_ids": [
+    "ZjhiNGI0YjUtOTFjNC00NzY3LTk0NGQtMDEyNGI0ZTdiZTdj-T04=",
+    "NjM3ZTU3MDUtMmY1ZS00ZGExLThkNjYtYWY4YWUzY2U1YWVm-VG9waWNz",
+    "Njc=-U2VjdGlvbnM=",
+    "TnN0ZWluX1BOXzIwMDkwNjIyXzE3Mzc=-UE4=",
+    "TnN0ZWluX0dMX0FGVE1fR0xfMTY0OTA2-R0w="
+  ],
+  "cmr_subjects": null,
+  "cmr_subjects_ids": null,
+  "cmr_topics": [
+    "Chinese business & finance",
+    "Asia-Pacific companies"
+  ],
+  "cmr_topics_ids": [
+    "NjM3ZTU3MDUtMmY1ZS00ZGExLThkNjYtYWY4YWUzY2U1YWVm-VG9waWNz",
+    "Njc=-U2VjdGlvbnM="
+  ],
+  "cmr_people": [
+    "Michael Seymour",
+    "Fraizer Campbell"
+  ],
+  "cmr_people_ids": [
+    "TnN0ZWluX1BOX1BvbGl0aWNpYW5zXzIwMDlfMTBfMl82Mzky-UE4=",
+    "TnN0ZWluX1BOXzIwMDkwNjIyXzE3Mzc=-UE4="
+  ],
+  "cmr_regions": null,
+  "cmr_regions_ids": null,
+  "cmr_icb": null,
+  "cmr_icb_ids": null,
+  "cmr_iptc": null,
+  "cmr_iptc_ids": null,
+  "cmr_authors_ids": null,
+  "cmr_authors": null,
+  "cmr_companynames": [
+    "Alibaba",
+    "Tencent Holdings Ltd"
+  ],
+  "cmr_companynames_ids": [
+    "NmY2M2U1ZDAtOTQxYS00YTYyLTkwNDgtMDk2ZWY1NjdjNmNi-T04=",
+    "TnN0ZWluX09OX0FGVE1fT05fMjI5Mzg=-T04=",
+    "ZjhiNGI0YjUtOTFjNC00NzY3LTk0NGQtMDEyNGI0ZTdiZTdj-T04="
+  ],
+  "cmr_orgnames": [
+    "Alibaba",
+    "Tencent Holdings Ltd"
+  ],
+  "cmr_orgnames_ids": [
+    "NmY2M2U1ZDAtOTQxYS00YTYyLTkwNDgtMDk2ZWY1NjdjNmNi-T04=",
+    "TnN0ZWluX09OX0FGVE1fT05fMjI5Mzg=-T04=",
+    "ZjhiNGI0YjUtOTFjNC00NzY3LTk0NGQtMDEyNGI0ZTdiZTdj-T04="
+  ],
+  "bestStory": false,
+  "internalContentType": "article",
+  "category": "article",
+  "lookupFailure": false,
+  "format": "Articles",
+  "cmr_genre": null,
+  "cmr_genre_id": null,
+  "region": null,
+  "topics": null,
+  "displayCodes": null,
+  "displayCodeNames": null,
+  "naicsNames": null,
+  "editorsTags": null,
+  "countryCodes": null,
+  "countryNames": null,
+  "subjects": null,
+  "companyNamesAuto": null,
+  "organisationNamesAuto": null,
+  "companyNamesEditorial": null,
+  "companyTickerCodeAuto": null,
+  "companyTickerCodeEditorial": null,
+  "articleTypes": null,
+  "articleBrands": null,
+  "publishReference": "tid_riega1hr5w"
+}

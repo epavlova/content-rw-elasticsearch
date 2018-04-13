@@ -22,11 +22,10 @@ func TestConvertToESContentModel(t *testing.T) {
 		tid                    string
 	}{
 		{"testdata/exampleEnrichedContentModel.json", "testdata/exampleConcordanceResponse.json", "testdata/exampleElasticModel.json", "tid_1"},
-		//TODO fix these
-		//{"testdata/testInput1.json", "", "testdata/testOutput1.json", "tid_2"},
+		{"testdata/anotherExampleEnrichedContentModel.json", "testdata/anotherExampleConcordanceResponse.json", "testdata/anotherExampleElasticModel.json", "tid_2"},
 		//{"testdata/testInput2.json", "", "testdata/testOutput2.json", "tid_3"},
 		//{"testdata/testInput3.json", "", "testdata/testOutput3.json", "tid_4"},
-		//{"testdata/testInputMultipleAbouts.json", "", "testdata/testOutputMultipleAbouts.json", "tid_5"},
+		//{"testdata/anotherExampleConcordanceResponse.json", "", "testdata/testOutputMultipleAbouts.json", "tid_5"},
 	}
 	concordanceApiMock := new(concordanceApiMock)
 	indexer := &Indexer{ConceptGetter: concordanceApiMock}

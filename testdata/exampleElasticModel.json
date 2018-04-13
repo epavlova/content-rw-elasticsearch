@@ -32,16 +32,46 @@
   "cmr_primarysection_id": "OTg=-U2VjdGlvbnM=",
   "cmr_primarytheme_id": "OWIwMDQ1MTEtOWIxYi00MmEzLWFjOGQtY2VhMDM0MjJlZjI3-VG9waWNz",
   "cmr_mediatype_id": null,
-  "cmr_brands": ["Markets Insight","Financial Times"],
-  "cmr_brands_ids": ["QnJhbmRzXzExNg==-QnJhbmRz", "dbb0bdae-1f0c-11e4-b0cb-b2227cce2b54"],
+  "cmr_brands": [
+    "Markets Insight",
+    "Financial Times"
+  ],
+  "cmr_brands_ids": [
+    "QnJhbmRzXzExNg==-QnJhbmRz",
+    "dbb0bdae-1f0c-11e4-b0cb-b2227cce2b54"
+  ],
   "cmr_specialreports": null,
   "cmr_specialreports_ids": null,
-  "cmr_sections": ["Investor activism","Markets Insight","Opinion","Markets","Financial Times","Companies"],
-  "cmr_sections_ids": ["aeada5a9-39cb-4bb6-b795-5baba8acf3fb","f021ef0a-e3a5-3530-9394-21a1eaf9f3f6","6da31a37-691f-4908-896f-2829ebe2309e","NzE=-U2VjdGlvbnM=","dbb0bdae-1f0c-11e4-b0cb-b2227cce2b54","Mjk=-U2VjdGlvbnM="],
+  "cmr_sections": [
+    "Investor activism",
+    "Markets Insight",
+    "Opinion",
+    "Markets",
+    "Financial Times",
+    "Companies"
+  ],
+  "cmr_sections_ids": [
+    "OWIwMDQ1MTEtOWIxYi00MmEzLWFjOGQtY2VhMDM0MjJlZjI3-VG9waWNz",
+    "QnJhbmRzXzExNg==-QnJhbmRz",
+    "OA==-R2VucmVz",
+    "NzE=-U2VjdGlvbnM=",
+    "dbb0bdae-1f0c-11e4-b0cb-b2227cce2b54",
+    "Mjk=-U2VjdGlvbnM="
+  ],
   "cmr_subjects": null,
   "cmr_subjects_ids": null,
-  "cmr_topics": ["Equities", "Investor activism", "Markets", "Companies"],
-  "cmr_topics_ids": ["b7ea3c33-ea8c-432e-bb7e-e3bbc8fdc2bb", "OWIwMDQ1MTEtOWIxYi00MmEzLWFjOGQtY2VhMDM0MjJlZjI3-VG9waWNz", "c91b1fad-1097-468b-be82-9a8ff717d54c", "c47f4dfc-6879-4e95-accf-ca8cbe6a1f69"],
+  "cmr_topics": [
+    "Equities",
+    "Investor activism",
+    "Markets",
+    "Companies"
+  ],
+  "cmr_topics_ids": [
+    "OTg=-U2VjdGlvbnM=",
+    "OWIwMDQ1MTEtOWIxYi00MmEzLWFjOGQtY2VhMDM0MjJlZjI3-VG9waWNz",
+    "NzE=-U2VjdGlvbnM=",
+    "Mjk=-U2VjdGlvbnM="
+  ],
   "cmr_people": null,
   "cmr_people_ids": null,
   "cmr_regions": null,
@@ -65,8 +95,12 @@
   "category": "article",
   "lookupFailure": false,
   "format": "Articles",
-  "cmr_genre": ["Opinion"],
-  "cmr_genre_id": ["OA==-R2VucmVz"],
+  "cmr_genre": [
+    "Opinion"
+  ],
+  "cmr_genre_id": [
+    "OA==-R2VucmVz"
+  ],
   "region": null,
   "topics": null,
   "displayCodes": null,
