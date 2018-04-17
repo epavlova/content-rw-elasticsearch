@@ -48,7 +48,8 @@
     "Opinion",
     "Markets",
     "Financial Times",
-    "Companies"
+    "Companies",
+    "UK"
   ],
   "cmr_sections_ids": [
     "OWIwMDQ1MTEtOWIxYi00MmEzLWFjOGQtY2VhMDM0MjJlZjI3-VG9waWNz",
@@ -56,7 +57,9 @@
     "OA==-R2VucmVz",
     "NzE=-U2VjdGlvbnM=",
     "dbb0bdae-1f0c-11e4-b0cb-b2227cce2b54",
-    "Mjk=-U2VjdGlvbnM="
+    "Mjk=-U2VjdGlvbnM=",
+    "TnN0ZWluX0dMX0dC-R0w=",
+    "Ng==-U2VjdGlvbnM="
   ],
   "cmr_subjects": null,
   "cmr_subjects_ids": null,
@@ -74,8 +77,13 @@
   ],
   "cmr_people": null,
   "cmr_people_ids": null,
-  "cmr_regions": null,
-  "cmr_regions_ids": null,
+  "cmr_regions": [
+    "UK"
+  ],
+  "cmr_regions_ids": [
+    "TnN0ZWluX0dMX0dC-R0w=",
+    "Ng==-U2VjdGlvbnM="
+  ],
   "cmr_icb": null,
   "cmr_icb_ids": null,
   "cmr_iptc": null,

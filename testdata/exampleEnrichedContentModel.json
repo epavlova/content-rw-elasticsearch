@@ -189,6 +189,19 @@
         "predicate": "http://www.ft.com/ontology/implicitlyAbout",
         "apiUrl": "http://api.ft.com/things/c47f4dfc-6879-4e95-accf-ca8cbe6a1f69"
       }
+    },
+    {
+      "thing": {
+        "predicate": "http://www.ft.com/ontology/annotation/majorMentions",
+        "id": "http://api.ft.com/things/6b683eff-56c3-43d9-acfc-7511d974fc01",
+        "apiUrl": "http://api.ft.com/things/6b683eff-56c3-43d9-acfc-7511d974fc01",
+        "types": [
+          "http://www.ft.com/ontology/core/Thing",
+          "http://www.ft.com/ontology/concept/Concept",
+          "http://www.ft.com/ontology/Location"
+        ],
+        "prefLabel": "UK"
+      }
     }
   ],
   "contentUri": "http://methode-article-mapper.svc.ft.com/content/aae9611e-f66c-4fe4-a6c6-2e2bdea69060",

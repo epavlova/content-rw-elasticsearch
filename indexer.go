@@ -111,11 +111,6 @@ func (indexer *Indexer) handleMessage(msg consumer.Message) {
 		return
 	}
 
-	if combinedPostPublicationEvent.Content.UUID == "" {
-		logger.WithTransactionID(tid).WithUUID(combinedPostPublicationEvent.UUID).Info("Ignoring message with no content for UUID")
-		return
-	}
-
 	uuid := combinedPostPublicationEvent.UUID
 	logger.WithTransactionID(tid).WithUUID(uuid).Info("Processing combined post publication event")
 
@@ -151,14 +146,21 @@ func (indexer *Indexer) handleMessage(msg consumer.Message) {
 			return
 		}
 		logger.WithMonitoringEvent("ContentDeleteElasticsearch", tid, "").WithUUID(uuid).Info("Successfully deleted")
-	} else {
-		payload := indexer.ToIndexModel(combinedPostPublicationEvent, contentType, tid)
-
-		_, err = indexer.esService.WriteData(ContentTypeMap[contentType].Collection, uuid, payload)
-		if err != nil {
-			logger.WithTransactionID(tid).WithUUID(uuid).WithError(err).Error("Failed to index content")
-			return
-		}
-		logger.WithMonitoringEvent("ContentWriteElasticsearch", tid, "").WithUUID(uuid).Info("Successfully saved")
+		return
 	}
+
+	if combinedPostPublicationEvent.Content.UUID == "" {
+		logger.WithTransactionID(tid).WithUUID(combinedPostPublicationEvent.UUID).Info("Ignoring message with no content")
+		return
+	}
+
+	payload := indexer.ToIndexModel(combinedPostPublicationEvent, contentType, tid)
+
+	_, err = indexer.esService.WriteData(ContentTypeMap[contentType].Collection, uuid, payload)
+	if err != nil {
+		logger.WithTransactionID(tid).WithUUID(uuid).WithError(err).Error("Failed to index content")
+		return
+	}
+	logger.WithMonitoringEvent("ContentWriteElasticsearch", tid, "").WithUUID(uuid).Info("Successfully saved")
+
 }

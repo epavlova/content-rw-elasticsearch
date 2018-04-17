@@ -158,10 +158,23 @@
         "types": [
           "http://www.ft.com/ontology/core/Thing",
           "http://www.ft.com/ontology/concept/Concept",
-          "http://www.ft.com/ontology/person/Location"
+          "http://www.ft.com/ontology/Location"
         ],
         "predicate": "http://www.ft.com/ontology/annotation/about",
         "apiUrl": "http://api.ft.com/things/bc21d781-3842-3f15-8072-50e018aa5d30"
+      }
+    },
+    {
+      "thing": {
+        "id": "http://api.ft.com/things/1b2eb180-92a2-4ac0-9022-66595e17cd4a",
+        "prefLabel": "NO TME ID",
+        "types": [
+          "http://www.ft.com/ontology/core/Thing",
+          "http://www.ft.com/ontology/concept/Concept",
+          "http://www.ft.com/ontology/Topic"
+        ],
+        "predicate": "http://www.ft.com/ontology/classification/isPrimarilyClassifiedBy",
+        "apiUrl": "http://api.ft.com/things/b7ea3c33-ea8c-432e-bb7e-e3bbc8fdc2bb"
       }
     },
     {
@@ -171,7 +184,7 @@
         "types": [
           "http://www.ft.com/ontology/core/Thing",
           "http://www.ft.com/ontology/concept/Concept",
-          "http://www.ft.com/ontology/person/Location"
+          "http://www.ft.com/ontology/Location"
         ],
         "predicate": "http://www.ft.com/ontology/annotation/majorMentions",
         "apiUrl": "http://api.ft.com/things/bfc20bcd-37d0-32dc-ba93-03ef5ee8c403"

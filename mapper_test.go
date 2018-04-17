@@ -16,28 +16,29 @@ func TestConvertToESContentModel(t *testing.T) {
 	assert := assert.New(t)
 
 	tests := []struct {
-		inputFileEnrichedModel string
+		inputFileEnrichedModel    string
 		inputFileConcordanceModel string
-		outputFile             string
-		tid                    string
+		outputFile                string
+		tid                       string
 	}{
 		{"testdata/exampleEnrichedContentModel.json", "testdata/exampleConcordanceResponse.json", "testdata/exampleElasticModel.json", "tid_1"},
 		{"testdata/anotherExampleEnrichedContentModel.json", "testdata/anotherExampleConcordanceResponse.json", "testdata/anotherExampleElasticModel.json", "tid_2"},
-		//{"testdata/testInput2.json", "", "testdata/testOutput2.json", "tid_3"},
-		//{"testdata/testInput3.json", "", "testdata/testOutput3.json", "tid_4"},
-		//{"testdata/anotherExampleConcordanceResponse.json", "", "testdata/testOutputMultipleAbouts.json", "tid_5"},
+		{"testdata/testInput2.json", "", "testdata/testOutput2.json", "tid_3"},
 	}
 	concordanceApiMock := new(concordanceApiMock)
 	indexer := &Indexer{ConceptGetter: concordanceApiMock}
 
 	for _, test := range tests {
-		inputConcordanceJSON, err := ioutil.ReadFile(test.inputFileConcordanceModel)
-		require.NoError(t, err, "Unexpected error")
-		var concResp concordancesResponse
-		err = json.Unmarshal([]byte(inputConcordanceJSON), &concResp)
-		require.NoError(t, err, "Unexpected error")
+		if test.inputFileConcordanceModel != "" {
+			inputConcordanceJSON, err := ioutil.ReadFile(test.inputFileConcordanceModel)
+			require.NoError(t, err, "Unexpected error")
 
-		concordanceApiMock.On("GetConcepts", test.tid, mock.AnythingOfType("[]string")).Return(transformToConceptModel(concResp), nil)
+			var concResp concordancesResponse
+			err = json.Unmarshal([]byte(inputConcordanceJSON), &concResp)
+			require.NoError(t, err, "Unexpected error")
+
+			concordanceApiMock.On("GetConcepts", test.tid, mock.AnythingOfType("[]string")).Return(transformToConceptModel(concResp), nil)
+		}
 		ecModel := content.EnrichedContent{}
 		inputJSON, err := ioutil.ReadFile(test.inputFileEnrichedModel)
 		require.NoError(t, err, "Unexpected error")
@@ -67,7 +68,7 @@ func TestConvertToESContentModel(t *testing.T) {
 
 		//the publishRef field is actually overwritten with the x-request-header received from the message, instead of the one read from doc-store
 		expectedESModel.PublishReference = test.tid
-		assert.Equal(expectedESModel, esModel)
+		assert.Equal(expectedESModel, esModel, "ES model not matching with the one from %v", test.outputFile)
 
 		mock.AssertExpectationsForObjects(t, concordanceApiMock)
 	}
@@ -75,6 +76,7 @@ func TestConvertToESContentModel(t *testing.T) {
 
 func TestCmrID(t *testing.T) {
 	assert := assert.New(t)
-	assert.Equal("NzE0ZThkZGItNDAyMC00MDRjLTlkNzMtY2I5MzRmZDVhOWM2-T04=",
-		getCmrID("ON", []string{"YzcxMTcyNGYtMzQyZC00ZmU2LTk0ZGYtYWI2Y2YxMDMwMTQy-QXV0aG9ycw==", "NzE0ZThkZGItNDAyMC00MDRjLTlkNzMtY2I5MzRmZDVhOWM2-T04="}), "Wrong CMR ID")
+	cmrID, found := getCmrID("ON", []string{"YzcxMTcyNGYtMzQyZC00ZmU2LTk0ZGYtYWI2Y2YxMDMwMTQy-QXV0aG9ycw==", "NzE0ZThkZGItNDAyMC00MDRjLTlkNzMtY2I5MzRmZDVhOWM2-T04="})
+	assert.True(found, "CMR ID is not composed from the expected taxonomy")
+	assert.Equal("NzE0ZThkZGItNDAyMC00MDRjLTlkNzMtY2I5MzRmZDVhOWM2-T04=", cmrID, "Wrong CMR ID")
 }

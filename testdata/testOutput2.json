@@ -20,38 +20,30 @@
   "contributor_rights": null,
   "source_code": null,
   "storymodel_id": null,
-  "model_api_url": null,
+  "model_api_url": "http://api.ft.com/content/62c53650-68d6-4ed9-9932-e76c53bebd35",
   "model_master_source": null,
   "model_master_id": null,
   "model_excerpt": null,
   "model_resource_uri": null,
-  "cmr_primarysection": "Special",
-  "cmr_primarytheme": "Martin Testerman",
+  "cmr_primarysection": null,
+  "cmr_primarytheme": null,
   "cmr_mediatype": null,
   "cmr_metadataupdatetime": null,
-  "cmr_primarysection_id": "M2FmYTU2ZmMtMTAwNC00ZjM5LWI5ZTQtNzJiZWQ1ZjFmYjg4-U3BlY2lhbFJlcG9ydHM=",
-  "cmr_primarytheme_id": "NGI4YWNhOTktOTc0Ny00MTdiLTkzNzMtZTUwMDM4MGIyODdh-UE4=",
+  "cmr_primarysection_id": null,
+  "cmr_primarytheme_id": null,
   "cmr_mediatype_id": null,
   "cmr_brands": null,
   "cmr_brands_ids": null,
-  "cmr_specialreports": [
-    "Special"
-  ],
-  "cmr_specialreports_ids": [
-    "M2FmYTU2ZmMtMTAwNC00ZjM5LWI5ZTQtNzJiZWQ1ZjFmYjg4-U3BlY2lhbFJlcG9ydHM="
-  ],
+  "cmr_specialreports": null,
+  "cmr_specialreports_ids": null,
   "cmr_sections": null,
   "cmr_sections_ids": null,
   "cmr_subjects": null,
   "cmr_subjects_ids": null,
   "cmr_topics": null,
   "cmr_topics_ids": null,
-  "cmr_people": [
-    "Martin Testerman"
-  ],
-  "cmr_people_ids": [
-    "NGI4YWNhOTktOTc0Ny00MTdiLTkzNzMtZTUwMDM4MGIyODdh-UE4="
-  ],
+  "cmr_people": null,
+  "cmr_people_ids": null,
   "cmr_regions": null,
   "cmr_regions_ids": null,
   "cmr_icb": null,
