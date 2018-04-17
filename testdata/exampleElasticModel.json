@@ -37,6 +37,7 @@
     "Financial Times"
   ],
   "cmr_brands_ids": [
+    "f021ef0a-e3a5-3530-9394-21a1eaf9f3f6",
     "QnJhbmRzXzExNg==-QnJhbmRz",
     "dbb0bdae-1f0c-11e4-b0cb-b2227cce2b54"
   ],
@@ -52,12 +53,18 @@
     "UK"
   ],
   "cmr_sections_ids": [
+    "aeada5a9-39cb-4bb6-b795-5baba8acf3fb",
     "OWIwMDQ1MTEtOWIxYi00MmEzLWFjOGQtY2VhMDM0MjJlZjI3-VG9waWNz",
+    "f021ef0a-e3a5-3530-9394-21a1eaf9f3f6",
     "QnJhbmRzXzExNg==-QnJhbmRz",
+    "6da31a37-691f-4908-896f-2829ebe2309e",
     "OA==-R2VucmVz",
+    "c91b1fad-1097-468b-be82-9a8ff717d54c",
     "NzE=-U2VjdGlvbnM=",
     "dbb0bdae-1f0c-11e4-b0cb-b2227cce2b54",
+    "c47f4dfc-6879-4e95-accf-ca8cbe6a1f69",
     "Mjk=-U2VjdGlvbnM=",
+    "6b683eff-56c3-43d9-acfc-7511d974fc01",
     "TnN0ZWluX0dMX0dC-R0w=",
     "Ng==-U2VjdGlvbnM="
   ],
@@ -70,9 +77,13 @@
     "Companies"
   ],
   "cmr_topics_ids": [
+    "b7ea3c33-ea8c-432e-bb7e-e3bbc8fdc2bb",
     "OTg=-U2VjdGlvbnM=",
+    "aeada5a9-39cb-4bb6-b795-5baba8acf3fb",
     "OWIwMDQ1MTEtOWIxYi00MmEzLWFjOGQtY2VhMDM0MjJlZjI3-VG9waWNz",
+    "c91b1fad-1097-468b-be82-9a8ff717d54c",
     "NzE=-U2VjdGlvbnM=",
+    "c47f4dfc-6879-4e95-accf-ca8cbe6a1f69",
     "Mjk=-U2VjdGlvbnM="
   ],
   "cmr_people": null,
@@ -81,6 +92,7 @@
     "UK"
   ],
   "cmr_regions_ids": [
+    "6b683eff-56c3-43d9-acfc-7511d974fc01",
     "TnN0ZWluX0dMX0dC-R0w=",
     "Ng==-U2VjdGlvbnM="
   ],
@@ -89,7 +101,8 @@
   "cmr_iptc": null,
   "cmr_iptc_ids": null,
   "cmr_authors_ids": [
-    "Q0ItMDM3NTcxMQ==-QXV0aG9ycw=="
+    "Q0ItMDM3NTcxMQ==-QXV0aG9ycw==",
+    "eadc5df0-9838-3971-920e-47beed423b4c"
   ],
   "cmr_authors": [
     "Huw van Steenis"
@@ -107,6 +120,7 @@
     "Opinion"
   ],
   "cmr_genre_id": [
+    "6da31a37-691f-4908-896f-2829ebe2309e",
     "OA==-R2VucmVz"
   ],
   "region": null,

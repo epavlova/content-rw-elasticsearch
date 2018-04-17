@@ -46,13 +46,20 @@
     "Aberdeen"
   ],
   "cmr_sections_ids": [
+    "00a8a5d0-2a3e-3fe3-9bbe-86f770b79941",
     "NmY2M2U1ZDAtOTQxYS00YTYyLTkwNDgtMDk2ZWY1NjdjNmNi-T04=",
     "TnN0ZWluX09OX0FGVE1fT05fMjI5Mzg=-T04=",
+    "5e9951f6-76ad-3f09-98e6-a2457ce55548",
     "ZjhiNGI0YjUtOTFjNC00NzY3LTk0NGQtMDEyNGI0ZTdiZTdj-T04=",
+    "dd3cc5a2-d14b-4b78-811c-89c387497476",
     "NjM3ZTU3MDUtMmY1ZS00ZGExLThkNjYtYWY4YWUzY2U1YWVm-VG9waWNz",
+    "97133bf5-c958-4c69-9e0e-44874679cedc",
     "Njc=-U2VjdGlvbnM=",
+    "0004fdce-0082-3276-867e-b7a8a8b1de86",
     "TnN0ZWluX1BOXzIwMDkwNjIyXzE3Mzc=-UE4=",
+    "bc21d781-3842-3f15-8072-50e018aa5d30",
     "TnN0ZWluX0dMX0FGVE1fR0xfMTY0OTA2-R0w=",
+    "bfc20bcd-37d0-32dc-ba93-03ef5ee8c403",
     "TnN0ZWluX0dMX1N0YW5kYWxvbmVfMDAwMjIy-R0w="
   ],
   "cmr_subjects": null,
@@ -62,7 +69,9 @@
     "Asia-Pacific companies"
   ],
   "cmr_topics_ids": [
+    "dd3cc5a2-d14b-4b78-811c-89c387497476",
     "NjM3ZTU3MDUtMmY1ZS00ZGExLThkNjYtYWY4YWUzY2U1YWVm-VG9waWNz",
+    "97133bf5-c958-4c69-9e0e-44874679cedc",
     "Njc=-U2VjdGlvbnM="
   ],
   "cmr_people": [
@@ -70,7 +79,9 @@
     "Fraizer Campbell"
   ],
   "cmr_people_ids": [
+    "00106288-5702-3229-9826-477973753ef8",
     "TnN0ZWluX1BOX1BvbGl0aWNpYW5zXzIwMDlfMTBfMl82Mzky-UE4=",
+    "0004fdce-0082-3276-867e-b7a8a8b1de86",
     "TnN0ZWluX1BOXzIwMDkwNjIyXzE3Mzc=-UE4="
   ],
   "cmr_regions": [
@@ -78,7 +89,9 @@
     "Aberdeen"
   ],
   "cmr_regions_ids": [
+    "bc21d781-3842-3f15-8072-50e018aa5d30",
     "TnN0ZWluX0dMX0FGVE1fR0xfMTY0OTA2-R0w=",
+    "bfc20bcd-37d0-32dc-ba93-03ef5ee8c403",
     "TnN0ZWluX0dMX1N0YW5kYWxvbmVfMDAwMjIy-R0w="
   ],
   "cmr_icb": null,
@@ -92,8 +105,10 @@
     "Tencent Holdings Ltd"
   ],
   "cmr_companynames_ids": [
+    "00a8a5d0-2a3e-3fe3-9bbe-86f770b79941",
     "NmY2M2U1ZDAtOTQxYS00YTYyLTkwNDgtMDk2ZWY1NjdjNmNi-T04=",
     "TnN0ZWluX09OX0FGVE1fT05fMjI5Mzg=-T04=",
+    "5e9951f6-76ad-3f09-98e6-a2457ce55548",
     "ZjhiNGI0YjUtOTFjNC00NzY3LTk0NGQtMDEyNGI0ZTdiZTdj-T04="
   ],
   "cmr_orgnames": [
@@ -101,8 +116,10 @@
     "Tencent Holdings Ltd"
   ],
   "cmr_orgnames_ids": [
+    "00a8a5d0-2a3e-3fe3-9bbe-86f770b79941",
     "NmY2M2U1ZDAtOTQxYS00YTYyLTkwNDgtMDk2ZWY1NjdjNmNi-T04=",
     "TnN0ZWluX09OX0FGVE1fT05fMjI5Mzg=-T04=",
+    "5e9951f6-76ad-3f09-98e6-a2457ce55548",
     "ZjhiNGI0YjUtOTFjNC00NzY3LTk0NGQtMDEyNGI0ZTdiZTdj-T04="
   ],
   "bestStory": false,
