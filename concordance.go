@@ -42,12 +42,17 @@ type ConceptGetter interface {
 	GetConcepts(tid string, ids []string) (map[string]*ConceptModel, error)
 }
 
-type ConcordanceApiService struct {
-	ConcordanceApiBaseURL string
-	Client                *http.Client
+
+type Client interface {
+	Do(req *http.Request) (resp *http.Response, err error)
 }
 
-func NewConcordanceApiService(concordanceApiBaseURL string, c *http.Client) *ConcordanceApiService {
+type ConcordanceApiService struct {
+	ConcordanceApiBaseURL string
+	Client                Client
+}
+
+func NewConcordanceApiService(concordanceApiBaseURL string, c Client) *ConcordanceApiService {
 	return &ConcordanceApiService{ConcordanceApiBaseURL: concordanceApiBaseURL, Client: c}
 }
 
@@ -73,12 +78,13 @@ func (c *ConcordanceApiService) GetConcepts(tid string, ids []string) (map[strin
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("calling Concordance API returned HTTP status %v", resp.StatusCode)
+	}
+
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
-	}
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("calling Concordance API returned HTTP status %v", resp.StatusCode)
 	}
 
 	var concordancesResp concordancesResponse
@@ -86,10 +92,10 @@ func (c *ConcordanceApiService) GetConcepts(tid string, ids []string) (map[strin
 		return nil, err
 	}
 
-	return transformToConceptModel(concordancesResp), nil
+	return TransformToConceptModel(concordancesResp), nil
 }
 
-func transformToConceptModel(concordancesResp concordancesResponse) map[string]*ConceptModel {
+func TransformToConceptModel(concordancesResp concordancesResponse) map[string]*ConceptModel {
 	conceptMap := make(map[string]*ConceptModel)
 	for _, c := range concordancesResp.Concordances {
 		concept, found := conceptMap[c.Concept.ID]
@@ -110,4 +116,25 @@ func transformToConceptModel(concordancesResp concordancesResponse) map[string]*
 	}
 	
 	return conceptMap
+}
+
+func (c *ConcordanceApiService) healthCheck() (string, error) {
+	req, err := http.NewRequest("GET", c.ConcordanceApiBaseURL+"/__gtg", nil)
+	if err != nil {
+		return "", err
+	}
+
+	req.Header.Add("User-Agent", "UPP content-rw-elasticsearch")
+
+	resp, err := c.Client.Do(req)
+	if err != nil {
+		return "", err
+	}
+
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("Health check returned a non-200 HTTP status: %v", resp.StatusCode)
+	}
+	return "Concordance API is healthy", nil
 }

@@ -145,7 +145,7 @@ func main() {
 
 		indexer.Start(*appSystemCode, *appName, *indexName, *port, accessConfig, httpClient)
 
-		healthService := newHealthService(&queueConfig, service, httpClient)
+		healthService := newHealthService(&queueConfig, service, httpClient, concordanceApiService, *appSystemCode)
 		serveAdminEndpoints(healthService, *appSystemCode, *appName, *port)
 
 		indexer.Stop()

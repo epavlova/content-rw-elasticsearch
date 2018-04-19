@@ -26,7 +26,7 @@ func TestConvertToESContentModel(t *testing.T) {
 		{"testdata/testInput2.json", "", "testdata/testOutput2.json", "tid_3"},
 	}
 	concordanceApiMock := new(concordanceApiMock)
-	indexer := &Indexer{ConceptGetter: concordanceApiMock}
+	indexer := &MessageHandler{ConceptGetter: concordanceApiMock}
 
 	for _, test := range tests {
 		if test.inputFileConcordanceModel != "" {
@@ -37,7 +37,7 @@ func TestConvertToESContentModel(t *testing.T) {
 			err = json.Unmarshal([]byte(inputConcordanceJSON), &concResp)
 			require.NoError(t, err, "Unexpected error")
 
-			concordanceApiMock.On("GetConcepts", test.tid, mock.AnythingOfType("[]string")).Return(transformToConceptModel(concResp), nil)
+			concordanceApiMock.On("GetConcepts", test.tid, mock.AnythingOfType("[]string")).Return(TransformToConceptModel(concResp), nil)
 		}
 		ecModel := content.EnrichedContent{}
 		inputJSON, err := ioutil.ReadFile(test.inputFileEnrichedModel)

@@ -4,4 +4,4 @@ service:
   name: content-rw-elasticsearch
 env:
   KAFKA_TOPIC: CombinedPostPublicationEvents
-  KAFKA_CONCURRENT_PROCESSING: true
+  KAFKA_CONCURRENT_PROCESSING: false
