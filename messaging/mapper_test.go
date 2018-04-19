@@ -1,4 +1,4 @@
-package main
+package messaging
 
 import (
 	"encoding/json"
@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
+	"github.com/Financial-Times/content-rw-elasticsearch/concept"
 )
 
 func TestConvertToESContentModel(t *testing.T) {
@@ -22,8 +23,8 @@ func TestConvertToESContentModel(t *testing.T) {
 		tid                       string
 	}{
 		{"testdata/exampleEnrichedContentModel.json", "testdata/exampleConcordanceResponse.json", "testdata/exampleElasticModel.json", "tid_1"},
-		{"testdata/anotherExampleEnrichedContentModel.json", "testdata/anotherExampleConcordanceResponse.json", "testdata/anotherExampleElasticModel.json", "tid_2"},
-		{"testdata/testInput2.json", "", "testdata/testOutput2.json", "tid_3"},
+		{"testdata/testEnrichedContentModel1.json", "testdata/testConcordanceResponse1.json", "testdata/testElasticModel1.json", "tid_2"},
+		{"testdata/testEnrichedContentModel2.json", "", "testdata/testElasticModel2.json", "tid_3"},
 	}
 	concordanceApiMock := new(concordanceApiMock)
 	indexer := &MessageHandler{ConceptGetter: concordanceApiMock}
@@ -33,11 +34,11 @@ func TestConvertToESContentModel(t *testing.T) {
 			inputConcordanceJSON, err := ioutil.ReadFile(test.inputFileConcordanceModel)
 			require.NoError(t, err, "Unexpected error")
 
-			var concResp concordancesResponse
+			var concResp concept.ConcordancesResponse
 			err = json.Unmarshal([]byte(inputConcordanceJSON), &concResp)
 			require.NoError(t, err, "Unexpected error")
 
-			concordanceApiMock.On("GetConcepts", test.tid, mock.AnythingOfType("[]string")).Return(TransformToConceptModel(concResp), nil)
+			concordanceApiMock.On("GetConcepts", test.tid, mock.AnythingOfType("[]string")).Return(concept.TransformToConceptModel(concResp), nil)
 		}
 		ecModel := content.EnrichedContent{}
 		inputJSON, err := ioutil.ReadFile(test.inputFileEnrichedModel)

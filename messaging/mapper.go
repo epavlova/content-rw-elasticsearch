@@ -1,4 +1,4 @@
-package main
+package messaging
 
 import (
 	"encoding/base64"
@@ -6,10 +6,11 @@ import (
 	"time"
 
 	"github.com/Financial-Times/content-rw-elasticsearch/content"
-	"github.com/Financial-Times/content-rw-elasticsearch/mapper/utils"
+	"github.com/Financial-Times/content-rw-elasticsearch/messaging/utils"
 	"github.com/Financial-Times/go-logger"
 	"github.com/Financial-Times/uuid-utils-go"
 	"github.com/golang/go/src/pkg/fmt"
+	"github.com/Financial-Times/content-rw-elasticsearch/concept"
 )
 
 const (
@@ -69,7 +70,7 @@ func (handler *MessageHandler) ToIndexModel(enrichedContent content.EnrichedCont
 	}
 
 	for _, annotation := range annotations {
-		canonicalID := strings.TrimPrefix(annotation.ID, thingURIPrefix)
+		canonicalID := strings.TrimPrefix(annotation.ID, concept.ThingURIPrefix)
 		concept, found := concepts[annotation.ID]
 		if !found {
 			logger.WithTransactionID(tid).WithUUID(enrichedContent.UUID).Warnf("No concordance found for %v", canonicalID)
@@ -140,7 +141,7 @@ func populateAnnotationRelatedFields(annotation content.Thing, model *content.In
 	}
 }
 
-func (handler *MessageHandler) prepareAnnotationsWithConcepts(enrichedContent *content.EnrichedContent, tid string) ([]content.Thing, map[string]*ConceptModel, error) {
+func (handler *MessageHandler) prepareAnnotationsWithConcepts(enrichedContent *content.EnrichedContent, tid string) ([]content.Thing, map[string]*concept.Model, error) {
 	var ids []string
 	var anns []content.Thing
 	for _, a := range enrichedContent.Metadata {

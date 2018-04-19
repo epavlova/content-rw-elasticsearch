@@ -1,4 +1,4 @@
-package main
+package messaging
 
 import (
 	"io/ioutil"
@@ -16,6 +16,7 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 	"gopkg.in/olivere/elastic.v2"
+	"github.com/Financial-Times/content-rw-elasticsearch/concept"
 )
 
 type esServiceMock struct {
@@ -83,9 +84,9 @@ type concordanceApiMock struct {
 	mock.Mock
 }
 
-func (m *concordanceApiMock) GetConcepts(tid string, ids []string) (map[string]*ConceptModel, error) {
+func (m *concordanceApiMock) GetConcepts(tid string, ids []string) (map[string]*concept.Model, error) {
 	args := m.Called(tid, ids)
-	return args.Get(0).(map[string]*ConceptModel), args.Error(1)
+	return args.Get(0).(map[string]*concept.Model), args.Error(1)
 }
 
 func TestStartClient(t *testing.T) {
@@ -174,7 +175,7 @@ func TestHandleWriteMessage(t *testing.T) {
 	serviceMock := &esServiceMock{}
 	serviceMock.On("WriteData", "FTCom", "aae9611e-f66c-4fe4-a6c6-2e2bdea69060", mock.Anything).Return(&elastic.IndexResult{}, nil)
 	concordanceApiMock := new(concordanceApiMock)
-	concordanceApiMock.On("GetConcepts", mock.AnythingOfType("string"), mock.AnythingOfType("[]string")).Return(map[string]*ConceptModel{}, nil)
+	concordanceApiMock.On("GetConcepts", mock.AnythingOfType("string"), mock.AnythingOfType("[]string")).Return(map[string]*concept.Model{}, nil)
 
 	indexer := MessageHandler{esService: serviceMock, ConceptGetter: concordanceApiMock}
 	indexer.handleMessage(consumer.Message{Body: string(inputJSON)})
@@ -193,7 +194,7 @@ func TestHandleWriteMessageBlog(t *testing.T) {
 	serviceMock := &esServiceMock{}
 	serviceMock.On("WriteData", "FTBlogs", "aae9611e-f66c-4fe4-a6c6-2e2bdea69060", mock.Anything).Return(&elastic.IndexResult{}, nil)
 	concordanceApiMock := new(concordanceApiMock)
-	concordanceApiMock.On("GetConcepts", mock.AnythingOfType("string"), mock.AnythingOfType("[]string")).Return(map[string]*ConceptModel{}, nil)
+	concordanceApiMock.On("GetConcepts", mock.AnythingOfType("string"), mock.AnythingOfType("[]string")).Return(map[string]*concept.Model{}, nil)
 
 	indexer := MessageHandler{esService: serviceMock, ConceptGetter: concordanceApiMock}
 	indexer.handleMessage(consumer.Message{Body: input})
@@ -212,7 +213,7 @@ func TestHandleWriteMessageBlogWithHeader(t *testing.T) {
 	serviceMock := &esServiceMock{}
 	serviceMock.On("WriteData", "FTBlogs", "aae9611e-f66c-4fe4-a6c6-2e2bdea69060", mock.Anything).Return(&elastic.IndexResult{}, nil)
 	concordanceApiMock := new(concordanceApiMock)
-	concordanceApiMock.On("GetConcepts", mock.AnythingOfType("string"), mock.AnythingOfType("[]string")).Return(map[string]*ConceptModel{}, nil)
+	concordanceApiMock.On("GetConcepts", mock.AnythingOfType("string"), mock.AnythingOfType("[]string")).Return(map[string]*concept.Model{}, nil)
 
 	indexer := MessageHandler{esService: serviceMock, ConceptGetter: concordanceApiMock}
 	indexer.handleMessage(consumer.Message{Body: input, Headers: map[string]string{"Origin-System-Id": "wordpress"}})
@@ -231,7 +232,7 @@ func TestHandleWriteMessageVideo(t *testing.T) {
 	serviceMock := &esServiceMock{}
 	serviceMock.On("WriteData", "FTVideos", "aae9611e-f66c-4fe4-a6c6-2e2bdea69060", mock.Anything).Return(&elastic.IndexResult{}, nil)
 	concordanceApiMock := new(concordanceApiMock)
-	concordanceApiMock.On("GetConcepts", mock.AnythingOfType("string"), mock.AnythingOfType("[]string")).Return(map[string]*ConceptModel{}, nil)
+	concordanceApiMock.On("GetConcepts", mock.AnythingOfType("string"), mock.AnythingOfType("[]string")).Return(map[string]*concept.Model{}, nil)
 
 	indexer := MessageHandler{esService: serviceMock, ConceptGetter: concordanceApiMock}
 	indexer.handleMessage(consumer.Message{Body: input})
@@ -262,7 +263,7 @@ func TestHandleWriteMessageNoUUIDForMetadataPublish(t *testing.T) {
 
 	hook := logTest.NewTestHook("content-rw-elasticsearch")
 
-	inputJSON, err := ioutil.ReadFile("testdata/testInput4.json")
+	inputJSON, err := ioutil.ReadFile("testdata/testEnrichedContentModel3.json")
 	assert.NoError(err, "Unexpected error")
 
 	serviceMock := &esServiceMock{}
@@ -309,7 +310,7 @@ func TestHandleWriteMessageError(t *testing.T) {
 	serviceMock := &esServiceMock{}
 	serviceMock.On("WriteData", "FTCom", "aae9611e-f66c-4fe4-a6c6-2e2bdea69060", mock.Anything).Return(&elastic.IndexResult{}, elastic.ErrTimeout)
 	concordanceApiMock := new(concordanceApiMock)
-	concordanceApiMock.On("GetConcepts", mock.AnythingOfType("string"), mock.AnythingOfType("[]string")).Return(map[string]*ConceptModel{}, nil)
+	concordanceApiMock.On("GetConcepts", mock.AnythingOfType("string"), mock.AnythingOfType("[]string")).Return(map[string]*concept.Model{}, nil)
 
 	indexer := MessageHandler{esService: serviceMock, ConceptGetter: concordanceApiMock}
 	indexer.handleMessage(consumer.Message{Body: string(inputJSON)})

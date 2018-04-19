@@ -1,4 +1,4 @@
-package main
+package concept
 
 import (
 	"encoding/json"
@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	thingURIPrefix         = "http://api.ft.com/things/"
+	ThingURIPrefix         = "http://api.ft.com/things/"
 	concordancesEndpoint   = "/concordances"
 	concordancesQueryParam = "conceptId"
 	tmeAuthority           = "http://api.ft.com/system/FT-TME"
@@ -30,16 +30,16 @@ type concordance struct {
 	Identifier identifier `json:"identifier"`
 }
 
-type concordancesResponse struct {
+type ConcordancesResponse struct {
 	Concordances []concordance `json:"concordances"`
 }
 
-type ConceptModel struct {
+type Model struct {
 	TmeIDs []string
 }
 
 type ConceptGetter interface {
-	GetConcepts(tid string, ids []string) (map[string]*ConceptModel, error)
+	GetConcepts(tid string, ids []string) (map[string]*Model, error)
 }
 
 type Client interface {
@@ -55,7 +55,7 @@ func NewConcordanceApiService(concordanceApiBaseURL string, c Client) *Concordan
 	return &ConcordanceApiService{ConcordanceApiBaseURL: concordanceApiBaseURL, Client: c}
 }
 
-func (c *ConcordanceApiService) GetConcepts(tid string, ids []string) (map[string]*ConceptModel, error) {
+func (c *ConcordanceApiService) GetConcepts(tid string, ids []string) (map[string]*Model, error) {
 	req, err := http.NewRequest(http.MethodGet, c.ConcordanceApiBaseURL+concordancesEndpoint, nil)
 	if err != nil {
 		return nil, err
@@ -86,7 +86,7 @@ func (c *ConcordanceApiService) GetConcepts(tid string, ids []string) (map[strin
 		return nil, err
 	}
 
-	var concordancesResp concordancesResponse
+	var concordancesResp ConcordancesResponse
 	if err = json.Unmarshal(body, &concordancesResp); err != nil {
 		return nil, err
 	}
@@ -94,12 +94,12 @@ func (c *ConcordanceApiService) GetConcepts(tid string, ids []string) (map[strin
 	return TransformToConceptModel(concordancesResp), nil
 }
 
-func TransformToConceptModel(concordancesResp concordancesResponse) map[string]*ConceptModel {
-	conceptMap := make(map[string]*ConceptModel)
+func TransformToConceptModel(concordancesResp ConcordancesResponse) map[string]*Model {
+	conceptMap := make(map[string]*Model)
 	for _, c := range concordancesResp.Concordances {
 		concept, found := conceptMap[c.Concept.ID]
 		if !found {
-			conceptMap[c.Concept.ID] = &ConceptModel{}
+			conceptMap[c.Concept.ID] = &Model{}
 			concept = conceptMap[c.Concept.ID]
 		}
 
@@ -107,9 +107,9 @@ func TransformToConceptModel(concordancesResp concordancesResponse) map[string]*
 			concept.TmeIDs = append(concept.TmeIDs, c.Identifier.IdentifierValue)
 		}
 		if c.Identifier.Authority == uppAuthority {
-			_, found := conceptMap[thingURIPrefix+c.Identifier.IdentifierValue]
+			_, found := conceptMap[ThingURIPrefix+c.Identifier.IdentifierValue]
 			if !found {
-				conceptMap[thingURIPrefix+c.Identifier.IdentifierValue] = concept
+				conceptMap[ThingURIPrefix+c.Identifier.IdentifierValue] = concept
 			}
 		}
 	}
@@ -117,7 +117,7 @@ func TransformToConceptModel(concordancesResp concordancesResponse) map[string]*
 	return conceptMap
 }
 
-func (c *ConcordanceApiService) healthCheck() (string, error) {
+func (c *ConcordanceApiService) HealthCheck() (string, error) {
 	req, err := http.NewRequest("GET", c.ConcordanceApiBaseURL+"/__gtg", nil)
 	if err != nil {
 		return "", err

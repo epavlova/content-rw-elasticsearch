@@ -1,4 +1,4 @@
-package main
+package concept
 
 import (
 	"encoding/json"
@@ -77,9 +77,9 @@ func (m *mockConcordanceApiServer) startMockServer(t *testing.T) *httptest.Serve
 func TestConcordanceApiService_GetConceptsSuccessfully(t *testing.T) {
 	expect := assert.New(t)
 
-	sampleID := thingURIPrefix + uuid.NewRandom().String()
+	sampleID := ThingURIPrefix + uuid.NewRandom().String()
 
-	sampleResponse := concordancesResponse{
+	sampleResponse := ConcordancesResponse{
 		Concordances: []concordance{
 			{
 				Concept: concept{
@@ -96,7 +96,7 @@ func TestConcordanceApiService_GetConceptsSuccessfully(t *testing.T) {
 	body, err := json.Marshal(&sampleResponse)
 	expect.NoError(err)
 
-	expected := map[string]*ConceptModel{
+	expected := map[string]*Model{
 		sampleID: {TmeIDs: []string{"TME-ID"}},
 	}
 
@@ -116,7 +116,7 @@ func TestConcordanceApiService_GetConceptsSuccessfully(t *testing.T) {
 func TestConcordanceApiService_GetConceptsServiceUnavailable(t *testing.T) {
 	expect := assert.New(t)
 
-	sampleID := thingURIPrefix + uuid.NewRandom().String()
+	sampleID := ThingURIPrefix + uuid.NewRandom().String()
 
 	mockServer := new(mockConcordanceApiServer)
 	mockServer.On("RequestConcordances", "tid_test", "application/json", []string{sampleID}).Return(http.StatusServiceUnavailable, []byte{})
@@ -135,7 +135,7 @@ func TestConcordanceApiService_GetConceptsServiceUnavailable(t *testing.T) {
 func TestConcordanceApiService_GetConceptsErrorOnNewRequest(t *testing.T) {
 	expect := assert.New(t)
 
-	sampleID := thingURIPrefix + uuid.NewRandom().String()
+	sampleID := ThingURIPrefix + uuid.NewRandom().String()
 
 	concordanceApiService := NewConcordanceApiService(":/", http.DefaultClient)
 
@@ -151,7 +151,7 @@ func TestConcordanceApiService_GetConceptsErrorOnRequestDo(t *testing.T) {
 	mockClient := new(mockHttpClient)
 	mockClient.On("Do", mock.AnythingOfType("*http.Request")).Return(&http.Response{}, errors.New("http client err"))
 
-	sampleID := thingURIPrefix + uuid.NewRandom().String()
+	sampleID := ThingURIPrefix + uuid.NewRandom().String()
 
 	concordanceApiService := NewConcordanceApiService("http://test-url", mockClient)
 
@@ -172,7 +172,7 @@ func TestConcordanceApiService_GetConceptsErrorOnResponseBodyRead(t *testing.T) 
 	mockBody.On("Read", mock.AnythingOfType("[]uint8")).Return(0, errors.New("read err"))
 	mockBody.On("Close").Return(nil)
 
-	sampleID := thingURIPrefix + uuid.NewRandom().String()
+	sampleID := ThingURIPrefix + uuid.NewRandom().String()
 
 	concordanceApiService := NewConcordanceApiService("http://test-url", mockClient)
 
@@ -188,7 +188,7 @@ func TestConcordanceApiService_GetConceptsErrorOnResponseBodyRead(t *testing.T) 
 func TestConcordanceApiService_GetConceptsErrorOnEmptyJSONResponse(t *testing.T) {
 	expect := assert.New(t)
 
-	sampleID := thingURIPrefix + uuid.NewRandom().String()
+	sampleID := ThingURIPrefix + uuid.NewRandom().String()
 
 	mockServer := new(mockConcordanceApiServer)
 	mockServer.On("RequestConcordances", "tid_test", "application/json", []string{sampleID}).Return(http.StatusOK, []byte("{invalid JSON}"))
@@ -212,7 +212,7 @@ func TestConcordanceApiService_CheckHealthSuccessfully(t *testing.T) {
 
 	concordanceApiService := NewConcordanceApiService(server.URL, http.DefaultClient)
 
-	check, err := concordanceApiService.healthCheck()
+	check, err := concordanceApiService.HealthCheck()
 	expect.NoError(err)
 	expect.Equal("Concordance API is healthy", check)
 	mock.AssertExpectationsForObjects(t, mockServer)
@@ -226,7 +226,7 @@ func TestConcordanceApiService_CheckHealthUnhealthy(t *testing.T) {
 
 	concordanceApiService := NewConcordanceApiService(server.URL, http.DefaultClient)
 
-	check, err := concordanceApiService.healthCheck()
+	check, err := concordanceApiService.HealthCheck()
 	expect.Error(err)
 	expect.Empty(check)
 	expect.Equal("Health check returned a non-200 HTTP status: 503", err.Error())
@@ -238,7 +238,7 @@ func TestConcordanceApiService_CheckHealthErrorOnNewRequest(t *testing.T) {
 
 	concordanceApiService := NewConcordanceApiService(":/", http.DefaultClient)
 
-	check, err := concordanceApiService.healthCheck()
+	check, err := concordanceApiService.HealthCheck()
 	expect.Error(err)
 	expect.Empty(check)
 	expect.Equal("parse ://__gtg: missing protocol scheme", err.Error())
@@ -251,7 +251,7 @@ func TestConcordanceApiService_CheckHealthErrorOnRequestDo(t *testing.T) {
 
 	concordanceApiService := NewConcordanceApiService("http://test-url", mockClient)
 
-	check, err := concordanceApiService.healthCheck()
+	check, err := concordanceApiService.HealthCheck()
 	expect.Error(err)
 	expect.Empty(check)
 	expect.Equal("http client err", err.Error())

@@ -1,4 +1,4 @@
-package main
+package messaging
 
 import (
 	"encoding/json"
@@ -13,6 +13,7 @@ import (
 	"github.com/Financial-Times/message-queue-gonsumer/consumer"
 	"github.com/dchest/uniuri"
 	"github.com/stretchr/stew/slice"
+	"github.com/Financial-Times/content-rw-elasticsearch/concept"
 )
 
 const (
@@ -33,13 +34,13 @@ var allowedTypes = []string{"Article", "Video", "MediaResource", ""}
 type MessageHandler struct {
 	esService         es.ServiceI
 	messageConsumer   consumer.MessageConsumer
-	ConceptGetter     ConceptGetter
+	ConceptGetter     concept.ConceptGetter
 	connectToESClient func(config es.AccessConfig, c *http.Client) (es.ClientI, error)
 	wg                sync.WaitGroup
 	mu                sync.Mutex
 }
 
-func NewIndexer(service es.ServiceI, conceptGetter ConceptGetter, client *http.Client, queueConfig consumer.QueueConfig, wg *sync.WaitGroup, connectToClient func(config es.AccessConfig, c *http.Client) (es.ClientI, error)) *MessageHandler {
+func NewIndexer(service es.ServiceI, conceptGetter concept.ConceptGetter, client *http.Client, queueConfig consumer.QueueConfig, wg *sync.WaitGroup, connectToClient func(config es.AccessConfig, c *http.Client) (es.ClientI, error)) *MessageHandler {
 	indexer := &MessageHandler{esService: service, ConceptGetter: conceptGetter, connectToESClient: connectToClient, wg: *wg}
 	indexer.messageConsumer = consumer.NewConsumer(queueConfig, indexer.handleMessage, client)
 	return indexer

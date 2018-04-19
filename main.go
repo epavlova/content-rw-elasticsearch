@@ -15,6 +15,8 @@ import (
 	"github.com/Financial-Times/message-queue-gonsumer/consumer"
 	status "github.com/Financial-Times/service-status-go/httphandlers"
 	"github.com/jawher/mow.cli"
+	"github.com/Financial-Times/content-rw-elasticsearch/concept"
+	"github.com/Financial-Times/content-rw-elasticsearch/messaging"
 )
 
 const (
@@ -140,8 +142,8 @@ func main() {
 
 		service := es.NewService(*indexName)
 		var wg sync.WaitGroup
-		concordanceApiService := NewConcordanceApiService(*publicConcordancesEndpoint, httpClient)
-		indexer := NewIndexer(service, concordanceApiService, httpClient, queueConfig, &wg, es.NewClient)
+		concordanceApiService := concept.NewConcordanceApiService(*publicConcordancesEndpoint, httpClient)
+		indexer := messaging.NewIndexer(service, concordanceApiService, httpClient, queueConfig, &wg, es.NewClient)
 
 		indexer.Start(*appSystemCode, *appName, *indexName, *port, accessConfig, httpClient)
 

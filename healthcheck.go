@@ -10,18 +10,19 @@ import (
 	"github.com/Financial-Times/go-logger"
 	"github.com/Financial-Times/message-queue-gonsumer/consumer"
 	"github.com/Financial-Times/service-status-go/gtg"
+	"github.com/Financial-Times/content-rw-elasticsearch/concept"
 )
 
 type healthService struct {
 	esHealthService  es.HealthServiceI
-	concordanceApi   *ConcordanceApiService
+	concordanceApi   *concept.ConcordanceApiService
 	consumerInstance consumer.MessageConsumer
 	httpClient       *http.Client
 	checks           []health.Check
 	appSystemCode    string
 }
 
-func newHealthService(config *consumer.QueueConfig, esHealthService es.HealthServiceI, client *http.Client, concordanceApi *ConcordanceApiService, appSystemCode string) *healthService {
+func newHealthService(config *consumer.QueueConfig, esHealthService es.HealthServiceI, client *http.Client, concordanceApi *concept.ConcordanceApiService, appSystemCode string) *healthService {
 	consumerInstance := consumer.NewConsumer(*config, func(m consumer.Message) {}, client)
 	service := &healthService{
 		esHealthService:  esHealthService,
@@ -127,7 +128,7 @@ func (service *healthService) checkConcordanceAPI() health.Check {
 		PanicGuide:       "https://dewey.in.ft.com/view/system/content-rw-elasticsearch#general",
 		Severity:         2,
 		TechnicalSummary: "Public Concordance API is not working correctly",
-		Checker:          service.concordanceApi.healthCheck,
+		Checker:          service.concordanceApi.HealthCheck,
 	}
 }
 
