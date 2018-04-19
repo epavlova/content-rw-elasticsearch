@@ -80,7 +80,7 @@ func (handler *MessageHandler) ToIndexModel(enrichedContent content.EnrichedCont
 		if concept.TmeIDs != nil {
 			annIDs = append(annIDs, concept.TmeIDs...)
 		} else {
-			logger.WithTransactionID(tid).WithUUID(enrichedContent.Content.UUID).Warnf("TME id missing for concept with id %s, using only canonical id", enrichedContent.Content.UUID, canonicalID)
+			logger.WithTransactionID(tid).WithUUID(enrichedContent.Content.UUID).Warnf("TME id missing for concept with id %s, using only canonical id", canonicalID)
 		}
 
 		populateAnnotationRelatedFields(annotation, &model, annIDs, canonicalID)
