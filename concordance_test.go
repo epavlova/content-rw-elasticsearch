@@ -1,16 +1,17 @@
 package main
 
 import (
-	"github.com/stretchr/testify/mock"
-	"github.com/stretchr/testify/assert"
-	"net/http"
-	"testing"
-	"net/http/httptest"
-	"github.com/gorilla/mux"
-	"net/url"
 	"encoding/json"
-	"github.com/pborman/uuid"
 	"errors"
+	"net/http"
+	"net/http/httptest"
+	"net/url"
+	"testing"
+
+	"github.com/gorilla/mux"
+	"github.com/pborman/uuid"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
 type mockHttpClient struct {
@@ -96,7 +97,7 @@ func TestConcordanceApiService_GetConceptsSuccessfully(t *testing.T) {
 	expect.NoError(err)
 
 	expected := map[string]*ConceptModel{
-		sampleID: {TmeIDs:[]string{"TME-ID"}},
+		sampleID: {TmeIDs: []string{"TME-ID"}},
 	}
 
 	mockServer := new(mockConcordanceApiServer)
@@ -167,7 +168,7 @@ func TestConcordanceApiService_GetConceptsErrorOnResponseBodyRead(t *testing.T) 
 	mockClient := new(mockHttpClient)
 	mockBody := new(mockResponseBody)
 
-	mockClient.On("Do", mock.AnythingOfType("*http.Request")).Return(&http.Response{Body: mockBody, StatusCode:http.StatusOK}, nil)
+	mockClient.On("Do", mock.AnythingOfType("*http.Request")).Return(&http.Response{Body: mockBody, StatusCode: http.StatusOK}, nil)
 	mockBody.On("Read", mock.AnythingOfType("[]uint8")).Return(0, errors.New("read err"))
 	mockBody.On("Close").Return(nil)
 

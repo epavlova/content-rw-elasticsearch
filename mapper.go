@@ -5,10 +5,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Financial-Times/content-rw-elasticsearch/content"
+	"github.com/Financial-Times/content-rw-elasticsearch/mapper/utils"
 	"github.com/Financial-Times/go-logger"
 	"github.com/Financial-Times/uuid-utils-go"
-	"github.com/Financial-Times/content-rw-elasticsearch/mapper/utils"
-	"github.com/Financial-Times/content-rw-elasticsearch/content"
 	"github.com/golang/go/src/pkg/fmt"
 )
 

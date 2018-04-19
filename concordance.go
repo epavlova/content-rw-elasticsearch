@@ -1,10 +1,10 @@
 package main
 
 import (
-	"net/http"
-	"io/ioutil"
-	"fmt"
 	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"net/http"
 )
 
 const (
@@ -16,8 +16,8 @@ const (
 )
 
 type concept struct {
-	ID     string       `json:"id"`
-	APIURL string       `json:"apiUrl,omitempty"`
+	ID     string `json:"id"`
+	APIURL string `json:"apiUrl,omitempty"`
 }
 
 type identifier struct {
@@ -31,7 +31,7 @@ type concordance struct {
 }
 
 type concordancesResponse struct {
-	Concordances []concordance    `json:"concordances"`
+	Concordances []concordance `json:"concordances"`
 }
 
 type ConceptModel struct {
@@ -41,7 +41,6 @@ type ConceptModel struct {
 type ConceptGetter interface {
 	GetConcepts(tid string, ids []string) (map[string]*ConceptModel, error)
 }
-
 
 type Client interface {
 	Do(req *http.Request) (resp *http.Response, err error)
@@ -114,7 +113,7 @@ func TransformToConceptModel(concordancesResp concordancesResponse) map[string]*
 			}
 		}
 	}
-	
+
 	return conceptMap
 }
 
