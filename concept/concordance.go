@@ -118,7 +118,7 @@ func TransformToConceptModel(concordancesResp ConcordancesResponse) map[string]*
 }
 
 func (c *ConcordanceApiService) HealthCheck() (string, error) {
-	req, err := http.NewRequest("GET", c.ConcordanceApiBaseURL+"/__gtg", nil)
+	req, err := http.NewRequest(http.MethodGet, c.ConcordanceApiBaseURL+"/__gtg", nil)
 	if err != nil {
 		return "", err
 	}

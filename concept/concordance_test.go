@@ -185,7 +185,7 @@ func TestConcordanceApiService_GetConceptsErrorOnResponseBodyRead(t *testing.T) 
 	mock.AssertExpectationsForObjects(t, mockBody)
 }
 
-func TestConcordanceApiService_GetConceptsErrorOnEmptyJSONResponse(t *testing.T) {
+func TestConcordanceApiService_GetConceptsErrorOnInvalidJSONResponse(t *testing.T) {
 	expect := assert.New(t)
 
 	sampleID := ThingURIPrefix + uuid.NewRandom().String()
