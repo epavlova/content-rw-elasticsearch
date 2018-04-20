@@ -7,13 +7,13 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Financial-Times/content-rw-elasticsearch/concept"
 	"github.com/Financial-Times/content-rw-elasticsearch/content"
 	"github.com/Financial-Times/content-rw-elasticsearch/es"
 	"github.com/Financial-Times/go-logger"
 	"github.com/Financial-Times/message-queue-gonsumer/consumer"
 	"github.com/dchest/uniuri"
 	"github.com/stretchr/stew/slice"
-	"github.com/Financial-Times/content-rw-elasticsearch/concept"
 )
 
 const (

@@ -6,11 +6,11 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Financial-Times/content-rw-elasticsearch/concept"
 	"github.com/Financial-Times/content-rw-elasticsearch/content"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
-	"github.com/Financial-Times/content-rw-elasticsearch/concept"
 )
 
 func TestConvertToESContentModel(t *testing.T) {

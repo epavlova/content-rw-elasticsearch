@@ -9,14 +9,14 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/Financial-Times/content-rw-elasticsearch/concept"
 	"github.com/Financial-Times/content-rw-elasticsearch/es"
+	"github.com/Financial-Times/content-rw-elasticsearch/messaging"
 	health "github.com/Financial-Times/go-fthealth/v1_1"
 	"github.com/Financial-Times/go-logger"
 	"github.com/Financial-Times/message-queue-gonsumer/consumer"
 	status "github.com/Financial-Times/service-status-go/httphandlers"
 	"github.com/jawher/mow.cli"
-	"github.com/Financial-Times/content-rw-elasticsearch/concept"
-	"github.com/Financial-Times/content-rw-elasticsearch/messaging"
 )
 
 const (

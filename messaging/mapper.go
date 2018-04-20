@@ -5,12 +5,12 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Financial-Times/content-rw-elasticsearch/concept"
 	"github.com/Financial-Times/content-rw-elasticsearch/content"
 	"github.com/Financial-Times/content-rw-elasticsearch/messaging/utils"
 	"github.com/Financial-Times/go-logger"
 	"github.com/Financial-Times/uuid-utils-go"
-	"github.com/golang/go/src/pkg/fmt"
-	"github.com/Financial-Times/content-rw-elasticsearch/concept"
+	"github.com/pkg/errors"
 )
 
 const (
@@ -40,6 +40,8 @@ const (
 	BlogType    = "blog"
 )
 
+var noAnnotationErr = errors.New("No annotation to be processed")
+
 var ContentTypeMap = map[string]content.ContentType{
 	"article": {
 		Collection: "FTCom",
@@ -65,7 +67,11 @@ func (handler *MessageHandler) ToIndexModel(enrichedContent content.EnrichedCont
 
 	annotations, concepts, err := handler.prepareAnnotationsWithConcepts(&enrichedContent, tid)
 	if err != nil {
-		logger.WithError(err).WithTransactionID(tid).Error(err)
+		if err == noAnnotationErr {
+			logger.WithTransactionID(tid).Warn(err.Error())
+		} else {
+			logger.WithError(err).WithTransactionID(tid).Error(err)
+		}
 		return model
 	}
 
@@ -157,7 +163,7 @@ func (handler *MessageHandler) prepareAnnotationsWithConcepts(enrichedContent *c
 	}
 
 	if len(ids) == 0 {
-		return nil, nil, fmt.Errorf("no annotation to be processed")
+		return nil, nil, noAnnotationErr
 	}
 
 	concepts, err := handler.ConceptGetter.GetConcepts(tid, ids)

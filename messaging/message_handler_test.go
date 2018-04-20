@@ -9,6 +9,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Financial-Times/content-rw-elasticsearch/concept"
 	"github.com/Financial-Times/content-rw-elasticsearch/es"
 	logTest "github.com/Financial-Times/go-logger/test"
 	"github.com/Financial-Times/message-queue-gonsumer/consumer"
@@ -16,7 +17,6 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 	"gopkg.in/olivere/elastic.v2"
-	"github.com/Financial-Times/content-rw-elasticsearch/concept"
 )
 
 type esServiceMock struct {
