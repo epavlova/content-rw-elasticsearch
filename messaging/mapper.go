@@ -147,7 +147,7 @@ func populateAnnotationRelatedFields(annotation content.Thing, model *content.In
 	}
 }
 
-func (handler *MessageHandler) prepareAnnotationsWithConcepts(enrichedContent *content.EnrichedContent, tid string) ([]content.Thing, map[string]*concept.Model, error) {
+func (handler *MessageHandler) prepareAnnotationsWithConcepts(enrichedContent *content.EnrichedContent, tid string) ([]content.Thing, map[string]concept.ConceptModel, error) {
 	var ids []string
 	var anns []content.Thing
 	for _, a := range enrichedContent.Metadata {

@@ -96,7 +96,7 @@ func TestConcordanceApiService_GetConceptsSuccessfully(t *testing.T) {
 	body, err := json.Marshal(&sampleResponse)
 	expect.NoError(err)
 
-	expected := map[string]*Model{
+	expected := map[string]ConceptModel{
 		sampleID: {TmeIDs: []string{"TME-ID"}},
 	}
 

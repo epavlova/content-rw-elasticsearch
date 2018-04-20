@@ -84,9 +84,9 @@ type concordanceApiMock struct {
 	mock.Mock
 }
 
-func (m *concordanceApiMock) GetConcepts(tid string, ids []string) (map[string]*concept.Model, error) {
+func (m *concordanceApiMock) GetConcepts(tid string, ids []string) (map[string]concept.ConceptModel, error) {
 	args := m.Called(tid, ids)
-	return args.Get(0).(map[string]*concept.Model), args.Error(1)
+	return args.Get(0).(map[string]concept.ConceptModel), args.Error(1)
 }
 
 func TestStartClient(t *testing.T) {
@@ -175,7 +175,7 @@ func TestHandleWriteMessage(t *testing.T) {
 	serviceMock := &esServiceMock{}
 	serviceMock.On("WriteData", "FTCom", "aae9611e-f66c-4fe4-a6c6-2e2bdea69060", mock.Anything).Return(&elastic.IndexResult{}, nil)
 	concordanceApiMock := new(concordanceApiMock)
-	concordanceApiMock.On("GetConcepts", mock.AnythingOfType("string"), mock.AnythingOfType("[]string")).Return(map[string]*concept.Model{}, nil)
+	concordanceApiMock.On("GetConcepts", mock.AnythingOfType("string"), mock.AnythingOfType("[]string")).Return(map[string]concept.ConceptModel{}, nil)
 
 	indexer := MessageHandler{esService: serviceMock, ConceptGetter: concordanceApiMock}
 	indexer.handleMessage(consumer.Message{Body: string(inputJSON)})
@@ -194,7 +194,7 @@ func TestHandleWriteMessageBlog(t *testing.T) {
 	serviceMock := &esServiceMock{}
 	serviceMock.On("WriteData", "FTBlogs", "aae9611e-f66c-4fe4-a6c6-2e2bdea69060", mock.Anything).Return(&elastic.IndexResult{}, nil)
 	concordanceApiMock := new(concordanceApiMock)
-	concordanceApiMock.On("GetConcepts", mock.AnythingOfType("string"), mock.AnythingOfType("[]string")).Return(map[string]*concept.Model{}, nil)
+	concordanceApiMock.On("GetConcepts", mock.AnythingOfType("string"), mock.AnythingOfType("[]string")).Return(map[string]concept.ConceptModel{}, nil)
 
 	indexer := MessageHandler{esService: serviceMock, ConceptGetter: concordanceApiMock}
 	indexer.handleMessage(consumer.Message{Body: input})
@@ -213,7 +213,7 @@ func TestHandleWriteMessageBlogWithHeader(t *testing.T) {
 	serviceMock := &esServiceMock{}
 	serviceMock.On("WriteData", "FTBlogs", "aae9611e-f66c-4fe4-a6c6-2e2bdea69060", mock.Anything).Return(&elastic.IndexResult{}, nil)
 	concordanceApiMock := new(concordanceApiMock)
-	concordanceApiMock.On("GetConcepts", mock.AnythingOfType("string"), mock.AnythingOfType("[]string")).Return(map[string]*concept.Model{}, nil)
+	concordanceApiMock.On("GetConcepts", mock.AnythingOfType("string"), mock.AnythingOfType("[]string")).Return(map[string]concept.ConceptModel{}, nil)
 
 	indexer := MessageHandler{esService: serviceMock, ConceptGetter: concordanceApiMock}
 	indexer.handleMessage(consumer.Message{Body: input, Headers: map[string]string{"Origin-System-Id": "wordpress"}})
@@ -232,7 +232,7 @@ func TestHandleWriteMessageVideo(t *testing.T) {
 	serviceMock := &esServiceMock{}
 	serviceMock.On("WriteData", "FTVideos", "aae9611e-f66c-4fe4-a6c6-2e2bdea69060", mock.Anything).Return(&elastic.IndexResult{}, nil)
 	concordanceApiMock := new(concordanceApiMock)
-	concordanceApiMock.On("GetConcepts", mock.AnythingOfType("string"), mock.AnythingOfType("[]string")).Return(map[string]*concept.Model{}, nil)
+	concordanceApiMock.On("GetConcepts", mock.AnythingOfType("string"), mock.AnythingOfType("[]string")).Return(map[string]concept.ConceptModel{}, nil)
 
 	indexer := MessageHandler{esService: serviceMock, ConceptGetter: concordanceApiMock}
 	indexer.handleMessage(consumer.Message{Body: input})
@@ -310,7 +310,7 @@ func TestHandleWriteMessageError(t *testing.T) {
 	serviceMock := &esServiceMock{}
 	serviceMock.On("WriteData", "FTCom", "aae9611e-f66c-4fe4-a6c6-2e2bdea69060", mock.Anything).Return(&elastic.IndexResult{}, elastic.ErrTimeout)
 	concordanceApiMock := new(concordanceApiMock)
-	concordanceApiMock.On("GetConcepts", mock.AnythingOfType("string"), mock.AnythingOfType("[]string")).Return(map[string]*concept.Model{}, nil)
+	concordanceApiMock.On("GetConcepts", mock.AnythingOfType("string"), mock.AnythingOfType("[]string")).Return(map[string]concept.ConceptModel{}, nil)
 
 	indexer := MessageHandler{esService: serviceMock, ConceptGetter: concordanceApiMock}
 	indexer.handleMessage(consumer.Message{Body: string(inputJSON)})

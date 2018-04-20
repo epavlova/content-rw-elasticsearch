@@ -34,12 +34,12 @@ type ConcordancesResponse struct {
 	Concordances []concordance `json:"concordances"`
 }
 
-type Model struct {
+type ConceptModel struct {
 	TmeIDs []string
 }
 
 type ConceptGetter interface {
-	GetConcepts(tid string, ids []string) (map[string]*Model, error)
+	GetConcepts(tid string, ids []string) (map[string]ConceptModel, error)
 }
 
 type Client interface {
@@ -55,7 +55,7 @@ func NewConcordanceApiService(concordanceApiBaseURL string, c Client) *Concordan
 	return &ConcordanceApiService{ConcordanceApiBaseURL: concordanceApiBaseURL, Client: c}
 }
 
-func (c *ConcordanceApiService) GetConcepts(tid string, ids []string) (map[string]*Model, error) {
+func (c *ConcordanceApiService) GetConcepts(tid string, ids []string) (map[string]ConceptModel, error) {
 	req, err := http.NewRequest(http.MethodGet, c.ConcordanceApiBaseURL+concordancesEndpoint, nil)
 	if err != nil {
 		return nil, err
@@ -94,17 +94,18 @@ func (c *ConcordanceApiService) GetConcepts(tid string, ids []string) (map[strin
 	return TransformToConceptModel(concordancesResp), nil
 }
 
-func TransformToConceptModel(concordancesResp ConcordancesResponse) map[string]*Model {
-	conceptMap := make(map[string]*Model)
+func TransformToConceptModel(concordancesResp ConcordancesResponse) map[string]ConceptModel {
+	conceptMap := make(map[string]ConceptModel)
 	for _, c := range concordancesResp.Concordances {
 		concept, found := conceptMap[c.Concept.ID]
 		if !found {
-			conceptMap[c.Concept.ID] = &Model{}
+			conceptMap[c.Concept.ID] = ConceptModel{}
 			concept = conceptMap[c.Concept.ID]
 		}
 
 		if c.Identifier.Authority == tmeAuthority {
 			concept.TmeIDs = append(concept.TmeIDs, c.Identifier.IdentifierValue)
+			conceptMap[c.Concept.ID] = concept
 		}
 		if c.Identifier.Authority == uppAuthority {
 			_, found := conceptMap[ThingURIPrefix+c.Identifier.IdentifierValue]
