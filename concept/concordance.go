@@ -97,20 +97,20 @@ func (c *ConcordanceApiService) GetConcepts(tid string, ids []string) (map[strin
 func TransformToConceptModel(concordancesResp ConcordancesResponse) map[string]ConceptModel {
 	conceptMap := make(map[string]ConceptModel)
 	for _, c := range concordancesResp.Concordances {
-		concept, found := conceptMap[c.Concept.ID]
+		_, found := conceptMap[c.Concept.ID]
 		if !found {
 			conceptMap[c.Concept.ID] = ConceptModel{}
-			concept = conceptMap[c.Concept.ID]
 		}
 
 		if c.Identifier.Authority == tmeAuthority {
+			concept := conceptMap[c.Concept.ID]
 			concept.TmeIDs = append(concept.TmeIDs, c.Identifier.IdentifierValue)
 			conceptMap[c.Concept.ID] = concept
 		}
 		if c.Identifier.Authority == uppAuthority {
 			_, found := conceptMap[ThingURIPrefix+c.Identifier.IdentifierValue]
 			if !found {
-				conceptMap[ThingURIPrefix+c.Identifier.IdentifierValue] = concept
+				conceptMap[ThingURIPrefix+c.Identifier.IdentifierValue] = conceptMap[c.Concept.ID]
 			}
 		}
 	}

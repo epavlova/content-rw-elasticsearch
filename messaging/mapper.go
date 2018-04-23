@@ -151,10 +151,7 @@ func (handler *MessageHandler) prepareAnnotationsWithConcepts(enrichedContent *c
 	var ids []string
 	var anns []content.Thing
 	for _, a := range enrichedContent.Metadata {
-		switch a.Thing.Predicate {
-		case mentions:
-			fallthrough
-		case hasDisplayTag:
+		if a.Thing.Predicate == mentions || a.Thing.Predicate == hasDisplayTag {
 			//ignore these annotations
 			continue
 		}
