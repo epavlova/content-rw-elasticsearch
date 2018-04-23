@@ -1,4 +1,4 @@
-package messaging
+package service
 
 import (
 	"encoding/json"
@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Financial-Times/content-rw-elasticsearch/concept"
+	"github.com/Financial-Times/content-rw-elasticsearch/service/concept"
 	"github.com/Financial-Times/content-rw-elasticsearch/content"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"

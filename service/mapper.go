@@ -1,13 +1,13 @@
-package messaging
+package service
 
 import (
 	"encoding/base64"
 	"strings"
 	"time"
 
-	"github.com/Financial-Times/content-rw-elasticsearch/concept"
+	"github.com/Financial-Times/content-rw-elasticsearch/service/concept"
 	"github.com/Financial-Times/content-rw-elasticsearch/content"
-	"github.com/Financial-Times/content-rw-elasticsearch/messaging/utils"
+	"github.com/Financial-Times/content-rw-elasticsearch/service/utils"
 	"github.com/Financial-Times/go-logger"
 	"github.com/Financial-Times/uuid-utils-go"
 	"github.com/pkg/errors"

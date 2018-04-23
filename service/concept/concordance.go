@@ -15,23 +15,23 @@ const (
 	uppAuthority           = "http://api.ft.com/system/UPP"
 )
 
-type concept struct {
+type Concept struct {
 	ID     string `json:"id"`
 	APIURL string `json:"apiUrl,omitempty"`
 }
 
-type identifier struct {
+type Identifier struct {
 	IdentifierValue string `json:"identifierValue"`
 	Authority       string `json:"authority"`
 }
 
-type concordance struct {
-	Concept    concept    `json:"concept"`
-	Identifier identifier `json:"identifier"`
+type Concordance struct {
+	Concept    Concept    `json:"concept"`
+	Identifier Identifier `json:"identifier"`
 }
 
 type ConcordancesResponse struct {
-	Concordances []concordance `json:"concordances"`
+	Concordances []Concordance `json:"concordances"`
 }
 
 type ConceptModel struct {

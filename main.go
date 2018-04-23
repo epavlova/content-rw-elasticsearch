@@ -9,14 +9,14 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/Financial-Times/content-rw-elasticsearch/concept"
+	"github.com/Financial-Times/content-rw-elasticsearch/service/concept"
 	"github.com/Financial-Times/content-rw-elasticsearch/es"
-	"github.com/Financial-Times/content-rw-elasticsearch/messaging"
 	health "github.com/Financial-Times/go-fthealth/v1_1"
 	"github.com/Financial-Times/go-logger"
 	"github.com/Financial-Times/message-queue-gonsumer/consumer"
 	status "github.com/Financial-Times/service-status-go/httphandlers"
 	"github.com/jawher/mow.cli"
+	"github.com/Financial-Times/content-rw-elasticsearch/service"
 )
 
 const (
@@ -140,14 +140,14 @@ func main() {
 			},
 		}
 
-		service := es.NewService(*indexName)
+		svc := es.NewService(*indexName)
 		var wg sync.WaitGroup
 		concordanceApiService := concept.NewConcordanceApiService(*publicConcordancesEndpoint, httpClient)
-		indexer := messaging.NewIndexer(service, concordanceApiService, httpClient, queueConfig, &wg, es.NewClient)
+		indexer := service.NewIndexer(svc, concordanceApiService, httpClient, queueConfig, &wg, es.NewClient)
 
 		indexer.Start(*appSystemCode, *appName, *indexName, *port, accessConfig, httpClient)
 
-		healthService := newHealthService(&queueConfig, service, httpClient, concordanceApiService, *appSystemCode)
+		healthService := newHealthService(&queueConfig, svc, httpClient, concordanceApiService, *appSystemCode)
 		serveAdminEndpoints(healthService, *appSystemCode, *appName, *port)
 
 		indexer.Stop()

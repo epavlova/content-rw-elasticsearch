@@ -1,4 +1,4 @@
-package messaging
+package service
 
 import (
 	"io/ioutil"
@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Financial-Times/content-rw-elasticsearch/concept"
+	"github.com/Financial-Times/content-rw-elasticsearch/service/concept"
 	"github.com/Financial-Times/content-rw-elasticsearch/es"
 	logTest "github.com/Financial-Times/go-logger/test"
 	"github.com/Financial-Times/message-queue-gonsumer/consumer"

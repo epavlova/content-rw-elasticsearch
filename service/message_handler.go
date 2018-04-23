@@ -1,4 +1,4 @@
-package messaging
+package service
 
 import (
 	"encoding/json"
@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Financial-Times/content-rw-elasticsearch/concept"
+	"github.com/Financial-Times/content-rw-elasticsearch/service/concept"
 	"github.com/Financial-Times/content-rw-elasticsearch/content"
 	"github.com/Financial-Times/content-rw-elasticsearch/es"
 	"github.com/Financial-Times/go-logger"

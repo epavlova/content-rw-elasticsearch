@@ -80,13 +80,13 @@ func TestConcordanceApiService_GetConceptsSuccessfully(t *testing.T) {
 	sampleID := ThingURIPrefix + uuid.NewRandom().String()
 
 	sampleResponse := ConcordancesResponse{
-		Concordances: []concordance{
+		Concordances: []Concordance{
 			{
-				Concept: concept{
+				Concept: Concept{
 					ID:     sampleID,
 					APIURL: sampleID,
 				},
-				Identifier: identifier{
+				Identifier: Identifier{
 					Authority:       tmeAuthority,
 					IdentifierValue: "TME-ID",
 				},
