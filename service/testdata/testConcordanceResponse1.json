@@ -1,0 +1,274 @@
+{
+  "concordances": [
+    {
+      "concept": {
+        "id": "http://api.ft.com/things/97133bf5-c958-4c69-9e0e-44874679cedc",
+        "apiUrl": "http://api.ft.com/things/97133bf5-c958-4c69-9e0e-44874679cedc"
+      },
+      "identifier": {
+        "authority": "http://api.ft.com/system/UPP",
+        "identifierValue": "97133bf5-c958-4c69-9e0e-44874679cedc"
+      }
+    },
+    {
+      "concept": {
+        "id": "http://api.ft.com/things/97133bf5-c958-4c69-9e0e-44874679cedc",
+        "apiUrl": "http://api.ft.com/things/97133bf5-c958-4c69-9e0e-44874679cedc"
+      },
+      "identifier": {
+        "authority": "http://api.ft.com/system/SMARTLOGIC",
+        "identifierValue": "97133bf5-c958-4c69-9e0e-44874679cedc"
+      }
+    },
+    {
+      "concept": {
+        "id": "http://api.ft.com/things/97133bf5-c958-4c69-9e0e-44874679cedc",
+        "apiUrl": "http://api.ft.com/things/97133bf5-c958-4c69-9e0e-44874679cedc"
+      },
+      "identifier": {
+        "authority": "http://api.ft.com/system/FT-TME",
+        "identifierValue": "Njc=-U2VjdGlvbnM="
+      }
+    },
+    {
+      "concept": {
+        "id": "http://api.ft.com/things/97133bf5-c958-4c69-9e0e-44874679cedc",
+        "apiUrl": "http://api.ft.com/things/97133bf5-c958-4c69-9e0e-44874679cedc"
+      },
+      "identifier": {
+        "authority": "http://api.ft.com/system/UPP",
+        "identifierValue": "94977e6e-f170-34c8-b6db-dbbb4a9c6137"
+      }
+    },
+    {
+      "concept": {
+        "id": "http://api.ft.com/things/5e9951f6-76ad-3f09-98e6-a2457ce55548",
+        "apiUrl": "http://api.ft.com/organisations/5e9951f6-76ad-3f09-98e6-a2457ce55548"
+      },
+      "identifier": {
+        "authority": "http://api.ft.com/system/FT-TME",
+        "identifierValue": "ZjhiNGI0YjUtOTFjNC00NzY3LTk0NGQtMDEyNGI0ZTdiZTdj-T04="
+      }
+    },
+    {
+      "concept": {
+        "id": "http://api.ft.com/things/5e9951f6-76ad-3f09-98e6-a2457ce55548",
+        "apiUrl": "http://api.ft.com/organisations/5e9951f6-76ad-3f09-98e6-a2457ce55548"
+      },
+      "identifier": {
+        "authority": "http://api.ft.com/system/UPP",
+        "identifierValue": "9da3f728-7627-3cbc-bc0a-8ce4981ac228"
+      }
+    },
+    {
+      "concept": {
+        "id": "http://api.ft.com/things/5e9951f6-76ad-3f09-98e6-a2457ce55548",
+        "apiUrl": "http://api.ft.com/organisations/5e9951f6-76ad-3f09-98e6-a2457ce55548"
+      },
+      "identifier": {
+        "authority": "http://api.ft.com/system/UPP",
+        "identifierValue": "5e9951f6-76ad-3f09-98e6-a2457ce55548"
+      }
+    },
+    {
+      "concept": {
+        "id": "http://api.ft.com/things/5e9951f6-76ad-3f09-98e6-a2457ce55548",
+        "apiUrl": "http://api.ft.com/organisations/5e9951f6-76ad-3f09-98e6-a2457ce55548"
+      },
+      "identifier": {
+        "authority": "http://api.ft.com/system/FACTSET",
+        "identifierValue": "07RRQ3-E"
+      }
+    },
+    {
+      "concept": {
+        "id": "http://api.ft.com/things/00106288-5702-3229-9826-477973753ef8",
+        "apiUrl": "http://api.ft.com/people/00106288-5702-3229-9826-477973753ef8"
+      },
+      "identifier": {
+        "authority": "http://api.ft.com/system/FT-TME",
+        "identifierValue": "TnN0ZWluX1BOX1BvbGl0aWNpYW5zXzIwMDlfMTBfMl82Mzky-UE4="
+      }
+    },
+    {
+      "concept": {
+        "id": "http://api.ft.com/things/00106288-5702-3229-9826-477973753ef8",
+        "apiUrl": "http://api.ft.com/people/00106288-5702-3229-9826-477973753ef8"
+      },
+      "identifier": {
+        "authority": "http://api.ft.com/system/UPP",
+        "identifierValue": "00106288-5702-3229-9826-477973753ef8"
+      }
+    },
+    {
+      "concept": {
+        "id": "http://api.ft.com/things/bc21d781-3842-3f15-8072-50e018aa5d30",
+        "apiUrl": "http://api.ft.com/things/bc21d781-3842-3f15-8072-50e018aa5d30"
+      },
+      "identifier": {
+        "authority": "http://api.ft.com/system/UPP",
+        "identifierValue": "bc21d781-3842-3f15-8072-50e018aa5d30"
+      }
+    },
+    {
+      "concept": {
+        "id": "http://api.ft.com/things/bc21d781-3842-3f15-8072-50e018aa5d30",
+        "apiUrl": "http://api.ft.com/things/bc21d781-3842-3f15-8072-50e018aa5d30"
+      },
+      "identifier": {
+        "authority": "http://api.ft.com/system/FT-TME",
+        "identifierValue": "TnN0ZWluX0dMX0FGVE1fR0xfMTY0OTA2-R0w="
+      }
+    },
+    {
+      "concept": {
+        "id": "http://api.ft.com/things/bfc20bcd-37d0-32dc-ba93-03ef5ee8c403",
+        "apiUrl": "http://api.ft.com/things/bfc20bcd-37d0-32dc-ba93-03ef5ee8c403"
+      },
+      "identifier": {
+        "authority": "http://api.ft.com/system/FT-TME",
+        "identifierValue": "TnN0ZWluX0dMX1N0YW5kYWxvbmVfMDAwMjIy-R0w="
+      }
+    },
+    {
+      "concept": {
+        "id": "http://api.ft.com/things/bfc20bcd-37d0-32dc-ba93-03ef5ee8c403",
+        "apiUrl": "http://api.ft.com/things/bfc20bcd-37d0-32dc-ba93-03ef5ee8c403"
+      },
+      "identifier": {
+        "authority": "http://api.ft.com/system/UPP",
+        "identifierValue": "bfc20bcd-37d0-32dc-ba93-03ef5ee8c403"
+      }
+    },
+    {
+      "concept": {
+        "id": "http://api.ft.com/things/0004fdce-0082-3276-867e-b7a8a8b1de86",
+        "apiUrl": "http://api.ft.com/people/0004fdce-0082-3276-867e-b7a8a8b1de86"
+      },
+      "identifier": {
+        "authority": "http://api.ft.com/system/UPP",
+        "identifierValue": "0004fdce-0082-3276-867e-b7a8a8b1de86"
+      }
+    },
+    {
+      "concept": {
+        "id": "http://api.ft.com/things/0004fdce-0082-3276-867e-b7a8a8b1de86",
+        "apiUrl": "http://api.ft.com/people/0004fdce-0082-3276-867e-b7a8a8b1de86"
+      },
+      "identifier": {
+        "authority": "http://api.ft.com/system/FT-TME",
+        "identifierValue": "TnN0ZWluX1BOXzIwMDkwNjIyXzE3Mzc=-UE4="
+      }
+    },
+    {
+      "concept": {
+        "id": "http://api.ft.com/things/00a8a5d0-2a3e-3fe3-9bbe-86f770b79941",
+        "apiUrl": "http://api.ft.com/organisations/00a8a5d0-2a3e-3fe3-9bbe-86f770b79941"
+      },
+      "identifier": {
+        "authority": "http://api.ft.com/system/FT-TME",
+        "identifierValue": "NmY2M2U1ZDAtOTQxYS00YTYyLTkwNDgtMDk2ZWY1NjdjNmNi-T04="
+      }
+    },
+    {
+      "concept": {
+        "id": "http://api.ft.com/things/00a8a5d0-2a3e-3fe3-9bbe-86f770b79941",
+        "apiUrl": "http://api.ft.com/organisations/00a8a5d0-2a3e-3fe3-9bbe-86f770b79941"
+      },
+      "identifier": {
+        "authority": "http://api.ft.com/system/FT-TME",
+        "identifierValue": "TnN0ZWluX09OX0FGVE1fT05fMjI5Mzg=-T04="
+      }
+    },
+    {
+      "concept": {
+        "id": "http://api.ft.com/things/00a8a5d0-2a3e-3fe3-9bbe-86f770b79941",
+        "apiUrl": "http://api.ft.com/organisations/00a8a5d0-2a3e-3fe3-9bbe-86f770b79941"
+      },
+      "identifier": {
+        "authority": "http://api.ft.com/system/UPP",
+        "identifierValue": "af75c22f-2016-3791-b2e0-462cfa3bb060"
+      }
+    },
+    {
+      "concept": {
+        "id": "http://api.ft.com/things/00a8a5d0-2a3e-3fe3-9bbe-86f770b79941",
+        "apiUrl": "http://api.ft.com/organisations/00a8a5d0-2a3e-3fe3-9bbe-86f770b79941"
+      },
+      "identifier": {
+        "authority": "http://api.ft.com/system/UPP",
+        "identifierValue": "00a8a5d0-2a3e-3fe3-9bbe-86f770b79941"
+      }
+    },
+    {
+      "concept": {
+        "id": "http://api.ft.com/things/00a8a5d0-2a3e-3fe3-9bbe-86f770b79941",
+        "apiUrl": "http://api.ft.com/organisations/00a8a5d0-2a3e-3fe3-9bbe-86f770b79941"
+      },
+      "identifier": {
+        "authority": "http://api.ft.com/system/UPP",
+        "identifierValue": "4a6e9712-a81b-346e-b134-e93f7b0ba45c"
+      }
+    },
+    {
+      "concept": {
+        "id": "http://api.ft.com/things/00a8a5d0-2a3e-3fe3-9bbe-86f770b79941",
+        "apiUrl": "http://api.ft.com/organisations/00a8a5d0-2a3e-3fe3-9bbe-86f770b79941"
+      },
+      "identifier": {
+        "authority": "http://api.ft.com/system/FACTSET",
+        "identifierValue": "06ZPRF-E"
+      }
+    },
+    {
+      "concept": {
+        "id": "http://api.ft.com/things/00a8a5d0-2a3e-3fe3-9bbe-86f770b79941",
+        "apiUrl": "http://api.ft.com/organisations/00a8a5d0-2a3e-3fe3-9bbe-86f770b79941"
+      },
+      "identifier": {
+        "authority": "http://api.ft.com/system/LEI",
+        "identifierValue": "5493001NTNQJDH60PM02"
+      }
+    },
+    {
+      "concept": {
+        "id": "http://api.ft.com/things/dd3cc5a2-d14b-4b78-811c-89c387497476",
+        "apiUrl": "http://api.ft.com/things/dd3cc5a2-d14b-4b78-811c-89c387497476"
+      },
+      "identifier": {
+        "authority": "http://api.ft.com/system/UPP",
+        "identifierValue": "fb4b9958-3bcf-3f21-9b7e-a43f90bbd3fc"
+      }
+    },
+    {
+      "concept": {
+        "id": "http://api.ft.com/things/dd3cc5a2-d14b-4b78-811c-89c387497476",
+        "apiUrl": "http://api.ft.com/things/dd3cc5a2-d14b-4b78-811c-89c387497476"
+      },
+      "identifier": {
+        "authority": "http://api.ft.com/system/FT-TME",
+        "identifierValue": "NjM3ZTU3MDUtMmY1ZS00ZGExLThkNjYtYWY4YWUzY2U1YWVm-VG9waWNz"
+      }
+    },
+    {
+      "concept": {
+        "id": "http://api.ft.com/things/dd3cc5a2-d14b-4b78-811c-89c387497476",
+        "apiUrl": "http://api.ft.com/things/dd3cc5a2-d14b-4b78-811c-89c387497476"
+      },
+      "identifier": {
+        "authority": "http://api.ft.com/system/SMARTLOGIC",
+        "identifierValue": "dd3cc5a2-d14b-4b78-811c-89c387497476"
+      }
+    },
+    {
+      "concept": {
+        "id": "http://api.ft.com/things/dd3cc5a2-d14b-4b78-811c-89c387497476",
+        "apiUrl": "http://api.ft.com/things/dd3cc5a2-d14b-4b78-811c-89c387497476"
+      },
+      "identifier": {
+        "authority": "http://api.ft.com/system/UPP",
+        "identifierValue": "dd3cc5a2-d14b-4b78-811c-89c387497476"
+      }
+    }
+  ]
+}

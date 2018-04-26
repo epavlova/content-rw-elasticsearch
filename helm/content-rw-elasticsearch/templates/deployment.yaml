@@ -58,7 +58,9 @@ spec:
           valueFrom:
             secretKeyRef:
               name: global-secrets
-              key: aws.secret_access_key 
+              key: aws.secret_access_key
+        - name: PUBLIC_CONCORDANCES_ENDPOINT
+          value: "{{ .Values.env.PUBLIC_CONCORDANCES_ENDPOINT }}"
         ports: 
         - containerPort: 8080 
         livenessProbe: 

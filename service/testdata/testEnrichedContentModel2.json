@@ -1,0 +1,40 @@
+{
+  "uuid": "62c53650-68d6-4ed9-9932-e76c53bebd35",
+  "content": {
+    "uuid": "62c53650-68d6-4ed9-9932-e76c53bebd35",
+    "title": "test title",
+    "body": "test body",
+    "identifiers": [
+      {
+        "authority": "http://api.ft.com/system/FTCOM-METHODE",
+        "identifierValue": "62c53650-68d6-4ed9-9932-e76c53bebd35"
+      }
+    ],
+    "publishedDate": "",
+    "lastModified": "",
+    "firstPublishedDate": "",
+    "mediaType": "",
+    "marked_deleted": false,
+    "byline": "John Doe in London",
+    "standfirst": "standfirst",
+    "description": "description",
+    "mainImage": "",
+    "publishReference": "tid_riega1hr5w",
+    "type": "Article"
+  },
+  "metadata": [
+    {
+      "thing": {
+        "id": "http://api.ft.com/things/9b3d0b4c-f317-3acc-abdc-d023832f5a40",
+        "prefLabel": "Lucian Arye Bebchuk",
+        "types": [
+          "http://www.ft.com/ontology/core/Thing",
+          "http://www.ft.com/ontology/concept/Concept",
+          "http://www.ft.com/ontology/person/Person"
+        ],
+        "predicate": "http://www.ft.com/ontology/annotation/mentions",
+        "apiUrl": "http://api.ft.com/people/9b3d0b4c-f317-3acc-abdc-d023832f5a40"
+      }
+    }
+  ]
+}

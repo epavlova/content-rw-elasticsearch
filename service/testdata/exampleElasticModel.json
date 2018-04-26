@@ -1,0 +1,143 @@
+{
+  "uid": "aae9611e-f66c-4fe4-a6c6-2e2bdea69060",
+  "last_metadata_publish": null,
+  "index_date": null,
+  "mark_deleted": false,
+  "story_id": null,
+  "lead_headline": "In praise of activist investors",
+  "byline": "John Doe in London",
+  "body": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris scelerisque, nunc vel consectetur sagittis, purus ex ultrices metus, in consectetur nisl lacus congue nulla.",
+  "url": "https://www.ft.com/content/aae9611e-f66c-4fe4-a6c6-2e2bdea69060",
+  "initial_publish": "2017-06-26T04:00:17.000Z",
+  "last_publish": "2017-06-26T04:00:17.000Z",
+  "content_type": "article",
+  "provider_name": null,
+  "length_millis": 0,
+  "short_description": null,
+  "thumbnail_url": "https://www.ft.com/__origami/service/image/v2/images/raw/http%3A%2F%2Fprod-upp-image-read.ft.com%2F5546cbc4-d4f7-47f9-3f3e-941fb0799c4f?source=search&fit=scale-down&width=167",
+  "section_link": null,
+  "secondary_image_id": null,
+  "contributor_rights": null,
+  "source_code": null,
+  "storymodel_id": null,
+  "model_api_url": "http://api.ft.com/content/aae9611e-f66c-4fe4-a6c6-2e2bdea69060",
+  "model_master_source": null,
+  "model_master_id": null,
+  "model_excerpt": null,
+  "model_resource_uri": null,
+  "cmr_primarysection": "Equities",
+  "cmr_primarytheme": "Investor activism",
+  "cmr_mediatype": null,
+  "cmr_metadataupdatetime": null,
+  "cmr_primarysection_id": "OTg=-U2VjdGlvbnM=",
+  "cmr_primarytheme_id": "OWIwMDQ1MTEtOWIxYi00MmEzLWFjOGQtY2VhMDM0MjJlZjI3-VG9waWNz",
+  "cmr_mediatype_id": null,
+  "cmr_brands": [
+    "Markets Insight",
+    "Financial Times"
+  ],
+  "cmr_brands_ids": [
+    "f021ef0a-e3a5-3530-9394-21a1eaf9f3f6",
+    "QnJhbmRzXzExNg==-QnJhbmRz",
+    "dbb0bdae-1f0c-11e4-b0cb-b2227cce2b54"
+  ],
+  "cmr_specialreports": null,
+  "cmr_specialreports_ids": null,
+  "cmr_sections": [
+    "Investor activism",
+    "Markets Insight",
+    "Opinion",
+    "Markets",
+    "Financial Times",
+    "Companies",
+    "UK"
+  ],
+  "cmr_sections_ids": [
+    "aeada5a9-39cb-4bb6-b795-5baba8acf3fb",
+    "OWIwMDQ1MTEtOWIxYi00MmEzLWFjOGQtY2VhMDM0MjJlZjI3-VG9waWNz",
+    "f021ef0a-e3a5-3530-9394-21a1eaf9f3f6",
+    "QnJhbmRzXzExNg==-QnJhbmRz",
+    "6da31a37-691f-4908-896f-2829ebe2309e",
+    "OA==-R2VucmVz",
+    "c91b1fad-1097-468b-be82-9a8ff717d54c",
+    "NzE=-U2VjdGlvbnM=",
+    "dbb0bdae-1f0c-11e4-b0cb-b2227cce2b54",
+    "c47f4dfc-6879-4e95-accf-ca8cbe6a1f69",
+    "Mjk=-U2VjdGlvbnM=",
+    "6b683eff-56c3-43d9-acfc-7511d974fc01",
+    "TnN0ZWluX0dMX0dC-R0w=",
+    "Ng==-U2VjdGlvbnM="
+  ],
+  "cmr_subjects": null,
+  "cmr_subjects_ids": null,
+  "cmr_topics": [
+    "Equities",
+    "Investor activism",
+    "Markets",
+    "Companies"
+  ],
+  "cmr_topics_ids": [
+    "b7ea3c33-ea8c-432e-bb7e-e3bbc8fdc2bb",
+    "OTg=-U2VjdGlvbnM=",
+    "aeada5a9-39cb-4bb6-b795-5baba8acf3fb",
+    "OWIwMDQ1MTEtOWIxYi00MmEzLWFjOGQtY2VhMDM0MjJlZjI3-VG9waWNz",
+    "c91b1fad-1097-468b-be82-9a8ff717d54c",
+    "NzE=-U2VjdGlvbnM=",
+    "c47f4dfc-6879-4e95-accf-ca8cbe6a1f69",
+    "Mjk=-U2VjdGlvbnM="
+  ],
+  "cmr_people": null,
+  "cmr_people_ids": null,
+  "cmr_regions": [
+    "UK"
+  ],
+  "cmr_regions_ids": [
+    "6b683eff-56c3-43d9-acfc-7511d974fc01",
+    "TnN0ZWluX0dMX0dC-R0w=",
+    "Ng==-U2VjdGlvbnM="
+  ],
+  "cmr_icb": null,
+  "cmr_icb_ids": null,
+  "cmr_iptc": null,
+  "cmr_iptc_ids": null,
+  "cmr_authors_ids": [
+    "Q0ItMDM3NTcxMQ==-QXV0aG9ycw==",
+    "eadc5df0-9838-3971-920e-47beed423b4c"
+  ],
+  "cmr_authors": [
+    "Huw van Steenis"
+  ],
+  "cmr_companynames": null,
+  "cmr_companynames_ids": null,
+  "cmr_orgnames": null,
+  "cmr_orgnames_ids": null,
+  "bestStory": false,
+  "internalContentType": "article",
+  "category": "article",
+  "lookupFailure": false,
+  "format": "Articles",
+  "cmr_genre": [
+    "Opinion"
+  ],
+  "cmr_genre_id": [
+    "6da31a37-691f-4908-896f-2829ebe2309e",
+    "OA==-R2VucmVz"
+  ],
+  "region": null,
+  "topics": null,
+  "displayCodes": null,
+  "displayCodeNames": null,
+  "naicsNames": null,
+  "editorsTags": null,
+  "countryCodes": null,
+  "countryNames": null,
+  "subjects": null,
+  "companyNamesAuto": null,
+  "organisationNamesAuto": null,
+  "companyNamesEditorial": null,
+  "companyTickerCodeAuto": null,
+  "companyTickerCodeEditorial": null,
+  "articleTypes": null,
+  "articleBrands": null,
+  "publishReference": "tid_f7k7nexpop"
+}

@@ -72,6 +72,18 @@
 			"revisionTime": "2016-02-12T16:43:26Z"
 		},
 		{
+			"checksumSHA1": "IkPM2QLv9urri7S49wzroQx9oXA=",
+			"path": "github.com/gorilla/context",
+			"revision": "08b5f424b9271eedf6f9f0ce86cb9396ed337a42",
+			"revisionTime": "2016-08-17T18:46:32Z"
+		},
+		{
+			"checksumSHA1": "CVss9W01Rrm2VlhhjW0z5D35Xo8=",
+			"path": "github.com/gorilla/mux",
+			"revision": "4dbd923b0c9e99ff63ad54b0e9705ff92d3cdb06",
+			"revisionTime": "2018-03-14T16:31:26Z"
+		},
+		{
 			"checksumSHA1": "KJqRW8jfPoHquMAd6FI7x92JxFs=",
 			"path": "github.com/hashicorp/go-version",
 			"revision": "03c5bf6be031b6dd45afec16b1cf94fc8938bc77",
@@ -82,6 +94,18 @@
 			"path": "github.com/jawher/mow.cli",
 			"revision": "d3ffbc2f98b83e09dc8efd55ecec75eb5fd656ec",
 			"revisionTime": "2017-02-20T22:51:54Z"
+		},
+		{
+			"checksumSHA1": "clghfbyn6uFTmv8jK+eR3cMU3so=",
+			"path": "github.com/pborman/uuid",
+			"revision": "c65b2f87fee37d1c7854c9164a450713c28d50cd",
+			"revisionTime": "2018-01-22T19:00:07Z"
+		},
+		{
+			"checksumSHA1": "d6BycwPpKXW09I/tXMqcItE8SA4=",
+			"path": "github.com/pkg/errors",
+			"revision": "816c9085562cd7ee03e7f8188a1cfd942858cded",
+			"revisionTime": "2018-03-11T21:45:15Z"
 		},
 		{
 			"checksumSHA1": "+oyIJwPyeof36XCkY8awrNfxaNM=",
@@ -118,6 +142,12 @@
 			"path": "github.com/stretchr/objx",
 			"revision": "4d4bfba8f1d1027c4fdbe371823030df51419987",
 			"revisionTime": "2017-01-30T11:31:45Z"
+		},
+		{
+			"checksumSHA1": "CK9yBhQ88Rn6zz4FdV7nyOiRTn0=",
+			"path": "github.com/stretchr/stew/slice",
+			"revision": "80ef0842b48b329a6120607c817a85aff5a2ec71",
+			"revisionTime": "2013-08-12T19:02:56Z"
 		},
 		{
 			"checksumSHA1": "jOpeEFMbb70Y0RGoAnj0aYtLZWg=",

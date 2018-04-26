@@ -1,4 +1,4 @@
-package mapper
+package utils
 
 import (
 	"html"
@@ -21,7 +21,7 @@ var (
 
 type textTransformer func(string) string
 
-func transformText(text string, transformers ...textTransformer) string {
+func TransformText(text string, transformers ...textTransformer) string {
 	current := text
 	for _, transformer := range transformers {
 		current = transformer(current)
@@ -29,41 +29,41 @@ func transformText(text string, transformers ...textTransformer) string {
 	return current
 }
 
-func interactiveGraphicsMarkupTagRemover(input string) string {
+func InteractiveGraphicsMarkupTagRemover(input string) string {
 	return interactiveGraphicsRegex.ReplaceAllString(input, "")
 
 }
 
-func pullTagTransformer(input string) string {
+func PullTagTransformer(input string) string {
 	return pullTagRegex.ReplaceAllString(input, "")
 }
 
-func htmlEntityTransformer(input string) string {
+func HtmlEntityTransformer(input string) string {
 	text := nbspRegex.ReplaceAllString(input, " ")
 	return html.UnescapeString(text)
 }
 
-func scriptTagRemover(input string) string {
+func ScriptTagRemover(input string) string {
 	return scriptRegex.ReplaceAllString(input, "")
 }
 
-func tagsRemover(input string) string {
+func TagsRemover(input string) string {
 	return tagRegex.ReplaceAllString(input, "")
 }
 
-func outerSpaceTrimmer(input string) string {
+func OuterSpaceTrimmer(input string) string {
 	return strings.TrimSpace(input)
 }
 
-func embed1Replacer(input string) string {
+func Embed1Replacer(input string) string {
 	return embedRegex.ReplaceAllString(input, "")
 }
 
-func squaredCaptionReplacer(input string) string {
+func SquaredCaptionReplacer(input string) string {
 	return squaredCaptionRegex.ReplaceAllString(input, "")
 
 }
 
-func duplicateWhiteSpaceRemover(input string) string {
+func DuplicateWhiteSpaceRemover(input string) string {
 	return duplicateWhiteSpaceRegex.ReplaceAllString(input, singleSpace)
 }

@@ -9,12 +9,14 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/Financial-Times/content-rw-elasticsearch/service/concept"
 	"github.com/Financial-Times/content-rw-elasticsearch/es"
 	health "github.com/Financial-Times/go-fthealth/v1_1"
 	"github.com/Financial-Times/go-logger"
 	"github.com/Financial-Times/message-queue-gonsumer/consumer"
 	status "github.com/Financial-Times/service-status-go/httphandlers"
 	"github.com/jawher/mow.cli"
+	"github.com/Financial-Times/content-rw-elasticsearch/service"
 )
 
 const (
@@ -36,14 +38,12 @@ func main() {
 		Desc:   "System Code of the application",
 		EnvVar: "APP_SYSTEM_CODE",
 	})
-
 	appName := app.String(cli.StringOpt{
 		Name:   "app-name",
 		Value:  appNameDefaultValue,
 		Desc:   "Application name",
 		EnvVar: "APP_NAME",
 	})
-
 	port := app.String(cli.StringOpt{
 		Name:   "port",
 		Value:  "8080",
@@ -102,6 +102,12 @@ func main() {
 		Desc:   "Whether the consumer uses concurrent processing for the messages",
 		EnvVar: "KAFKA_CONCURRENT_PROCESSING",
 	})
+	publicConcordancesEndpoint := app.String(cli.StringOpt{
+		Name:   "public-concordances-endpoint",
+		Value:  "http://public-concordances-api:8080",
+		Desc:   "Endpoint to concord ids with",
+		EnvVar: "PUBLIC_CONCORDANCES_ENDPOINT",
+	})
 
 	queueConfig := consumer.QueueConfig{
 		Addrs:                []string{*kafkaProxyAddress},
@@ -121,7 +127,7 @@ func main() {
 			Endpoint:  *esEndpoint,
 		}
 
-		client := &http.Client{
+		httpClient := &http.Client{
 			Transport: &http.Transport{
 				Proxy: http.ProxyFromEnvironment,
 				DialContext: (&net.Dialer{
@@ -134,13 +140,14 @@ func main() {
 			},
 		}
 
-		service := es.NewService(*indexName)
+		svc := es.NewService(*indexName)
 		var wg sync.WaitGroup
-		indexer := NewIndexer(service, client, queueConfig, &wg, es.NewClient)
+		concordanceApiService := concept.NewConcordanceApiService(*publicConcordancesEndpoint, httpClient)
+		indexer := service.NewIndexer(svc, concordanceApiService, httpClient, queueConfig, &wg, es.NewClient)
 
-		indexer.Start(*appSystemCode, *appName, *indexName, *port, accessConfig, client)
+		indexer.Start(*appSystemCode, *appName, *indexName, *port, accessConfig, httpClient)
 
-		healthService := newHealthService(&queueConfig, service, client)
+		healthService := newHealthService(&queueConfig, svc, httpClient, concordanceApiService, *appSystemCode)
 		serveAdminEndpoints(healthService, *appSystemCode, *appName, *port)
 
 		indexer.Stop()

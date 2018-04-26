@@ -1,0 +1,197 @@
+{
+  "uuid": "35ebcdf5-54b2-4834-8309-ba5ae3d5dd15",
+  "content": {
+    "accessLevel": "subscribed",
+    "alternativeStandfirsts": {
+      "promotionalStandfirst": null
+    },
+    "alternativeTitles": {
+      "contentPackageTitle": null,
+      "promotionalTitle": "China internet group Toutiao hit by content crackdown"
+    },
+    "body": "\u003cbody\u003e\u003cp\u003eOne of China’s biggest tech start-ups has vowed to hire 4,000 new censors \u003c/body\u003e",
+    "brands": [
+      {
+        "id": "http://api.ft.com/things/dbb0bdae-1f0c-11e4-b0cb-b2227cce2b54"
+      }
+    ],
+    "byline": "Jane Awesome",
+    "canBeDistributed": "yes",
+    "canBeSyndicated": "yes",
+    "comments": {
+      "enabled": true
+    },
+    "contentPackage": null,
+    "copyright": null,
+    "description": null,
+    "externalBinaryUrl": null,
+    "firstPublishedDate": "",
+    "identifiers": [
+      {
+        "authority": "http://api.ft.com/system/FTCOM-METHODE",
+        "identifierValue": "35ebcdf5-54b2-4834-8309-ba5ae3d5dd15"
+      }
+    ],
+    "internalBinaryUrl": null,
+    "lastModified": "2018-04-11T12:27:51.148Z",
+    "mainImage": "invalid-3d82-11e8-22ae-5926626bb4d9",
+    "masterSource": null,
+    "mediaType": null,
+    "members": null,
+    "pixelHeight": null,
+    "pixelWidth": null,
+    "publishReference": "tid_ucjghi2ln2",
+    "publishedDate": "",
+    "rightsGroup": null,
+    "standfirst": "Founder of news aggregation app promises to respect ‘socialist values’",
+    "standout": {
+      "editorsChoice": false,
+      "exclusive": false,
+      "scoop": false
+    },
+    "storyPackage": null,
+    "title": "China internet group Toutiao hit by content crackdown",
+    "type": "Article",
+    "uuid": "35ebcdf5-54b2-4834-8309-ba5ae3d5dd15",
+    "webUrl": null
+  },
+  "metadata": [
+    {
+      "thing": {
+        "id": "http://api.ft.com/things/00a8a5d0-2a3e-3fe3-9bbe-86f770b79941",
+        "prefLabel": "Alibaba",
+        "types": [
+          "http://www.ft.com/ontology/core/Thing",
+          "http://www.ft.com/ontology/concept/Concept",
+          "http://www.ft.com/ontology/organisation/Organisation",
+          "http://www.ft.com/ontology/company/Company",
+          "http://www.ft.com/ontology/company/PublicCompany"
+        ],
+        "predicate": "http://www.ft.com/ontology/annotation/majorMentions",
+        "apiUrl": "http://api.ft.com/organisations/00a8a5d0-2a3e-3fe3-9bbe-86f770b79941"
+      }
+    },
+    {
+      "thing": {
+        "id": "http://api.ft.com/things/5e9951f6-76ad-3f09-98e6-a2457ce55548",
+        "prefLabel": "Tencent Holdings Ltd",
+        "types": [
+          "http://www.ft.com/ontology/core/Thing",
+          "http://www.ft.com/ontology/concept/Concept",
+          "http://www.ft.com/ontology/organisation/Organisation",
+          "http://www.ft.com/ontology/company/Company",
+          "http://www.ft.com/ontology/company/PublicCompany"
+        ],
+        "predicate": "http://www.ft.com/ontology/annotation/about",
+        "apiUrl": "http://api.ft.com/organisations/5e9951f6-76ad-3f09-98e6-a2457ce55548"
+      }
+    },
+    {
+      "thing": {
+        "id": "http://api.ft.com/things/dd3cc5a2-d14b-4b78-811c-89c387497476",
+        "prefLabel": "Chinese business \u0026 finance",
+        "types": [
+          "http://www.ft.com/ontology/core/Thing",
+          "http://www.ft.com/ontology/concept/Concept",
+          "http://www.ft.com/ontology/Topic"
+        ],
+        "predicate": "http://www.ft.com/ontology/annotation/about",
+        "apiUrl": "http://api.ft.com/things/dd3cc5a2-d14b-4b78-811c-89c387497476"
+      }
+    },
+    {
+      "thing": {
+        "id": "http://api.ft.com/things/720ec0a5-6d43-45e2-9f0a-32253faed54f",
+        "prefLabel": "Censorship - NO RESULT FROM CONCORDANCE API",
+        "types": [
+          "http://www.ft.com/ontology/core/Thing",
+          "http://www.ft.com/ontology/concept/Concept",
+          "http://www.ft.com/ontology/Topic"
+        ],
+        "predicate": "http://www.ft.com/ontology/annotation/majorMentions",
+        "apiUrl": "http://api.ft.com/things/720ec0a5-6d43-45e2-9f0a-32253faed54f"
+      }
+    },
+    {
+      "thing": {
+        "id": "http://api.ft.com/things/97133bf5-c958-4c69-9e0e-44874679cedc",
+        "prefLabel": "Asia-Pacific companies",
+        "types": [
+          "http://www.ft.com/ontology/core/Thing",
+          "http://www.ft.com/ontology/concept/Concept",
+          "http://www.ft.com/ontology/Topic"
+        ],
+        "predicate": "http://www.ft.com/ontology/classification/isClassifiedBy",
+        "apiUrl": "http://api.ft.com/things/97133bf5-c958-4c69-9e0e-44874679cedc"
+      }
+    },
+    {
+      "thing": {
+        "id": "http://api.ft.com/things/00106288-5702-3229-9826-477973753ef8",
+        "prefLabel": "Michael Seymour",
+        "types": [
+          "http://www.ft.com/ontology/core/Thing",
+          "http://www.ft.com/ontology/concept/Concept",
+          "http://www.ft.com/ontology/person/Person"
+        ],
+        "predicate": "http://www.ft.com/ontology/hasContributor",
+        "apiUrl": "http://api.ft.com/people/00106288-5702-3229-9826-477973753ef8"
+      }
+    },
+    {
+      "thing": {
+        "id": "http://api.ft.com/things/0004fdce-0082-3276-867e-b7a8a8b1de86",
+        "prefLabel": "Fraizer Campbell",
+        "types": [
+          "http://www.ft.com/ontology/core/Thing",
+          "http://www.ft.com/ontology/concept/Concept",
+          "http://www.ft.com/ontology/person/Person"
+        ],
+        "predicate": "http://www.ft.com/ontology/annotation/about",
+        "apiUrl": "http://api.ft.com/people/0004fdce-0082-3276-867e-b7a8a8b1de86"
+      }
+    },
+    {
+      "thing": {
+        "id": "http://api.ft.com/things/bc21d781-3842-3f15-8072-50e018aa5d30",
+        "prefLabel": "'Îlayh",
+        "types": [
+          "http://www.ft.com/ontology/core/Thing",
+          "http://www.ft.com/ontology/concept/Concept",
+          "http://www.ft.com/ontology/Location"
+        ],
+        "predicate": "http://www.ft.com/ontology/annotation/about",
+        "apiUrl": "http://api.ft.com/things/bc21d781-3842-3f15-8072-50e018aa5d30"
+      }
+    },
+    {
+      "thing": {
+        "id": "http://api.ft.com/things/1b2eb180-92a2-4ac0-9022-66595e17cd4a",
+        "prefLabel": "NO TME ID",
+        "types": [
+          "http://www.ft.com/ontology/core/Thing",
+          "http://www.ft.com/ontology/concept/Concept",
+          "http://www.ft.com/ontology/Topic"
+        ],
+        "predicate": "http://www.ft.com/ontology/classification/isPrimarilyClassifiedBy",
+        "apiUrl": "http://api.ft.com/things/b7ea3c33-ea8c-432e-bb7e-e3bbc8fdc2bb"
+      }
+    },
+    {
+      "thing": {
+        "id": "http://api.ft.com/things/bfc20bcd-37d0-32dc-ba93-03ef5ee8c403",
+        "prefLabel": "Aberdeen",
+        "types": [
+          "http://www.ft.com/ontology/core/Thing",
+          "http://www.ft.com/ontology/concept/Concept",
+          "http://www.ft.com/ontology/Location"
+        ],
+        "predicate": "http://www.ft.com/ontology/annotation/majorMentions",
+        "apiUrl": "http://api.ft.com/things/bfc20bcd-37d0-32dc-ba93-03ef5ee8c403"
+      }
+    }
+  ],
+  "contentUri": "http://methode-article-mapper.svc.ft.com/content/35ebcdf5-54b2-4834-8309-ba5ae3d5dd15",
+  "lastModified": "2018-04-11T12:27:51.148Z",
+  "markedDeleted": "false"
+}
