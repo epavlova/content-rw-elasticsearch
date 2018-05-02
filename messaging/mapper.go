@@ -258,14 +258,12 @@ func handleSectionMapping(annotation content.Thing, model *content.IndexModel, a
 		model.CmrSections = appendIfNotExists(model.CmrSections, annotation.PrefLabel)
 		model.CmrSectionsIds = prepareElasticField(model.CmrSectionsIds, annIDs)
 	case isPrimaryClassifiedBy:
+		model.CmrSections = appendIfNotExists(model.CmrSections, annotation.PrefLabel)
+		model.CmrSectionsIds = prepareElasticField(model.CmrSectionsIds, annIDs)
 		model.CmrPrimarysection = new(string)
 		*model.CmrPrimarysection = annotation.PrefLabel
 		model.CmrPrimarysectionID = new(string)
-		if len(annIDs) == 1 {
-			*model.CmrPrimarysectionID = annIDs[0]
-		} else {
-			*model.CmrPrimarysectionID = annIDs[1]
-		}
+		*model.CmrPrimarysectionID = getCmrIDWithFallback("Sections", annIDs)
 	}
 }
 
@@ -297,7 +295,11 @@ func getCmrIDWithFallback(taxonomy string, annotationIDs []string) string {
 			return annID
 		}
 	}
-	return annotationIDs[0]
+	if len(annotationIDs) > 1 {
+		return annotationIDs[1]
+	} else {
+		return annotationIDs[0]
+	}
 }
 
 func appendIfNotExists(s []string, e string) []string {
