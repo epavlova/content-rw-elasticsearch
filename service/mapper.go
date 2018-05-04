@@ -198,16 +198,24 @@ func populateContentRelatedFields(model *content.IndexModel, enrichedContent con
 		model.InitialPublish = &(enrichedContent.Content.FirstPublishedDate)
 	}
 	model.Body = new(string)
-	*model.Body = utils.TransformText(enrichedContent.Content.Body,
-		utils.InteractiveGraphicsMarkupTagRemover,
-		utils.PullTagTransformer,
-		utils.HtmlEntityTransformer,
-		utils.ScriptTagRemover,
-		utils.TagsRemover,
-		utils.OuterSpaceTrimmer,
-		utils.Embed1Replacer,
-		utils.SquaredCaptionReplacer,
-		utils.DuplicateWhiteSpaceRemover)
+	if enrichedContent.Content.Body != "" {
+		*model.Body = utils.TransformText(enrichedContent.Content.Body,
+			utils.InteractiveGraphicsMarkupTagRemover,
+			utils.PullTagTransformer,
+			utils.HtmlEntityTransformer,
+			utils.ScriptTagRemover,
+			utils.TagsRemover,
+			utils.OuterSpaceTrimmer,
+			utils.Embed1Replacer,
+			utils.SquaredCaptionReplacer,
+			utils.DuplicateWhiteSpaceRemover)
+	} else {
+		*model.Body = enrichedContent.Content.Description
+	}
+
+	model.ShortDescription = new(string)
+	*model.ShortDescription = enrichedContent.Content.Standfirst
+
 	if contentType != BlogType && enrichedContent.Content.MainImage != "" {
 		model.ThumbnailURL = new(string)
 
