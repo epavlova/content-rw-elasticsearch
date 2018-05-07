@@ -1,0 +1,74 @@
+{
+  "uuid": "0fb3501b-16bf-4cd3-845e-d047ab6d8109",
+  "content": {
+    "accessLevel": "free",
+    "byline": "Produced by test",
+    "canBeDistributed": "yes",
+    "canBeSyndicated": "yes",
+    "canonicalWebUrl": "https://www.ft.com/content/0fb3501b-16bf-4cd3-845e-d047ab6d8109",
+    "captions": [
+      {
+        "mediaType": "text/vtt",
+        "url": "https://next-media-api.ft.com/captions/1234567.vtt"
+      }
+    ],
+    "dataSource": [
+      {
+        "audioCodec": "mp3",
+        "binaryUrl": "https://next-media-api.ft.com/renditions/1234567/0x0.mp3",
+        "duration": 130344,
+        "mediaType": "audio/mpeg"
+      },
+      {
+        "audioCodec": "aac",
+        "binaryUrl": "https://next-media-api.ft.com/renditions/1234567/640x360.mp4",
+        "duration": 130388,
+        "mediaType": "video/mp4",
+        "pixelHeight": 360,
+        "pixelWidth": 640,
+        "videoCodec": "h264"
+      },
+      {
+        "audioCodec": "aac",
+        "binaryUrl": "https://next-media-api.ft.com/renditions/1234567/1280x720.mp4",
+        "duration": 130388,
+        "mediaType": "video/mp4",
+        "pixelHeight": 720,
+        "pixelWidth": 1280,
+        "videoCodec": "h264"
+      },
+      {
+        "audioCodec": "aac",
+        "binaryUrl": "https://next-media-api.ft.com/renditions/1234567/1920x1080.mp4",
+        "duration": 130388,
+        "mediaType": "video/mp4",
+        "pixelHeight": 1080,
+        "pixelWidth": 1920,
+        "videoCodec": "h264"
+      }
+    ],
+    "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+    "firstPublishedDate": "2017-09-26T13:44:07.519Z",
+    "identifiers": [
+      {
+        "authority": "http://api.ft.com/system/NEXT-VIDEO-EDITOR",
+        "identifierValue": "0fb3501b-16bf-4cd3-845e-d047ab6d8109"
+      }
+    ],
+    "lastModified": "2018-04-25T11:09:11.199Z",
+    "mainImage": "9baeda0d-cf5f-4e39-9d34-8a1ea53ad852",
+    "publishReference": "tid_video",
+    "publishedDate": "2017-09-26T13:44:07.519Z",
+    "standfirst": "Ut enim ad minim veniam, quis nostrud exercitation",
+    "title": "Lorem ipsum dolor sit amet",
+    "transcript": "<p>[MUSIC PLAYING] </p><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>",
+    "type": "Video",
+    "uuid": "0fb3501b-16bf-4cd3-845e-d047ab6d8109",
+    "webUrl": "https://www.ft.com/content/0fb3501b-16bf-4cd3-845e-d047ab6d8109"
+  },
+  "metadata": [
+  ],
+  "contentUri": "",
+  "lastModified": "2018-04-25T11:09:11.199Z",
+  "markedDeleted": ""
+}

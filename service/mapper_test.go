@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Financial-Times/content-rw-elasticsearch/service/concept"
 	"github.com/Financial-Times/content-rw-elasticsearch/content"
+	"github.com/Financial-Times/content-rw-elasticsearch/service/concept"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
@@ -17,14 +17,16 @@ func TestConvertToESContentModel(t *testing.T) {
 	assert := assert.New(t)
 
 	tests := []struct {
+		contentType               string
 		inputFileEnrichedModel    string
 		inputFileConcordanceModel string
 		outputFile                string
 		tid                       string
 	}{
-		{"testdata/exampleEnrichedContentModel.json", "testdata/exampleConcordanceResponse.json", "testdata/exampleElasticModel.json", "tid_1"},
-		{"testdata/testEnrichedContentModel1.json", "testdata/testConcordanceResponse1.json", "testdata/testElasticModel1.json", "tid_2"},
-		{"testdata/testEnrichedContentModel2.json", "", "testdata/testElasticModel2.json", "tid_3"},
+		{"article", "testdata/exampleEnrichedContentModel.json", "testdata/exampleConcordanceResponse.json", "testdata/exampleElasticModel.json", "tid_1"},
+		{"article", "testdata/testEnrichedContentModel1.json", "testdata/testConcordanceResponse1.json", "testdata/testElasticModel1.json", "tid_2"},
+		{"article", "testdata/testEnrichedContentModel2.json", "", "testdata/testElasticModel2.json", "tid_3"},
+		{"video", "testdata/testEnrichedContentModel4.json", "", "testdata/testElasticModel4.json", "tid_video"},
 	}
 	concordanceApiMock := new(concordanceApiMock)
 	indexer := &MessageHandler{ConceptGetter: concordanceApiMock}
@@ -48,7 +50,7 @@ func TestConvertToESContentModel(t *testing.T) {
 		require.NoError(t, err, "Unexpected error")
 
 		startTime := time.Now().UnixNano() / 1000000
-		esModel := indexer.ToIndexModel(ecModel, "article", test.tid)
+		esModel := indexer.ToIndexModel(ecModel, test.contentType, test.tid)
 
 		endTime := time.Now().UnixNano() / 1000000
 

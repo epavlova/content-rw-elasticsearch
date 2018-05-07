@@ -38,6 +38,8 @@ const (
 	ArticleType = "article"
 	VideoType   = "video"
 	BlogType    = "blog"
+
+	video_prefix = "video"
 )
 
 var noAnnotationErr = errors.New("No annotation to be processed")
@@ -233,6 +235,14 @@ func populateContentRelatedFields(model *content.IndexModel, enrichedContent con
 			*model.ThumbnailURL = strings.Replace(imageServiceURL, imagePlaceholder, imageID.String(), -1)
 		}
 
+	}
+
+	if contentType == VideoType && len(enrichedContent.Content.DataSources) > 0 {
+		for _, ds := range enrichedContent.Content.DataSources {
+			if strings.HasPrefix(ds.MediaType, video_prefix) {
+				model.LengthMillis = ds.Duration
+			}
+		}
 	}
 	model.URL = new(string)
 	*model.URL = webURLPrefix + enrichedContent.Content.UUID

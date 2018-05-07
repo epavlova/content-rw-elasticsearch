@@ -109,6 +109,12 @@ type Content struct {
 	MainImage          string       `json:"mainImage"`
 	PublishReference   string       `json:"publishReference"`
 	Type               string       `json:"type"`
+	DataSources        []dataSource `json:"dataSource"`
+}
+
+type dataSource struct {
+	Duration  int32  `json:"duration"`
+	MediaType string `json:"mediaType"`
 }
 
 type identifier struct {
