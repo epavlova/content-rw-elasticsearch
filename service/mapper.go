@@ -241,6 +241,7 @@ func populateContentRelatedFields(model *content.IndexModel, enrichedContent con
 		for _, ds := range enrichedContent.Content.DataSources {
 			if strings.HasPrefix(ds.MediaType, video_prefix) {
 				model.LengthMillis = ds.Duration
+				break
 			}
 		}
 	}
