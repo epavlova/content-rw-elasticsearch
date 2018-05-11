@@ -29,7 +29,7 @@ func TestConvertToESContentModel(t *testing.T) {
 		{"video", "testdata/testEnrichedContentModel4.json", "", "testdata/testElasticModel4.json", "tid_video"},
 	}
 	concordanceApiMock := new(concordanceApiMock)
-	indexer := &MessageHandler{ConceptGetter: concordanceApiMock}
+	handler := &MessageHandler{ConceptGetter: concordanceApiMock, baseApiUrl: "https://api.ft.com/"}
 
 	for _, test := range tests {
 		if test.inputFileConcordanceModel != "" {
@@ -50,7 +50,7 @@ func TestConvertToESContentModel(t *testing.T) {
 		require.NoError(t, err, "Unexpected error")
 
 		startTime := time.Now().UnixNano() / 1000000
-		esModel := indexer.ToIndexModel(ecModel, test.contentType, test.tid)
+		esModel := handler.ToIndexModel(ecModel, test.contentType, test.tid)
 
 		endTime := time.Now().UnixNano() / 1000000
 

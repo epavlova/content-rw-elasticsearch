@@ -25,7 +25,7 @@ const (
 	hasAuthor              = "http://www.ft.com/ontology/annotation/hasAuthor"
 	hasContributor         = "http://www.ft.com/ontology/hasContributor"
 	webURLPrefix           = "https://www.ft.com/content/"
-	apiURLPrefix           = "http://api.ft.com/content/"
+	apiURLPrefix           = "content/"
 	imageServiceURL        = "https://www.ft.com/__origami/service/image/v2/images/raw/http%3A%2F%2Fprod-upp-image-read.ft.com%2F[image_uuid]?source=search&fit=scale-down&width=167"
 	imagePlaceholder       = "[image_uuid]"
 
@@ -65,7 +65,7 @@ var ContentTypeMap = map[string]content.ContentType{
 func (handler *MessageHandler) ToIndexModel(enrichedContent content.EnrichedContent, contentType string, tid string) content.IndexModel {
 	model := content.IndexModel{}
 
-	populateContentRelatedFields(&model, enrichedContent, contentType, tid)
+	populateContentRelatedFields(&model, enrichedContent, contentType, tid, handler.baseApiUrl)
 
 	annotations, concepts, err := handler.prepareAnnotationsWithConcepts(&enrichedContent, tid)
 	if err != nil {
@@ -169,7 +169,7 @@ func (handler *MessageHandler) prepareAnnotationsWithConcepts(enrichedContent *c
 	return anns, concepts, err
 }
 
-func populateContentRelatedFields(model *content.IndexModel, enrichedContent content.EnrichedContent, contentType string, tid string) {
+func populateContentRelatedFields(model *content.IndexModel, enrichedContent content.EnrichedContent, contentType string, tid string, baseApiUrl string) {
 	model.IndexDate = new(string)
 	*model.IndexDate = time.Now().UTC().Format("2006-01-02T15:04:05.999Z")
 	model.ContentType = new(string)
@@ -248,7 +248,7 @@ func populateContentRelatedFields(model *content.IndexModel, enrichedContent con
 	model.URL = new(string)
 	*model.URL = webURLPrefix + enrichedContent.Content.UUID
 	model.ModelAPIURL = new(string)
-	*model.ModelAPIURL = apiURLPrefix + enrichedContent.Content.UUID
+	*model.ModelAPIURL = baseApiUrl + apiURLPrefix + enrichedContent.Content.UUID
 	model.PublishReference = tid
 }
 

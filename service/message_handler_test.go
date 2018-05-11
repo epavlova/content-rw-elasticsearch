@@ -9,8 +9,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Financial-Times/content-rw-elasticsearch/service/concept"
 	"github.com/Financial-Times/content-rw-elasticsearch/es"
+	"github.com/Financial-Times/content-rw-elasticsearch/service/concept"
 	logTest "github.com/Financial-Times/go-logger/test"
 	"github.com/Financial-Times/message-queue-gonsumer/consumer"
 	"github.com/stretchr/testify/assert"
@@ -112,18 +112,18 @@ func TestStartClient(t *testing.T) {
 	concordanceApiMock := new(concordanceApiMock)
 
 	var wg sync.WaitGroup
-	indexer := NewIndexer(es.NewService("index"), concordanceApiMock, http.DefaultClient, queueConfig, &wg, NewClient)
+	handler := NewMessageHandler(es.NewService("index"), concordanceApiMock, http.DefaultClient, queueConfig, &wg, NewClient)
 
-	indexer.Start("app", "name", "index", "1984", accessConfig, http.DefaultClient)
-	defer indexer.Stop()
+	handler.Start("http://api.ft.com/", accessConfig, http.DefaultClient)
+	defer handler.Stop()
 
 	time.Sleep(100 * time.Millisecond)
 
-	assert.NotNil(indexer.esService, "Elastic Service should be initialized")
-	assert.Equal("index", (indexer.esService).(*es.Service).IndexName, "Wrong index")
-	(indexer.esService).(*es.Service).Lock()
-	assert.NotNil((indexer.esService).(*es.Service).ElasticClient, "Elastic client should be initialized")
-	(indexer.esService).(*es.Service).Unlock()
+	assert.NotNil(handler.esService, "Elastic Service should be initialized")
+	assert.Equal("index", (handler.esService).(*es.Service).IndexName, "Wrong index")
+	(handler.esService).(*es.Service).Lock()
+	assert.NotNil((handler.esService).(*es.Service).ElasticClient, "Elastic client should be initialized")
+	(handler.esService).(*es.Service).Unlock()
 }
 
 func TestStartClientError(t *testing.T) {
@@ -152,18 +152,18 @@ func TestStartClientError(t *testing.T) {
 	concordanceApiMock := new(concordanceApiMock)
 
 	var wg sync.WaitGroup
-	indexer := NewIndexer(es.NewService("index"), concordanceApiMock, http.DefaultClient, queueConfig, &wg, NewClient)
+	handler := NewMessageHandler(es.NewService("index"), concordanceApiMock, http.DefaultClient, queueConfig, &wg, NewClient)
 
-	indexer.Start("app", "name", "index", "1984", accessConfig, http.DefaultClient)
-	defer indexer.Stop()
+	handler.Start("http://api.ft.com/", accessConfig, http.DefaultClient)
+	defer handler.Stop()
 
 	time.Sleep(100 * time.Millisecond)
 
 	require.NotNil(t, hook.LastEntry())
 	assert.Equal("error", hook.LastEntry().Level.String(), "Wrong log")
-	assert.NotNil(indexer.esService, "Elastic Service should be initialized")
-	assert.Equal("index", (indexer.esService).(*es.Service).IndexName, "Wrong index")
-	assert.Nil((indexer.esService).(*es.Service).ElasticClient, "Elastic client should not be initialized")
+	assert.NotNil(handler.esService, "Elastic Service should be initialized")
+	assert.Equal("index", (handler.esService).(*es.Service).IndexName, "Wrong index")
+	assert.Nil((handler.esService).(*es.Service).ElasticClient, "Elastic client should not be initialized")
 }
 
 func TestHandleWriteMessage(t *testing.T) {
@@ -177,8 +177,8 @@ func TestHandleWriteMessage(t *testing.T) {
 	concordanceApiMock := new(concordanceApiMock)
 	concordanceApiMock.On("GetConcepts", mock.AnythingOfType("string"), mock.AnythingOfType("[]string")).Return(map[string]concept.ConceptModel{}, nil)
 
-	indexer := MessageHandler{esService: serviceMock, ConceptGetter: concordanceApiMock}
-	indexer.handleMessage(consumer.Message{Body: string(inputJSON)})
+	handler := MessageHandler{esService: serviceMock, ConceptGetter: concordanceApiMock}
+	handler.handleMessage(consumer.Message{Body: string(inputJSON)})
 
 	serviceMock.AssertExpectations(t)
 	concordanceApiMock.AssertExpectations(t)
@@ -196,8 +196,8 @@ func TestHandleWriteMessageBlog(t *testing.T) {
 	concordanceApiMock := new(concordanceApiMock)
 	concordanceApiMock.On("GetConcepts", mock.AnythingOfType("string"), mock.AnythingOfType("[]string")).Return(map[string]concept.ConceptModel{}, nil)
 
-	indexer := MessageHandler{esService: serviceMock, ConceptGetter: concordanceApiMock}
-	indexer.handleMessage(consumer.Message{Body: input})
+	handler := MessageHandler{esService: serviceMock, ConceptGetter: concordanceApiMock}
+	handler.handleMessage(consumer.Message{Body: input})
 
 	serviceMock.AssertExpectations(t)
 	concordanceApiMock.AssertExpectations(t)
@@ -215,8 +215,8 @@ func TestHandleWriteMessageBlogWithHeader(t *testing.T) {
 	concordanceApiMock := new(concordanceApiMock)
 	concordanceApiMock.On("GetConcepts", mock.AnythingOfType("string"), mock.AnythingOfType("[]string")).Return(map[string]concept.ConceptModel{}, nil)
 
-	indexer := MessageHandler{esService: serviceMock, ConceptGetter: concordanceApiMock}
-	indexer.handleMessage(consumer.Message{Body: input, Headers: map[string]string{"Origin-System-Id": "wordpress"}})
+	handler := MessageHandler{esService: serviceMock, ConceptGetter: concordanceApiMock}
+	handler.handleMessage(consumer.Message{Body: input, Headers: map[string]string{"Origin-System-Id": "wordpress"}})
 
 	serviceMock.AssertExpectations(t)
 	concordanceApiMock.AssertExpectations(t)
@@ -234,8 +234,8 @@ func TestHandleWriteMessageVideo(t *testing.T) {
 	concordanceApiMock := new(concordanceApiMock)
 	concordanceApiMock.On("GetConcepts", mock.AnythingOfType("string"), mock.AnythingOfType("[]string")).Return(map[string]concept.ConceptModel{}, nil)
 
-	indexer := MessageHandler{esService: serviceMock, ConceptGetter: concordanceApiMock}
-	indexer.handleMessage(consumer.Message{Body: input})
+	handler := MessageHandler{esService: serviceMock, ConceptGetter: concordanceApiMock}
+	handler.handleMessage(consumer.Message{Body: input})
 
 	serviceMock.AssertExpectations(t)
 	concordanceApiMock.AssertExpectations(t)
@@ -250,8 +250,8 @@ func TestHandleWriteMessageUnknownType(t *testing.T) {
 
 	serviceMock := &esServiceMock{}
 
-	indexer := MessageHandler{esService: serviceMock}
-	indexer.handleMessage(consumer.Message{Body: input})
+	handler := MessageHandler{esService: serviceMock}
+	handler.handleMessage(consumer.Message{Body: input})
 
 	serviceMock.AssertNotCalled(t, "WriteData", mock.Anything, "aae9611e-f66c-4fe4-a6c6-2e2bdea69060", mock.Anything)
 	serviceMock.AssertNotCalled(t, "DeleteData", mock.Anything, "aae9611e-f66c-4fe4-a6c6-2e2bdea69060")
@@ -268,8 +268,8 @@ func TestHandleWriteMessageNoUUIDForMetadataPublish(t *testing.T) {
 
 	serviceMock := &esServiceMock{}
 
-	indexer := MessageHandler{esService: serviceMock}
-	indexer.handleMessage(consumer.Message{Body: string(inputJSON), Headers: map[string]string{originHeader: methodeOrigin}})
+	handler := MessageHandler{esService: serviceMock}
+	handler.handleMessage(consumer.Message{Body: string(inputJSON), Headers: map[string]string{originHeader: methodeOrigin}})
 
 	serviceMock.AssertNotCalled(t, "WriteData", mock.Anything, "b17756fe-0f62-4cf1-9deb-ca7a2ff80172", mock.Anything)
 	serviceMock.AssertNotCalled(t, "DeleteData", mock.Anything, "b17756fe-0f62-4cf1-9deb-ca7a2ff80172")
@@ -290,8 +290,8 @@ func TestHandleWriteMessageNoType(t *testing.T) {
 
 	serviceMock := &esServiceMock{}
 
-	indexer := MessageHandler{esService: serviceMock}
-	indexer.handleMessage(consumer.Message{Body: input})
+	handler := MessageHandler{esService: serviceMock}
+	handler.handleMessage(consumer.Message{Body: input})
 
 	serviceMock.AssertNotCalled(t, "WriteData", mock.Anything, mock.Anything, mock.Anything)
 	serviceMock.AssertNotCalled(t, "DeleteData", mock.Anything, mock.Anything)
@@ -312,8 +312,8 @@ func TestHandleWriteMessageError(t *testing.T) {
 	concordanceApiMock := new(concordanceApiMock)
 	concordanceApiMock.On("GetConcepts", mock.AnythingOfType("string"), mock.AnythingOfType("[]string")).Return(map[string]concept.ConceptModel{}, nil)
 
-	indexer := MessageHandler{esService: serviceMock, ConceptGetter: concordanceApiMock}
-	indexer.handleMessage(consumer.Message{Body: string(inputJSON)})
+	handler := MessageHandler{esService: serviceMock, ConceptGetter: concordanceApiMock}
+	handler.handleMessage(consumer.Message{Body: string(inputJSON)})
 
 	serviceMock.AssertExpectations(t)
 	require.NotNil(t, hook.LastEntry())
@@ -332,8 +332,8 @@ func TestHandleDeleteMessage(t *testing.T) {
 	serviceMock := &esServiceMock{}
 	serviceMock.On("DeleteData", "FTCom", "aae9611e-f66c-4fe4-a6c6-2e2bdea69060").Return(&elastic.DeleteResult{}, nil)
 
-	indexer := MessageHandler{esService: serviceMock}
-	indexer.handleMessage(consumer.Message{Body: input})
+	handler := MessageHandler{esService: serviceMock}
+	handler.handleMessage(consumer.Message{Body: input})
 
 	serviceMock.AssertExpectations(t)
 }
@@ -351,8 +351,8 @@ func TestHandleDeleteMessageError(t *testing.T) {
 
 	serviceMock.On("DeleteData", "FTCom", "aae9611e-f66c-4fe4-a6c6-2e2bdea69060").Return(&elastic.DeleteResult{}, elastic.ErrTimeout)
 
-	indexer := MessageHandler{esService: serviceMock}
-	indexer.handleMessage(consumer.Message{Body: input})
+	handler := MessageHandler{esService: serviceMock}
+	handler.handleMessage(consumer.Message{Body: input})
 
 	serviceMock.AssertExpectations(t)
 	require.NotNil(t, hook.LastEntry())
@@ -366,8 +366,8 @@ func TestHandleMessageJsonError(t *testing.T) {
 
 	serviceMock := &esServiceMock{}
 
-	indexer := &MessageHandler{esService: serviceMock}
-	indexer.handleMessage(consumer.Message{Body: "malformed json"})
+	handler := &MessageHandler{esService: serviceMock}
+	handler.handleMessage(consumer.Message{Body: "malformed json"})
 
 	require.NotNil(t, hook.LastEntry())
 	assert.Equal("error", hook.LastEntry().Level.String(), "Wrong log")
@@ -381,8 +381,8 @@ func TestHandleSyntheticMessage(t *testing.T) {
 	hook := logTest.NewTestHook("content-rw-elasticsearch")
 
 	serviceMock := &esServiceMock{}
-	indexer := &MessageHandler{esService: serviceMock}
-	indexer.handleMessage(consumer.Message{Headers: map[string]string{"X-Request-Id": "SYNTHETIC-REQ-MON_WuLjbRpCgh"}})
+	handler := &MessageHandler{esService: serviceMock}
+	handler.handleMessage(consumer.Message{Headers: map[string]string{"X-Request-Id": "SYNTHETIC-REQ-MON_WuLjbRpCgh"}})
 
 	require.NotNil(t, hook.LastEntry())
 	assert.Equal("info", hook.LastEntry().Level.String(), "Wrong log")
