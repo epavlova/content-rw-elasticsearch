@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	"fmt"
 	"github.com/Financial-Times/content-rw-elasticsearch/content"
 	"github.com/Financial-Times/content-rw-elasticsearch/service/concept"
 	"github.com/Financial-Times/content-rw-elasticsearch/service/utils"
@@ -25,7 +26,7 @@ const (
 	hasAuthor              = "http://www.ft.com/ontology/annotation/hasAuthor"
 	hasContributor         = "http://www.ft.com/ontology/hasContributor"
 	webURLPrefix           = "https://www.ft.com/content/"
-	apiURLPrefix           = "content/"
+	apiURLPrefix           = "/content/"
 	imageServiceURL        = "https://www.ft.com/__origami/service/image/v2/images/raw/http%3A%2F%2Fprod-upp-image-read.ft.com%2F[image_uuid]?source=search&fit=scale-down&width=167"
 	imagePlaceholder       = "[image_uuid]"
 
@@ -65,7 +66,11 @@ var ContentTypeMap = map[string]content.ContentType{
 func (handler *MessageHandler) ToIndexModel(enrichedContent content.EnrichedContent, contentType string, tid string) content.IndexModel {
 	model := content.IndexModel{}
 
-	populateContentRelatedFields(&model, enrichedContent, contentType, tid, handler.baseApiUrl)
+	baseApiUrl := handler.baseApiUrl
+	if strings.HasPrefix(handler.baseApiUrl, "http://") {
+		baseApiUrl = strings.Replace(handler.baseApiUrl, "http", "https", 1)
+	}
+	populateContentRelatedFields(&model, enrichedContent, contentType, tid, baseApiUrl)
 
 	annotations, concepts, err := handler.prepareAnnotationsWithConcepts(&enrichedContent, tid)
 	if err != nil {
@@ -248,7 +253,7 @@ func populateContentRelatedFields(model *content.IndexModel, enrichedContent con
 	model.URL = new(string)
 	*model.URL = webURLPrefix + enrichedContent.Content.UUID
 	model.ModelAPIURL = new(string)
-	*model.ModelAPIURL = baseApiUrl + apiURLPrefix + enrichedContent.Content.UUID
+	*model.ModelAPIURL = fmt.Sprintf("%v%v%v", baseApiUrl, apiURLPrefix, enrichedContent.Content.UUID)
 	model.PublishReference = tid
 }
 

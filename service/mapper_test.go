@@ -29,7 +29,7 @@ func TestConvertToESContentModel(t *testing.T) {
 		{"video", "testdata/testEnrichedContentModel4.json", "", "testdata/testElasticModel4.json", "tid_video"},
 	}
 	concordanceApiMock := new(concordanceApiMock)
-	handler := &MessageHandler{ConceptGetter: concordanceApiMock, baseApiUrl: "https://api.ft.com/"}
+	handler := &MessageHandler{ConceptGetter: concordanceApiMock, baseApiUrl: "http://api.ft.com"}
 
 	for _, test := range tests {
 		if test.inputFileConcordanceModel != "" {
