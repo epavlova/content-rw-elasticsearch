@@ -9,14 +9,14 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/Financial-Times/content-rw-elasticsearch/service/concept"
 	"github.com/Financial-Times/content-rw-elasticsearch/es"
+	"github.com/Financial-Times/content-rw-elasticsearch/service"
+	"github.com/Financial-Times/content-rw-elasticsearch/service/concept"
 	health "github.com/Financial-Times/go-fthealth/v1_1"
 	"github.com/Financial-Times/go-logger"
 	"github.com/Financial-Times/message-queue-gonsumer/consumer"
 	status "github.com/Financial-Times/service-status-go/httphandlers"
 	"github.com/jawher/mow.cli"
-	"github.com/Financial-Times/content-rw-elasticsearch/service"
 )
 
 const (
@@ -108,6 +108,12 @@ func main() {
 		Desc:   "Endpoint to concord ids with",
 		EnvVar: "PUBLIC_CONCORDANCES_ENDPOINT",
 	})
+	baseApiUrl := app.String(cli.StringOpt{
+		Name:   "base-api-url",
+		Value:  "https://api.ft.com/",
+		Desc:   "Base API URL",
+		EnvVar: "BASE_API_URL",
+	})
 
 	queueConfig := consumer.QueueConfig{
 		Addrs:                []string{*kafkaProxyAddress},
@@ -143,14 +149,14 @@ func main() {
 		svc := es.NewService(*indexName)
 		var wg sync.WaitGroup
 		concordanceApiService := concept.NewConcordanceApiService(*publicConcordancesEndpoint, httpClient)
-		indexer := service.NewIndexer(svc, concordanceApiService, httpClient, queueConfig, &wg, es.NewClient)
+		handler := service.NewMessageHandler(svc, concordanceApiService, httpClient, queueConfig, &wg, es.NewClient)
 
-		indexer.Start(*appSystemCode, *appName, *indexName, *port, accessConfig, httpClient)
+		handler.Start(*baseApiUrl, accessConfig, httpClient)
 
 		healthService := newHealthService(&queueConfig, svc, httpClient, concordanceApiService, *appSystemCode)
 		serveAdminEndpoints(healthService, *appSystemCode, *appName, *port)
 
-		indexer.Stop()
+		handler.Stop()
 		wg.Wait()
 	}
 	err := app.Run(os.Args)

@@ -7,9 +7,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Financial-Times/content-rw-elasticsearch/service/concept"
 	"github.com/Financial-Times/content-rw-elasticsearch/content"
 	"github.com/Financial-Times/content-rw-elasticsearch/es"
+	"github.com/Financial-Times/content-rw-elasticsearch/service/concept"
 	"github.com/Financial-Times/go-logger"
 	"github.com/Financial-Times/message-queue-gonsumer/consumer"
 	"github.com/dchest/uniuri"
@@ -36,17 +36,19 @@ type MessageHandler struct {
 	messageConsumer   consumer.MessageConsumer
 	ConceptGetter     concept.ConceptGetter
 	connectToESClient func(config es.AccessConfig, c *http.Client) (es.ClientI, error)
+	baseApiUrl        string
 	wg                sync.WaitGroup
 	mu                sync.Mutex
 }
 
-func NewIndexer(service es.ServiceI, conceptGetter concept.ConceptGetter, client *http.Client, queueConfig consumer.QueueConfig, wg *sync.WaitGroup, connectToClient func(config es.AccessConfig, c *http.Client) (es.ClientI, error)) *MessageHandler {
+func NewMessageHandler(service es.ServiceI, conceptGetter concept.ConceptGetter, client *http.Client, queueConfig consumer.QueueConfig, wg *sync.WaitGroup, connectToClient func(config es.AccessConfig, c *http.Client) (es.ClientI, error)) *MessageHandler {
 	indexer := &MessageHandler{esService: service, ConceptGetter: conceptGetter, connectToESClient: connectToClient, wg: *wg}
 	indexer.messageConsumer = consumer.NewConsumer(queueConfig, indexer.handleMessage, client)
 	return indexer
 }
 
-func (handler *MessageHandler) Start(appSystemCode string, appName string, indexName string, port string, accessConfig es.AccessConfig, httpClient *http.Client) {
+func (handler *MessageHandler) Start(baseApiUrl string, accessConfig es.AccessConfig, httpClient *http.Client) {
+	handler.baseApiUrl = baseApiUrl
 	channel := make(chan es.ClientI)
 	go func() {
 		defer close(channel)
