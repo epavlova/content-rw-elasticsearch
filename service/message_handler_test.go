@@ -184,6 +184,25 @@ func TestHandleWriteMessage(t *testing.T) {
 	concordanceApiMock.AssertExpectations(t)
 }
 
+func TestHandleWriteMessageSparkHeader(t *testing.T) {
+	assert := assert.New(t)
+
+	inputJSON, err := ioutil.ReadFile("testdata/exampleEnrichedContentModel.json")
+	assert.NoError(err, "Unexpected error")
+	input := strings.Replace(string(inputJSON), "FTCOM-METHODE", "invalid", 1)
+
+	serviceMock := &esServiceMock{}
+	serviceMock.On("WriteData", "FTCom", "aae9611e-f66c-4fe4-a6c6-2e2bdea69060", mock.Anything).Return(&elastic.IndexResult{}, nil)
+	concordanceApiMock := new(concordanceApiMock)
+	concordanceApiMock.On("GetConcepts", mock.AnythingOfType("string"), mock.AnythingOfType("[]string")).Return(map[string]concept.ConceptModel{}, nil)
+
+	handler := MessageHandler{esService: serviceMock, ConceptGetter: concordanceApiMock}
+	handler.handleMessage(consumer.Message{Body: input, Headers: map[string]string{"Origin-System-Id": "cct"}})
+
+	serviceMock.AssertExpectations(t)
+	concordanceApiMock.AssertExpectations(t)
+}
+
 func TestHandleWriteMessageBlog(t *testing.T) {
 	assert := assert.New(t)
 
