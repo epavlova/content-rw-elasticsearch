@@ -187,9 +187,8 @@ func TestHandleWriteMessage(t *testing.T) {
 func TestHandleWriteMessageSparkHeader(t *testing.T) {
 	assert := assert.New(t)
 
-	inputJSON, err := ioutil.ReadFile("testdata/exampleEnrichedContentModel.json")
+	input, err :=modifyTestInputAuthority("invalid")
 	assert.NoError(err, "Unexpected error")
-	input := strings.Replace(string(inputJSON), "FTCOM-METHODE", "invalid", 1)
 
 	serviceMock := &esServiceMock{}
 	serviceMock.On("WriteData", "FTCom", "aae9611e-f66c-4fe4-a6c6-2e2bdea69060", mock.Anything).Return(&elastic.IndexResult{}, nil)
@@ -206,9 +205,8 @@ func TestHandleWriteMessageSparkHeader(t *testing.T) {
 func TestHandleWriteMessageBlog(t *testing.T) {
 	assert := assert.New(t)
 
-	inputJSON, err := ioutil.ReadFile("testdata/exampleEnrichedContentModel.json")
+	input, err :=modifyTestInputAuthority("FT-LABS-WP1234")
 	assert.NoError(err, "Unexpected error")
-	input := strings.Replace(string(inputJSON), "FTCOM-METHODE", "FT-LABS-WP1234", 1)
 
 	serviceMock := &esServiceMock{}
 	serviceMock.On("WriteData", "FTBlogs", "aae9611e-f66c-4fe4-a6c6-2e2bdea69060", mock.Anything).Return(&elastic.IndexResult{}, nil)
@@ -225,9 +223,8 @@ func TestHandleWriteMessageBlog(t *testing.T) {
 func TestHandleWriteMessageBlogWithHeader(t *testing.T) {
 	assert := assert.New(t)
 
-	inputJSON, err := ioutil.ReadFile("testdata/exampleEnrichedContentModel.json")
+	input, err :=modifyTestInputAuthority("invalid")
 	assert.NoError(err, "Unexpected error")
-	input := strings.Replace(string(inputJSON), "FTCOM-METHODE", "invalid", 1)
 
 	serviceMock := &esServiceMock{}
 	serviceMock.On("WriteData", "FTBlogs", "aae9611e-f66c-4fe4-a6c6-2e2bdea69060", mock.Anything).Return(&elastic.IndexResult{}, nil)
@@ -244,9 +241,8 @@ func TestHandleWriteMessageBlogWithHeader(t *testing.T) {
 func TestHandleWriteMessageVideo(t *testing.T) {
 	assert := assert.New(t)
 
-	inputJSON, err := ioutil.ReadFile("testdata/exampleEnrichedContentModel.json")
+	input, err :=modifyTestInputAuthority("NEXT-VIDEO-EDITOR")
 	assert.NoError(err, "Unexpected error")
-	input := strings.Replace(string(inputJSON), "FTCOM-METHODE", "NEXT-VIDEO-EDITOR", 1)
 
 	serviceMock := &esServiceMock{}
 	serviceMock.On("WriteData", "FTVideos", "aae9611e-f66c-4fe4-a6c6-2e2bdea69060", mock.Anything).Return(&elastic.IndexResult{}, nil)
@@ -303,9 +299,8 @@ func TestHandleWriteMessageNoType(t *testing.T) {
 
 	hook := logTest.NewTestHook("content-rw-elasticsearch")
 
-	inputJSON, err := ioutil.ReadFile("testdata/exampleEnrichedContentModel.json")
+	input, err :=modifyTestInputAuthority("invalid")
 	assert.NoError(err, "Unexpected error")
-	input := strings.Replace(string(inputJSON), "FTCOM-METHODE", "invalid", 1)
 
 	serviceMock := &esServiceMock{}
 
@@ -407,4 +402,11 @@ func TestHandleSyntheticMessage(t *testing.T) {
 	assert.Equal("info", hook.LastEntry().Level.String(), "Wrong log")
 	serviceMock.AssertNotCalled(t, "WriteData", mock.Anything, mock.Anything, mock.Anything)
 	serviceMock.AssertNotCalled(t, "DeleteData", mock.Anything, mock.Anything)
+}
+
+func modifyTestInputAuthority(replacement string) (string, error) {
+
+	inputJSON, err := ioutil.ReadFile("testdata/exampleEnrichedContentModel.json")
+	input := strings.Replace(string(inputJSON), "FTCOM-METHODE", replacement, 1)
+	return input, err
 }
