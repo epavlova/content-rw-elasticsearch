@@ -26,6 +26,7 @@ const (
 	methodeOrigin          = "methode-web-pub"
 	wordpressOrigin        = "wordpress"
 	videoOrigin            = "next-video-editor"
+	sparkOrigin			   = "cct"
 )
 
 // Empty type added for older content. Placeholders - which are subject of exclusion - have type Content.
@@ -130,7 +131,7 @@ func (handler *MessageHandler) handleMessage(msg consumer.Message) {
 
 	if contentType == "" {
 		origin := msg.Headers[originHeader]
-		if strings.Contains(origin, methodeOrigin) {
+		if strings.Contains(origin, methodeOrigin) || strings.Contains(origin, sparkOrigin){
 			contentType = ArticleType
 		} else if strings.Contains(origin, wordpressOrigin) {
 			contentType = BlogType
