@@ -11,7 +11,7 @@ jobs:
       - run:
           name: Create folder
           command: |
-            mkdir -p ${CIRCLE_TEST_REPORTS}
+            mkdir -p ${CIRCLE_TEST_REPORTS}/golang
       - run:
           name: External Dependencies
           command: |
@@ -37,7 +37,7 @@ jobs:
   dockerfile:
     working_directory: /content-rw-elasticsearch
     docker:
-      - image: docker:17.09.0-git
+      - image: docker:18.03
     steps:
       - checkout
       - setup_docker_engine
