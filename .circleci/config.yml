@@ -3,13 +3,15 @@ jobs:
   build:
     working_directory: /go/src/github.com/Financial-Times/content-rw-elasticsearch
     docker:
-      - image: golang:1.8.3
+      - image: golang:1.10
         environment:
-          GOPATH: /go
           CIRCLE_TEST_REPORTS: /tmp/test-results
-          CIRCLE_COVERAGE_REPORT: /tmp/coverage-results
     steps:
       - checkout
+      - run:
+          name: Create folder
+          command: |
+            mkdir -p ${CIRCLE_TEST_REPORTS}
       - run:
           name: External Dependencies
           command: |
@@ -17,23 +19,19 @@ jobs:
             go get -u github.com/jstemmer/go-junit-report
             curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
       - run:
-          name: Test Results
-          command: |
-            mkdir -p ${CIRCLE_TEST_REPORTS}
-            mkdir -p ${CIRCLE_COVERAGE_REPORT}
-      - run:
           name: Download vendored dependancies
           command: dep ensure -v -vendor-only
       - run:
           name: Go Build
           command: go build -v
       - run:
-          name: Run Tests
+          name: Run Tests and create coverage report
           command: |
-            go test ./... -v -race -cover -coverprofile=${CIRCLE_COVERAGE_REPORT}/coverage.out | go-junit-report > $CIRCLE_TEST_REPORTS/golang/junit.xml
+            go test ./... -v -race -cover -coverprofile=$CIRCLE_TEST_REPORTS/coverage.out | go-junit-report > $CIRCLE_TEST_REPORTS/golang/junit.xml
       - run:
           name: Upload Coverage
-          command: /go/bin/goveralls -coverprofile=${CIRCLE_COVERAGE_REPORT}/coverage.out -service=circle-ci -repotoken=$COVERALLS_TOKEN
+          command: |
+            /go/bin/goveralls -coverprofile=$CIRCLE_TEST_REPORTS/coverage.out -service=circle-ci -repotoken=$COVERALLS_TOKEN
       - store_test_results:
           path: /tmp/test-results
   dockerfile:
