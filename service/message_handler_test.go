@@ -404,6 +404,21 @@ func TestHandleSyntheticMessage(t *testing.T) {
 	serviceMock.AssertNotCalled(t, "DeleteData", mock.Anything, mock.Anything)
 }
 
+func TestHandlePACMessage(t *testing.T) {
+	assert := assert.New(t)
+
+	hook := logTest.NewTestHook("content-rw-elasticsearch")
+
+	serviceMock := &esServiceMock{}
+	handler := &MessageHandler{esService: serviceMock}
+	handler.handleMessage(consumer.Message{Headers: map[string]string{"Origin-System-Id": "http://cmdb.ft.com/systems/pac"}, Body:"{}"})
+
+	require.NotNil(t, hook.LastEntry())
+	assert.Equal("info", hook.LastEntry().Level.String(), "Wrong log")
+	serviceMock.AssertNotCalled(t, "WriteData", mock.Anything, mock.Anything, mock.Anything)
+	serviceMock.AssertNotCalled(t, "DeleteData", mock.Anything, mock.Anything)
+}
+
 func modifyTestInputAuthority(replacement string) (string, error) {
 
 	inputJSON, err := ioutil.ReadFile("testdata/exampleEnrichedContentModel.json")
