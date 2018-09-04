@@ -28,7 +28,7 @@ const (
 	wordpressOrigin        = "wordpress"
 	videoOrigin            = "next-video-editor"
 	sparkOrigin            = "cct"
-	audioContentType       = "ft-upp-audio+json"
+	audioContentType       = "ft-upp-audio"
 )
 
 // Empty type added for older content. Placeholders - which are subject of exclusion - have type Content.
