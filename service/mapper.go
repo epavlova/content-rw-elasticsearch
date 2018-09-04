@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"fmt"
+
 	"github.com/Financial-Times/content-rw-elasticsearch/content"
 	"github.com/Financial-Times/content-rw-elasticsearch/service/concept"
 	"github.com/Financial-Times/content-rw-elasticsearch/service/utils"
@@ -39,6 +40,7 @@ const (
 	ArticleType = "article"
 	VideoType   = "video"
 	BlogType    = "blog"
+	AudioType   = "audio"
 
 	video_prefix = "video"
 )
@@ -46,20 +48,25 @@ const (
 var noAnnotationErr = errors.New("No annotation to be processed")
 
 var ContentTypeMap = map[string]content.ContentType{
-	"article": {
+	ArticleType: {
 		Collection: "FTCom",
 		Format:     "Articles",
 		Category:   "article",
 	},
-	"blog": {
+	BlogType: {
 		Collection: "FTBlogs",
 		Format:     "Blogs",
 		Category:   "blogPost",
 	},
-	"video": {
+	VideoType: {
 		Collection: "FTVideos",
 		Format:     "Videos",
 		Category:   "video",
+	},
+	AudioType: {
+		Collection: "FTAudios",
+		Format:     "Audios",
+		Category:   "audio",
 	},
 }
 
@@ -250,6 +257,14 @@ func populateContentRelatedFields(model *content.IndexModel, enrichedContent con
 			}
 		}
 	}
+
+	if contentType == AudioType && len(enrichedContent.Content.DataSources) > 0 {
+		for _, ds := range enrichedContent.Content.DataSources {
+			model.LengthMillis = ds.Duration
+			break
+		}
+	}
+
 	model.URL = new(string)
 	*model.URL = webURLPrefix + enrichedContent.Content.UUID
 	model.ModelAPIURL = new(string)

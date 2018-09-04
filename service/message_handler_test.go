@@ -187,7 +187,7 @@ func TestHandleWriteMessage(t *testing.T) {
 func TestHandleWriteMessageSparkHeader(t *testing.T) {
 	assert := assert.New(t)
 
-	input, err :=modifyTestInputAuthority("invalid")
+	input, err := modifyTestInputAuthority("invalid")
 	assert.NoError(err, "Unexpected error")
 
 	serviceMock := &esServiceMock{}
@@ -205,7 +205,7 @@ func TestHandleWriteMessageSparkHeader(t *testing.T) {
 func TestHandleWriteMessageBlog(t *testing.T) {
 	assert := assert.New(t)
 
-	input, err :=modifyTestInputAuthority("FT-LABS-WP1234")
+	input, err := modifyTestInputAuthority("FT-LABS-WP1234")
 	assert.NoError(err, "Unexpected error")
 
 	serviceMock := &esServiceMock{}
@@ -223,7 +223,7 @@ func TestHandleWriteMessageBlog(t *testing.T) {
 func TestHandleWriteMessageBlogWithHeader(t *testing.T) {
 	assert := assert.New(t)
 
-	input, err :=modifyTestInputAuthority("invalid")
+	input, err := modifyTestInputAuthority("invalid")
 	assert.NoError(err, "Unexpected error")
 
 	serviceMock := &esServiceMock{}
@@ -232,7 +232,7 @@ func TestHandleWriteMessageBlogWithHeader(t *testing.T) {
 	concordanceApiMock.On("GetConcepts", mock.AnythingOfType("string"), mock.AnythingOfType("[]string")).Return(map[string]concept.ConceptModel{}, nil)
 
 	handler := MessageHandler{esService: serviceMock, ConceptGetter: concordanceApiMock}
-	handler.handleMessage(consumer.Message{Body: input, Headers: map[string]string{"Origin-System-Id": "wordpress"}})
+	handler.handleMessage(consumer.Message{Body: input, Headers: map[string]string{"Origin-System-Id": "wordpress", "Content-Type": "application/json"}})
 
 	serviceMock.AssertExpectations(t)
 	concordanceApiMock.AssertExpectations(t)
@@ -241,7 +241,7 @@ func TestHandleWriteMessageBlogWithHeader(t *testing.T) {
 func TestHandleWriteMessageVideo(t *testing.T) {
 	assert := assert.New(t)
 
-	input, err :=modifyTestInputAuthority("NEXT-VIDEO-EDITOR")
+	input, err := modifyTestInputAuthority("NEXT-VIDEO-EDITOR")
 	assert.NoError(err, "Unexpected error")
 
 	serviceMock := &esServiceMock{}
@@ -250,7 +250,25 @@ func TestHandleWriteMessageVideo(t *testing.T) {
 	concordanceApiMock.On("GetConcepts", mock.AnythingOfType("string"), mock.AnythingOfType("[]string")).Return(map[string]concept.ConceptModel{}, nil)
 
 	handler := MessageHandler{esService: serviceMock, ConceptGetter: concordanceApiMock}
-	handler.handleMessage(consumer.Message{Body: input})
+	handler.handleMessage(consumer.Message{Body: input, Headers: map[string]string{"Content-Type": "application/json"}})
+
+	serviceMock.AssertExpectations(t)
+	concordanceApiMock.AssertExpectations(t)
+}
+
+func TestHandleWriteMessageAudio(t *testing.T) {
+	assert := assert.New(t)
+
+	input, err := modifyTestInputAuthority("NEXT-VIDEO-EDITOR")
+	assert.NoError(err, "Unexpected error")
+
+	serviceMock := &esServiceMock{}
+	serviceMock.On("WriteData", "FTAudios", "aae9611e-f66c-4fe4-a6c6-2e2bdea69060", mock.Anything).Return(&elastic.IndexResult{}, nil)
+	concordanceApiMock := new(concordanceApiMock)
+	concordanceApiMock.On("GetConcepts", mock.AnythingOfType("string"), mock.AnythingOfType("[]string")).Return(map[string]concept.ConceptModel{}, nil)
+
+	handler := MessageHandler{esService: serviceMock, ConceptGetter: concordanceApiMock}
+	handler.handleMessage(consumer.Message{Body: input, Headers: map[string]string{"Content-Type": "vnd.ft-upp-audio+json"}})
 
 	serviceMock.AssertExpectations(t)
 	concordanceApiMock.AssertExpectations(t)
@@ -299,7 +317,7 @@ func TestHandleWriteMessageNoType(t *testing.T) {
 
 	hook := logTest.NewTestHook("content-rw-elasticsearch")
 
-	input, err :=modifyTestInputAuthority("invalid")
+	input, err := modifyTestInputAuthority("invalid")
 	assert.NoError(err, "Unexpected error")
 
 	serviceMock := &esServiceMock{}
