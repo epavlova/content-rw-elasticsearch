@@ -29,6 +29,7 @@ const (
 	videoOrigin            = "next-video-editor"
 	sparkOrigin            = "cct"
 	audioContentType       = "ft-upp-audio"
+	pacOrigin              = "http://cmdb.ft.com/systems/pac"
 )
 
 // Empty type added for older content. Placeholders - which are subject of exclusion - have type Content.
@@ -143,7 +144,7 @@ func (handler *MessageHandler) handleMessage(msg consumer.Message) {
 			contentType = BlogType
 		} else if strings.Contains(origin, videoOrigin) {
 			contentType = VideoType
-		} else {
+		} else if origin != pacOrigin {
 			logger.WithTransactionID(tid).WithUUID(uuid).WithError(err).Error("Failed to index content. Could not infer type of content")
 			return
 		}
@@ -159,7 +160,7 @@ func (handler *MessageHandler) handleMessage(msg consumer.Message) {
 		return
 	}
 
-	if combinedPostPublicationEvent.Content.UUID == "" {
+	if combinedPostPublicationEvent.Content.UUID == "" || contentType == "" {
 		logger.WithTransactionID(tid).WithUUID(combinedPostPublicationEvent.UUID).Info("Ignoring message with no content")
 		return
 	}
