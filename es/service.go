@@ -80,6 +80,13 @@ func (service *Service) GetSchemaHealth() (string, error) {
 		delete(settings, "created")
 	}
 
+	if liveIndex[service.IndexName] == nil || liveIndex[service.IndexName].Settings == nil {
+		return "not ok, wrong response from ES", nil
+	}
+	if referenceIndex.index[service.IndexName] == nil || referenceIndex.index[service.IndexName].Settings == nil {
+		return "not ok, wrong referenceIndex", nil
+	}
+
 	if !reflect.DeepEqual(liveIndex[service.IndexName].Settings, referenceIndex.index[service.IndexName].Settings) {
 		return "not ok, wrong settings", nil
 	}
