@@ -61,9 +61,9 @@ func (service *Service) GetSchemaHealth() (string, error) {
 		if err != nil {
 			return "", err
 		}
-		if referenceIndex.index[service.IndexName] == nil || referenceIndex.index[service.IndexName].Settings == nil || referenceIndex.index[service.IndexName].Mappings == nil {
-			return "not ok, wrong referenceIndex", nil
-		}
+	}
+	if referenceIndex.index[service.IndexName] == nil || referenceIndex.index[service.IndexName].Settings == nil || referenceIndex.index[service.IndexName].Mappings == nil {
+		return "not ok, wrong referenceIndex", nil
 	}
 
 	if service.ElasticClient == nil {
