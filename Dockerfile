@@ -29,5 +29,6 @@ FROM scratch
 WORKDIR /
 COPY --from=0 /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=0 /artifacts/* /
+COPY ./runtime/referenceSchema.json /
 
 CMD [ "/content-rw-elasticsearch" ]

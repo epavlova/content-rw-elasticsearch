@@ -52,7 +52,7 @@ func (service *Service) GetSchemaHealth() (string, error) {
 	if referenceIndex == nil {
 		referenceIndex = new(elasticIndex)
 
-		referenceJSON, err := ioutil.ReadFile("runtime/referenceSchema.json")
+		referenceJSON, err := ioutil.ReadFile("referenceSchema.json")
 		if err != nil {
 			return "", err
 		}
@@ -60,6 +60,9 @@ func (service *Service) GetSchemaHealth() (string, error) {
 		err = json.Unmarshal([]byte(fmt.Sprintf(`{"ft": %s}`, referenceJSON)), &referenceIndex.index)
 		if err != nil {
 			return "", err
+		}
+		if referenceIndex.index[service.IndexName] == nil || referenceIndex.index[service.IndexName].Settings == nil || referenceIndex.index[service.IndexName].Mappings == nil {
+			return "not ok, wrong referenceIndex", nil
 		}
 	}
 
@@ -78,13 +81,6 @@ func (service *Service) GetSchemaHealth() (string, error) {
 		delete(settings, "uuid")
 		delete(settings, "version")
 		delete(settings, "created")
-	}
-
-	if liveIndex[service.IndexName] == nil || liveIndex[service.IndexName].Settings == nil {
-		return "not ok, wrong response from ES", nil
-	}
-	if referenceIndex.index[service.IndexName] == nil || referenceIndex.index[service.IndexName].Settings == nil {
-		return "not ok, wrong referenceIndex", nil
 	}
 
 	if !reflect.DeepEqual(liveIndex[service.IndexName].Settings, referenceIndex.index[service.IndexName].Settings) {
