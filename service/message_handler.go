@@ -23,15 +23,17 @@ const (
 	articleAuthority       = "http://api.ft.com/system/FTCOM-METHODE"
 	videoAuthority         = "http://api.ft.com/system/NEXT-VIDEO-EDITOR"
 	originHeader           = "Origin-System-Id"
+	contentTypeHeader      = "Content-Type"
 	methodeOrigin          = "methode-web-pub"
 	wordpressOrigin        = "wordpress"
 	videoOrigin            = "next-video-editor"
 	sparkOrigin            = "cct"
+	audioContentType       = "ft-upp-audio"
 	pacOrigin              = "http://cmdb.ft.com/systems/pac"
 )
 
 // Empty type added for older content. Placeholders - which are subject of exclusion - have type Content.
-var allowedTypes = []string{"Article", "Video", "MediaResource", ""}
+var allowedTypes = []string{"Article", "Video", "MediaResource", "Audio", ""}
 
 type MessageHandler struct {
 	esService         es.ServiceI
@@ -120,13 +122,17 @@ func (handler *MessageHandler) handleMessage(msg consumer.Message) {
 	logger.WithTransactionID(tid).WithUUID(uuid).Info("Processing combined post publication event")
 
 	var contentType string
-	for _, identifier := range combinedPostPublicationEvent.Content.Identifiers {
-		if strings.HasPrefix(identifier.Authority, blogsAuthority) {
-			contentType = BlogType
-		} else if strings.HasPrefix(identifier.Authority, articleAuthority) {
-			contentType = ArticleType
-		} else if strings.HasPrefix(identifier.Authority, videoAuthority) {
-			contentType = VideoType
+	if strings.Contains(msg.Headers[contentTypeHeader], audioContentType) {
+		contentType = AudioType
+	} else {
+		for _, identifier := range combinedPostPublicationEvent.Content.Identifiers {
+			if strings.HasPrefix(identifier.Authority, blogsAuthority) {
+				contentType = BlogType
+			} else if strings.HasPrefix(identifier.Authority, articleAuthority) {
+				contentType = ArticleType
+			} else if strings.HasPrefix(identifier.Authority, videoAuthority) {
+				contentType = VideoType
+			}
 		}
 	}
 

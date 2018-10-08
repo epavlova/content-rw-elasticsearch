@@ -52,7 +52,7 @@ func (service *Service) GetSchemaHealth() (string, error) {
 	if referenceIndex == nil {
 		referenceIndex = new(elasticIndex)
 
-		referenceJSON, err := ioutil.ReadFile("runtime/referenceSchema.json")
+		referenceJSON, err := ioutil.ReadFile("referenceSchema.json")
 		if err != nil {
 			return "", err
 		}
@@ -61,6 +61,9 @@ func (service *Service) GetSchemaHealth() (string, error) {
 		if err != nil {
 			return "", err
 		}
+	}
+	if referenceIndex.index[service.IndexName] == nil || referenceIndex.index[service.IndexName].Settings == nil || referenceIndex.index[service.IndexName].Mappings == nil {
+		return "not ok, wrong referenceIndex", nil
 	}
 
 	if service.ElasticClient == nil {

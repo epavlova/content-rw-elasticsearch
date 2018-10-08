@@ -9,18 +9,16 @@ Indexes V2 content in Elasticsearch for use by SAPI V1
 ## Installation
 Download the source code, dependencies and test dependencies:
 
-        go get -u github.com/kardianos/govendor
         go get -u github.com/Financial-Times/content-rw-elasticsearch
         cd $GOPATH/src/github.com/Financial-Times/content-rw-elasticsearch
-        govendor sync
-        go build .
+        dep ensure -vendor-only
+        go test ./...
 
 ## Running locally
 
 1. Run the tests and install the binary:
 
-        govendor sync
-        govendor test -v -race
+        go test -race ./...
         go install
 
 2. Run the binary (using the `help` flag to see the available optional arguments):

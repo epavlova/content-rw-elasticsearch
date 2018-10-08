@@ -27,7 +27,7 @@
 
 [[constraint]]
   name = "github.com/Financial-Times/go-fthealth"
-  version = "0.2.0"
+  version = "0.5.0"
 
 [[constraint]]
   name = "github.com/Financial-Times/go-logger"
@@ -35,7 +35,7 @@
 
 [[constraint]]
   name = "github.com/Financial-Times/message-queue-gonsumer"
-  version = "0.4.0"
+  version = "0.4.2"
 
 [[constraint]]
   name = "github.com/Financial-Times/service-status-go"
@@ -50,20 +50,32 @@
   name = "github.com/dchest/uniuri"
 
 [[constraint]]
-  branch = "master"
+  name = "github.com/gorilla/mux"
+  version = "1.6.2"
+
+[[constraint]]
+  name = "github.com/jawher/mow.cli"
+  version = "1.0.4"
+
+[[constraint]]
+  name = "github.com/pborman/uuid"
+  version = "1.1.0"
+
+[[constraint]]
   name = "github.com/pkg/errors"
+  version = "0.8.0"
+
+[[constraint]]
+  name = "github.com/smartystreets/go-aws-auth"
+  version = "1.0.0"
 
 [[constraint]]
   branch = "master"
   name = "github.com/stretchr/stew"
 
 [[constraint]]
-  name = "github.com/stretchr/testify"
-  version = "1.2.0"
-
-[[constraint]]
   name = "gopkg.in/olivere/elastic.v2"
-  version = "2.0.58"
+  version = "2.0.61"
 
 [prune]
   go-tests = true

@@ -3,59 +3,51 @@ jobs:
   build:
     working_directory: /go/src/github.com/Financial-Times/content-rw-elasticsearch
     docker:
-      - image: golang:1.10
-        environment:
-          CIRCLE_TEST_REPORTS: /tmp/test-results
+    - image: circleci/golang:1.10
+      environment:
+        CIRCLE_TEST_REPORTS: /tmp/test-results
+        CIRCLE_COVERAGE_REPORT: /tmp/coverage-results
     steps:
-      - checkout
-      - run:
-          name: Create folder
-          command: |
-            mkdir -p ${CIRCLE_TEST_REPORTS}/golang
-      - run:
-          name: External Dependencies
-          command: |
-            go get -u github.com/mattn/goveralls
-            go get -u github.com/jstemmer/go-junit-report
-            curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
-      - run:
-          name: Download vendored dependancies
-          command: dep ensure -v -vendor-only
-      - run:
-          name: Go Build
-          command: go build -v
-      - run:
-          name: Run Tests and create coverage report
-          command: |
-            go test ./... -v -race -cover -coverprofile=$CIRCLE_TEST_REPORTS/coverage.out | go-junit-report > $CIRCLE_TEST_REPORTS/golang/junit.xml
-      - run:
-          name: Upload Coverage
-          command: |
-            /go/bin/goveralls -coverprofile=$CIRCLE_TEST_REPORTS/coverage.out -service=circle-ci -repotoken=$COVERALLS_TOKEN
-      - store_test_results:
-          path: /tmp/test-results
+    - checkout
+    - run:
+        name: External dependencies
+        command: |
+          go get -u github.com/mattn/goveralls
+          go get -u github.com/jstemmer/go-junit-report
+          curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
+    - run:
+        name: Make result folders
+        command: |
+          mkdir -p ${CIRCLE_TEST_REPORTS}
+          mkdir -p ${CIRCLE_COVERAGE_REPORT}
+    - run:
+        name: Download vendored dependencies
+        command: dep ensure -v -vendor-only
+    - run:
+        name: Go build
+        command: go build -v
+    - run:
+        name: Run tests
+        command: go test -race -cover -coverprofile=${CIRCLE_COVERAGE_REPORT}/coverage.out ./... | go-junit-report > ${CIRCLE_TEST_REPORTS}/junit.xml
+    - run:
+        name: Upload coverage
+        command: goveralls -coverprofile=${CIRCLE_COVERAGE_REPORT}/coverage.out -service=circle-ci -repotoken=${COVERALLS_TOKEN}
+    - store_test_results:
+        path: /tmp/test-results
   dockerfile:
     working_directory: /content-rw-elasticsearch
     docker:
-      - image: docker:18.03
+    - image: docker:18.03
     steps:
-      - checkout
-      - setup_docker_engine
-      - run:
-          name: Build Dockerfile
-          command: docker build -t test/content-rw-elasticsearch .
-      - run:
-          name: Run and Test Container
-          command: |
-            export CONTAINER_HASH=$(docker run -d -p 8080:8080 test/content-rw-elasticsearch)
-            docker exec ${CONTAINER_HASH} apk update
-            docker exec ${CONTAINER_HASH} apk add curl
-            docker exec ${CONTAINER_HASH} curl --retry-connrefused --retry 10 --retry-delay 3 http://localhost:8080/__health
-            docker kill ${CONTAINER_HASH}
+    - checkout
+    - setup_docker_engine
+    - run:
+        name: Build Dockerfile
+        command: docker build .
   dredd:
     working_directory: /go/src/github.com/Financial-Times/content-rw-elasticsearch
     docker:
-      - image: bankrs/golang-dredd:go1.8.3-dredd4.4.0
+      - image: bankrs/golang-dredd:go1.10.0-dredd5.1.5
         environment:
           GOPATH: /go
           ELASTICSEARCH_SAPI_ENDPOINT: http://localhost:9000
@@ -63,22 +55,21 @@ jobs:
     steps:
       - checkout
       - run:
+          name: Load ersatz-fixtures.yml to ersatz image
+          command: "curl -X POST --data-binary @_ft/ersatz-fixtures.yml -H \"Content-type: text/x-yaml\" http://localhost:9000/__configure"
+      - run:
           name: External Dependencies
           command: |
             curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
       - run:
-          name: Download vendored dependancies
+          name: Download vendored dependencies
           command: dep ensure -v -vendor-only
       - run:
           name: Go Build
           command: go build -v
       - run:
-          name: Check ersatz is up and running
-          command: curl --retry-connrefused --retry 5 --retry-delay 3 http://localhost:9000/
-      - run:
           name: Dredd API Testing
           command: dredd
-
 workflows:
   version: 2
   test-and-build-docker:
