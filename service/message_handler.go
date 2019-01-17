@@ -17,19 +17,19 @@ import (
 )
 
 const (
-	syntheticRequestPrefix = "SYNTHETIC-REQ-MON"
-	transactionIDHeader    = "X-Request-Id"
-	blogsAuthority         = "http://api.ft.com/system/FT-LABS-WP"
-	articleAuthority       = "http://api.ft.com/system/FTCOM-METHODE"
-	videoAuthority         = "http://api.ft.com/system/NEXT-VIDEO-EDITOR"
-	originHeader           = "Origin-System-Id"
-	contentTypeHeader      = "Content-Type"
-	methodeOrigin          = "methode-web-pub"
-	wordpressOrigin        = "wordpress"
-	videoOrigin            = "next-video-editor"
-	sparkOrigin            = "cct"
-	audioContentType       = "ft-upp-audio"
-	pacOrigin              = "http://cmdb.ft.com/systems/pac"
+	syntheticRequestPrefix   = "SYNTHETIC-REQ-MON"
+	transactionIDHeader      = "X-Request-Id"
+	blogsAuthority           = "http://api.ft.com/system/FT-LABS-WP"
+	articleAuthority         = "http://api.ft.com/system/FTCOM-METHODE"
+	videoAuthority           = "http://api.ft.com/system/NEXT-VIDEO-EDITOR"
+	originHeader             = "Origin-System-Id"
+	methodeOrigin            = "methode-web-pub"
+	wordpressOrigin          = "wordpress"
+	videoOrigin              = "next-video-editor"
+	pacOrigin                = "http://cmdb.ft.com/systems/pac"
+	contentTypeHeader        = "Content-Type"
+	audioContentTypeHeader   = "ft-upp-audio"
+	articleContentTypeHeader = "ft-upp-article"
 )
 
 // Empty type added for older content. Placeholders - which are subject of exclusion - have type Content.
@@ -122,8 +122,11 @@ func (handler *MessageHandler) handleMessage(msg consumer.Message) {
 	logger.WithTransactionID(tid).WithUUID(uuid).Info("Processing combined post publication event")
 
 	var contentType string
-	if strings.Contains(msg.Headers[contentTypeHeader], audioContentType) {
+	typeHeader := msg.Headers[contentTypeHeader]
+	if strings.Contains(typeHeader, audioContentTypeHeader) {
 		contentType = AudioType
+	} else if strings.Contains(typeHeader, articleContentTypeHeader) {
+		contentType = ArticleType
 	} else {
 		for _, identifier := range combinedPostPublicationEvent.Content.Identifiers {
 			if strings.HasPrefix(identifier.Authority, blogsAuthority) {
@@ -138,7 +141,7 @@ func (handler *MessageHandler) handleMessage(msg consumer.Message) {
 
 	if contentType == "" {
 		origin := msg.Headers[originHeader]
-		if strings.Contains(origin, methodeOrigin) || strings.Contains(origin, sparkOrigin) {
+		if strings.Contains(origin, methodeOrigin) {
 			contentType = ArticleType
 		} else if strings.Contains(origin, wordpressOrigin) {
 			contentType = BlogType
