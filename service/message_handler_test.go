@@ -184,24 +184,6 @@ func TestHandleWriteMessage(t *testing.T) {
 	concordanceApiMock.AssertExpectations(t)
 }
 
-func TestHandleWriteMessageSparkHeader(t *testing.T) {
-	assert := assert.New(t)
-
-	input, err := modifyTestInputAuthority("invalid")
-	assert.NoError(err, "Unexpected error")
-
-	serviceMock := &esServiceMock{}
-	serviceMock.On("WriteData", "FTCom", "aae9611e-f66c-4fe4-a6c6-2e2bdea69060", mock.Anything).Return(&elastic.IndexResult{}, nil)
-	concordanceApiMock := new(concordanceApiMock)
-	concordanceApiMock.On("GetConcepts", mock.AnythingOfType("string"), mock.AnythingOfType("[]string")).Return(map[string]concept.ConceptModel{}, nil)
-
-	handler := MessageHandler{esService: serviceMock, ConceptGetter: concordanceApiMock}
-	handler.handleMessage(consumer.Message{Body: input, Headers: map[string]string{"Origin-System-Id": "cct"}})
-
-	serviceMock.AssertExpectations(t)
-	concordanceApiMock.AssertExpectations(t)
-}
-
 func TestHandleWriteMessageBlog(t *testing.T) {
 	assert := assert.New(t)
 
@@ -269,6 +251,24 @@ func TestHandleWriteMessageAudio(t *testing.T) {
 
 	handler := MessageHandler{esService: serviceMock, ConceptGetter: concordanceApiMock}
 	handler.handleMessage(consumer.Message{Body: input, Headers: map[string]string{"Content-Type": "vnd.ft-upp-audio+json"}})
+
+	serviceMock.AssertExpectations(t)
+	concordanceApiMock.AssertExpectations(t)
+}
+
+func TestHandleWriteMessageArticleByHeaderType(t *testing.T) {
+	assert := assert.New(t)
+
+	input, err := modifyTestInputAuthority("invalid")
+	assert.NoError(err, "Unexpected error")
+
+	serviceMock := &esServiceMock{}
+	serviceMock.On("WriteData", "FTCom", "aae9611e-f66c-4fe4-a6c6-2e2bdea69060", mock.Anything).Return(&elastic.IndexResult{}, nil)
+	concordanceApiMock := new(concordanceApiMock)
+	concordanceApiMock.On("GetConcepts", mock.AnythingOfType("string"), mock.AnythingOfType("[]string")).Return(map[string]concept.ConceptModel{}, nil)
+
+	handler := MessageHandler{esService: serviceMock, ConceptGetter: concordanceApiMock}
+	handler.handleMessage(consumer.Message{Body: input, Headers: map[string]string{"Content-Type": "application/vnd.ft-upp-article"}})
 
 	serviceMock.AssertExpectations(t)
 	concordanceApiMock.AssertExpectations(t)
@@ -429,7 +429,7 @@ func TestHandlePACMessage(t *testing.T) {
 
 	serviceMock := &esServiceMock{}
 	handler := &MessageHandler{esService: serviceMock}
-	handler.handleMessage(consumer.Message{Headers: map[string]string{"Origin-System-Id": "http://cmdb.ft.com/systems/pac"}, Body:"{}"})
+	handler.handleMessage(consumer.Message{Headers: map[string]string{"Origin-System-Id": "http://cmdb.ft.com/systems/pac"}, Body: "{}"})
 
 	require.NotNil(t, hook.LastEntry())
 	assert.Equal("info", hook.LastEntry().Level.String(), "Wrong log")
