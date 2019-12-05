@@ -1,0 +1,210 @@
+{
+  "uuid": "aae9611e-f66c-4fe4-a6c6-2e2bdea69060",
+  "content": {
+    "accessLevel": "subscribed",
+    "alternativeStandfirsts": {
+      "promotionalStandfirst": "Agitators are far from perfect, but they can play a key role in spurring long-term thinking"
+    },
+    "alternativeTitles": {
+      "contentPackageTitle": null,
+      "promotionalTitle": "In praise of activist investors"
+    },
+    "bodyXML": "\u003cbody\u003e\u003ccontent data-embedded=\"true\" id=\"5546cbc4-d4f7-47f9-a158-03856a0d3706\" type=\"http://www.ft.com/ontology/content/ImageSet\"\u003e\u003c/content\u003e\u003cp\u003eLorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris scelerisque, nunc vel consectetur sagittis, purus ex ultrices metus, in consectetur nisl lacus congue nulla.\u003c/p\u003e\n\u003c/body\u003e",
+    "brands": [
+      {
+        "id": "http://api.ft.com/things/dbb0bdae-1f0c-11e4-b0cb-b2227cce2b54"
+      }
+    ],
+    "byline": "John Doe in London",
+    "canBeDistributed": "yes",
+    "canBeSyndicated": "yes",
+    "comments": {
+      "enabled": true
+    },
+    "contentPackage": null,
+    "copyright": null,
+    "description": null,
+    "editorialDesk": "/FT/MarketNews",
+    "externalBinaryUrl": null,
+    "firstPublishedDate": "2017-06-26T04:00:17.000Z",
+    "identifiers": [
+      {
+        "authority": "http://api.ft.com/system/FTCOM-METHODE",
+        "identifierValue": "aae9611e-f66c-4fe4-a6c6-2e2bdea69060"
+      }
+    ],
+    "internalBinaryUrl": null,
+    "lastModified": "2018-04-04T12:58:00.347Z",
+    "mainImage": "5546cbc4-d4f7-47f9-a158-03856a0d3706",
+    "masterSource": null,
+    "mediaType": null,
+    "members": null,
+    "pixelHeight": null,
+    "pixelWidth": null,
+    "publishReference": "republish_-f4b0e15d-0b69-48cc-9e9e-4b8b2afe8999_carousel_1522846675",
+    "publishedDate": "2017-06-26T04:00:17.000Z",
+    "rightsGroup": null,
+    "standfirst": "Agitators are far from perfect, but they can play key role in spurring long-term thinking",
+    "standout": {
+      "editorsChoice": false,
+      "exclusive": false,
+      "scoop": false
+    },
+    "storyPackage": null,
+    "title": "In praise of activist investors",
+    "type": "Article",
+    "uuid": "aae9611e-f66c-4fe4-a6c6-2e2bdea69060",
+    "webUrl": null
+  },
+  "metadata": [
+    {
+      "thing": {
+        "id": "http://api.ft.com/things/9b3d0b4c-f317-3acc-abdc-d023832f5a40",
+        "prefLabel": "Lucian Arye Bebchuk",
+        "types": [
+          "http://www.ft.com/ontology/core/Thing",
+          "http://www.ft.com/ontology/concept/Concept",
+          "http://www.ft.com/ontology/person/Person"
+        ],
+        "predicate": "http://www.ft.com/ontology/annotation/mentions",
+        "apiUrl": "http://api.ft.com/people/9b3d0b4c-f317-3acc-abdc-d023832f5a40"
+      }
+    },
+    {
+      "thing": {
+        "id": "http://api.ft.com/things/e3f5393f-15b7-361f-9d02-826616b1fc66",
+        "prefLabel": "Harvard University",
+        "types": [
+          "http://www.ft.com/ontology/core/Thing",
+          "http://www.ft.com/ontology/concept/Concept",
+          "http://www.ft.com/ontology/organisation/Organisation"
+        ],
+        "predicate": "http://www.ft.com/ontology/annotation/mentions",
+        "apiUrl": "http://api.ft.com/organisations/e3f5393f-15b7-361f-9d02-826616b1fc66"
+      }
+    },
+    {
+      "thing": {
+        "id": "http://api.ft.com/things/b7ea3c33-ea8c-432e-bb7e-e3bbc8fdc2bb",
+        "prefLabel": "Equities",
+        "types": [
+          "http://www.ft.com/ontology/core/Thing",
+          "http://www.ft.com/ontology/concept/Concept",
+          "http://www.ft.com/ontology/Topic"
+        ],
+        "predicate": "http://www.ft.com/ontology/classification/isPrimarilyClassifiedBy",
+        "apiUrl": "http://api.ft.com/things/b7ea3c33-ea8c-432e-bb7e-e3bbc8fdc2bb"
+      }
+    },
+    {
+      "thing": {
+        "id": "http://api.ft.com/things/aeada5a9-39cb-4bb6-b795-5baba8acf3fb",
+        "prefLabel": "Investor activism",
+        "types": [
+          "http://www.ft.com/ontology/core/Thing",
+          "http://www.ft.com/ontology/concept/Concept",
+          "http://www.ft.com/ontology/Topic"
+        ],
+        "predicate": "http://www.ft.com/ontology/annotation/about",
+        "apiUrl": "http://api.ft.com/things/aeada5a9-39cb-4bb6-b795-5baba8acf3fb"
+      }
+    },
+    {
+      "thing": {
+        "id": "http://api.ft.com/things/f021ef0a-e3a5-3530-9394-21a1eaf9f3f6",
+        "prefLabel": "Markets Insight",
+        "types": [
+          "http://www.ft.com/ontology/core/Thing",
+          "http://www.ft.com/ontology/concept/Concept",
+          "http://www.ft.com/ontology/classification/Classification",
+          "http://www.ft.com/ontology/product/Brand"
+        ],
+        "predicate": "http://www.ft.com/ontology/classification/isClassifiedBy",
+        "apiUrl": "http://api.ft.com/brands/f021ef0a-e3a5-3530-9394-21a1eaf9f3f6"
+      }
+    },
+    {
+      "thing": {
+        "id": "http://api.ft.com/things/6da31a37-691f-4908-896f-2829ebe2309e",
+        "prefLabel": "Opinion",
+        "types": [
+          "http://www.ft.com/ontology/core/Thing",
+          "http://www.ft.com/ontology/concept/Concept",
+          "http://www.ft.com/ontology/classification/Classification",
+          "http://www.ft.com/ontology/Genre"
+        ],
+        "predicate": "http://www.ft.com/ontology/classification/isClassifiedBy",
+        "apiUrl": "http://api.ft.com/things/6da31a37-691f-4908-896f-2829ebe2309e"
+      }
+    },
+    {
+      "thing": {
+        "id": "http://api.ft.com/things/c91b1fad-1097-468b-be82-9a8ff717d54c",
+        "prefLabel": "Markets",
+        "types": [
+          "http://www.ft.com/ontology/core/Thing",
+          "http://www.ft.com/ontology/concept/Concept",
+          "http://www.ft.com/ontology/Topic"
+        ],
+        "predicate": "http://www.ft.com/ontology/classification/isClassifiedBy",
+        "apiUrl": "http://api.ft.com/things/c91b1fad-1097-468b-be82-9a8ff717d54c"
+      }
+    },
+    {
+      "thing": {
+        "id": "http://api.ft.com/things/eadc5df0-9838-3971-920e-47beed423b4c",
+        "prefLabel": "Huw van Steenis",
+        "types": [
+          "http://www.ft.com/ontology/core/Thing",
+          "http://www.ft.com/ontology/concept/Concept",
+          "http://www.ft.com/ontology/person/Person"
+        ],
+        "predicate": "http://www.ft.com/ontology/annotation/hasAuthor",
+        "apiUrl": "http://api.ft.com/people/eadc5df0-9838-3971-920e-47beed423b4c"
+      }
+    },
+    {
+      "thing": {
+        "id": "http://api.ft.com/things/dbb0bdae-1f0c-11e4-b0cb-b2227cce2b54",
+        "prefLabel": "Financial Times",
+        "types": [
+          "http://www.ft.com/ontology/core/Thing",
+          "http://www.ft.com/ontology/concept/Concept",
+          "http://www.ft.com/ontology/classification/Classification",
+          "http://www.ft.com/ontology/product/Brand"
+        ],
+        "predicate": "http://www.ft.com/ontology/implicitlyClassifiedBy",
+        "apiUrl": "http://api.ft.com/brands/dbb0bdae-1f0c-11e4-b0cb-b2227cce2b54"
+      }
+    },
+    {
+      "thing": {
+        "id": "http://api.ft.com/things/c47f4dfc-6879-4e95-accf-ca8cbe6a1f69",
+        "prefLabel": "Companies",
+        "types": [
+          "http://www.ft.com/ontology/core/Thing",
+          "http://www.ft.com/ontology/concept/Concept",
+          "http://www.ft.com/ontology/Topic"
+        ],
+        "predicate": "http://www.ft.com/ontology/implicitlyAbout",
+        "apiUrl": "http://api.ft.com/things/c47f4dfc-6879-4e95-accf-ca8cbe6a1f69"
+      }
+    },
+    {
+      "thing": {
+        "predicate": "http://www.ft.com/ontology/annotation/majorMentions",
+        "id": "http://api.ft.com/things/6b683eff-56c3-43d9-acfc-7511d974fc01",
+        "apiUrl": "http://api.ft.com/things/6b683eff-56c3-43d9-acfc-7511d974fc01",
+        "types": [
+          "http://www.ft.com/ontology/core/Thing",
+          "http://www.ft.com/ontology/concept/Concept",
+          "http://www.ft.com/ontology/Location"
+        ],
+        "prefLabel": "UK"
+      }
+    }
+  ],
+  "contentUri": "http://methode-article-mapper.svc.ft.com/content/aae9611e-f66c-4fe4-a6c6-2e2bdea69060",
+  "lastModified": "2018-04-04T12:58:00.347Z",
+  "markedDeleted": "false"
+}

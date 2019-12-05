@@ -113,6 +113,11 @@ func (handler *MessageHandler) handleMessage(msg consumer.Message) {
 		return
 	}
 
+	if combinedPostPublicationEvent.Content.BodyXML != "" && combinedPostPublicationEvent.Content.Body == "" {
+		combinedPostPublicationEvent.Content.Body = combinedPostPublicationEvent.Content.BodyXML
+		combinedPostPublicationEvent.Content.BodyXML = ""
+	}
+
 	if !slice.ContainsString(allowedTypes, combinedPostPublicationEvent.Content.Type) {
 		logger.WithTransactionID(tid).Infof("Ignoring message of type %s", combinedPostPublicationEvent.Content.Type)
 		return
