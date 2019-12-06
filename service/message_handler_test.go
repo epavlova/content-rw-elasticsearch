@@ -182,6 +182,15 @@ func TestHandleWriteMessage(t *testing.T) {
 	handler := MessageHandler{esService: serviceMock, ConceptGetter: concordanceApiMock}
 	handler.handleMessage(consumer.Message{Body: string(inputJSON)})
 
+	assert.Equal(1, len(serviceMock.Calls))
+
+	data := serviceMock.Calls[0].Arguments.Get(2)
+	model, ok := data.(content.IndexModel)
+	if !ok {
+		assert.Fail("Result is not content.IndexModel")
+	}
+	assert.NotEmpty(model.Body)
+
 	serviceMock.AssertExpectations(t)
 	concordanceApiMock.AssertExpectations(t)
 }
