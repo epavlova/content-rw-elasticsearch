@@ -17,6 +17,8 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 	"gopkg.in/olivere/elastic.v2"
+
+	"github.com/Financial-Times/content-rw-elasticsearch/content"
 )
 
 type esServiceMock struct {
@@ -179,6 +181,42 @@ func TestHandleWriteMessage(t *testing.T) {
 
 	handler := MessageHandler{esService: serviceMock, ConceptGetter: concordanceApiMock}
 	handler.handleMessage(consumer.Message{Body: string(inputJSON)})
+
+	assert.Equal(1, len(serviceMock.Calls))
+
+	data := serviceMock.Calls[0].Arguments.Get(2)
+	model, ok := data.(content.IndexModel)
+	if !ok {
+		assert.Fail("Result is not content.IndexModel")
+	}
+	assert.NotEmpty(model.Body)
+
+	serviceMock.AssertExpectations(t)
+	concordanceApiMock.AssertExpectations(t)
+}
+
+func TestHandleWriteMessageFromBodyXML(t *testing.T) {
+	assert := assert.New(t)
+
+	inputJSON, err := ioutil.ReadFile("testdata/exampleEnrichedContentModelWithBodyXML.json")
+	assert.NoError(err, "Unexpected error")
+
+	serviceMock := &esServiceMock{}
+	serviceMock.On("WriteData", "FTCom", "aae9611e-f66c-4fe4-a6c6-2e2bdea69060", mock.Anything).Return(&elastic.IndexResult{}, nil)
+	concordanceApiMock := new(concordanceApiMock)
+	concordanceApiMock.On("GetConcepts", mock.AnythingOfType("string"), mock.AnythingOfType("[]string")).Return(map[string]concept.ConceptModel{}, nil)
+
+	handler := MessageHandler{esService: serviceMock, ConceptGetter: concordanceApiMock}
+	handler.handleMessage(consumer.Message{Body: string(inputJSON)})
+
+	assert.Equal(1, len(serviceMock.Calls))
+
+	data := serviceMock.Calls[0].Arguments.Get(2)
+	model, ok := data.(content.IndexModel)
+	if !ok {
+		assert.Fail("Result is not content.IndexModel")
+	}
+	assert.NotEmpty(model.Body)
 
 	serviceMock.AssertExpectations(t)
 	concordanceApiMock.AssertExpectations(t)

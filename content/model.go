@@ -98,6 +98,7 @@ type Content struct {
 	UUID               string       `json:"uuid"`
 	Title              string       `json:"title"`
 	Body               string       `json:"body"`
+	BodyXML            string       `json:"bodyXML,ommitempty"`
 	Identifiers        []identifier `json:"identifiers"`
 	PublishedDate      string       `json:"publishedDate"`
 	LastModified       string       `json:"lastModified"`
