@@ -5,31 +5,34 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/Financial-Times/content-rw-elasticsearch/service/concept"
-	"github.com/Financial-Times/content-rw-elasticsearch/es"
+	"github.com/Financial-Times/content-rw-elasticsearch/v2/es"
+	"github.com/Financial-Times/content-rw-elasticsearch/v2/service/concept"
 	health "github.com/Financial-Times/go-fthealth/v1_1"
 	"github.com/Financial-Times/go-logger"
-	"github.com/Financial-Times/message-queue-gonsumer/consumer"
+	logger2 "github.com/Financial-Times/go-logger/v2"
+	consumer "github.com/Financial-Times/message-queue-gonsumer"
 	"github.com/Financial-Times/service-status-go/gtg"
 )
 
 type healthService struct {
 	esHealthService  es.HealthServiceI
-	concordanceApi   *concept.ConcordanceApiService
+	concordanceAPI   *concept.ConcordanceApiService
 	consumerInstance consumer.MessageConsumer
 	httpClient       *http.Client
 	checks           []health.Check
 	appSystemCode    string
+	log              *logger2.UPPLogger
 }
 
-func newHealthService(config *consumer.QueueConfig, esHealthService es.HealthServiceI, client *http.Client, concordanceApi *concept.ConcordanceApiService, appSystemCode string) *healthService {
-	consumerInstance := consumer.NewConsumer(*config, func(m consumer.Message) {}, client)
+func newHealthService(config *consumer.QueueConfig, esHealthService es.HealthServiceI, client *http.Client, concordanceAPI *concept.ConcordanceApiService, appSystemCode string, log *logger2.UPPLogger) *healthService {
+	consumerInstance := consumer.NewConsumer(*config, func(m consumer.Message) {}, client, log)
 	service := &healthService{
 		esHealthService:  esHealthService,
-		concordanceApi:   concordanceApi,
+		concordanceAPI:   concordanceAPI,
 		consumerInstance: consumerInstance,
 		httpClient:       client,
 		appSystemCode:    appSystemCode,
+		log:              log,
 	}
 	service.checks = []health.Check{
 		service.clusterIsHealthyCheck(),
@@ -128,7 +131,7 @@ func (service *healthService) checkConcordanceAPI() health.Check {
 		PanicGuide:       "https://dewey.in.ft.com/view/system/content-rw-elasticsearch#general",
 		Severity:         2,
 		TechnicalSummary: "Public Concordance API is not working correctly",
-		Checker:          service.concordanceApi.HealthCheck,
+		Checker:          service.concordanceAPI.HealthCheck,
 	}
 }
 
