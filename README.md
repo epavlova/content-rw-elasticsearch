@@ -33,12 +33,14 @@ Options:
         --aws-secret-access-key=""                              AWS SECRET ACCES KEY ($AWS_SECRET_ACCESS_KEY)
         --elasticsearch-sapi-endpoint="http://localhost:9200"   AES endpoint ($ELASTICSEARCH_SAPI_ENDPOINT)
         --index-name="ft"                                       The name of the elaticsearch index ($ELASTICSEARCH_SAPI_INDEX)
+        --log-level                                             Logging level (DEBUG, INFO, WARN, ERROR) ($LOG_LEVEL) 
+        (default "INFO")
         --kafka-proxy-address="http://localhost:8080"           Addresses used by the queue consumer to connect to the queue ($KAFKA_PROXY_ADDR)
         --kafka-consumer-group="default-consumer-group"         Group used to read the messages from the queue ($KAFKA_CONSUMER_GROUP)
         --kafka-topic="CombinedPostPublicationEvents"           The topic to read the meassages from ($KAFKA_TOPIC)
         --kafka-header="kafka"                                  The header identifying the queue to read the messages from ($KAFKA_HEADER)
         --kafka-concurrent-processing=false                     Whether the consumer uses concurrent processing for the messages ($KAFKA_CONCURRENT_PROCESSING)
-
+        
 3. Test:
 
 There are no service endpoints to test.
