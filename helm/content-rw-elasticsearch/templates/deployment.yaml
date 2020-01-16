@@ -50,7 +50,7 @@ spec:
           valueFrom: 
             configMapKeyRef: 
               name: global-config 
-              key: kafka.proxy.url.with.protocol
+              key: kafka-msk.proxy.url.with.protocol
         - name: AWS_ACCESS_KEY_ID
           valueFrom:
             secretKeyRef:
