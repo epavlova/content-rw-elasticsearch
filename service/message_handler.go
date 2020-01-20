@@ -43,7 +43,6 @@ type MessageHandler struct {
 	connectToESClient func(config es.AccessConfig, c *http.Client) (es.ClientI, error)
 	baseApiUrl        string
 	wg                *sync.WaitGroup
-	mu                sync.Mutex
 	log               *logger2.UPPLogger
 }
 
@@ -75,31 +74,21 @@ func (handler *MessageHandler) Start(baseApiUrl string, accessConfig es.AccessCo
 			time.Sleep(time.Minute)
 		}
 	}()
-
+	handler.wg.Add(1)
 	go func() {
 		defer handler.wg.Done()
 		for ec := range channel {
-			handler.mu.Lock()
-			handler.wg.Add(1)
-			handler.mu.Unlock()
 			handler.esService.SetClient(ec)
-			handler.startMessageConsumer()
+			//this is a blocking method
+			handler.messageConsumer.Start()
 		}
 	}()
 }
 
 func (handler *MessageHandler) Stop() {
-	handler.mu.Lock()
 	if handler.messageConsumer != nil {
 		handler.messageConsumer.Stop()
 	}
-	handler.mu.Unlock()
-
-}
-
-func (handler *MessageHandler) startMessageConsumer() {
-	//this is a blocking method
-	handler.messageConsumer.Start()
 }
 
 func (handler *MessageHandler) handleMessage(msg consumer.Message) {
