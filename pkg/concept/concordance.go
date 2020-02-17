@@ -34,28 +34,28 @@ type ConcordancesResponse struct {
 	Concordances []Concordance `json:"concordances"`
 }
 
-type ConceptModel struct {
+type Model struct {
 	TmeIDs []string
 }
 
-type ConceptGetter interface {
-	GetConcepts(tid string, ids []string) (map[string]ConceptModel, error)
+type Reader interface {
+	GetConcepts(tid string, ids []string) (map[string]Model, error)
 }
 
 type Client interface {
 	Do(req *http.Request) (resp *http.Response, err error)
 }
 
-type ConcordanceApiService struct {
+type ConcordanceAPIService struct {
 	ConcordanceApiBaseURL string
 	Client                Client
 }
 
-func NewConcordanceApiService(concordanceApiBaseURL string, c Client) *ConcordanceApiService {
-	return &ConcordanceApiService{ConcordanceApiBaseURL: concordanceApiBaseURL, Client: c}
+func NewConcordanceAPIService(concordanceApiBaseURL string, c Client) *ConcordanceAPIService {
+	return &ConcordanceAPIService{ConcordanceApiBaseURL: concordanceApiBaseURL, Client: c}
 }
 
-func (c *ConcordanceApiService) GetConcepts(tid string, ids []string) (map[string]ConceptModel, error) {
+func (c *ConcordanceAPIService) GetConcepts(tid string, ids []string) (map[string]Model, error) {
 	req, err := http.NewRequest(http.MethodGet, c.ConcordanceApiBaseURL+concordancesEndpoint, nil)
 	if err != nil {
 		return nil, err
@@ -94,12 +94,12 @@ func (c *ConcordanceApiService) GetConcepts(tid string, ids []string) (map[strin
 	return TransformToConceptModel(concordancesResp), nil
 }
 
-func TransformToConceptModel(concordancesResp ConcordancesResponse) map[string]ConceptModel {
-	conceptMap := make(map[string]ConceptModel)
+func TransformToConceptModel(concordancesResp ConcordancesResponse) map[string]Model {
+	conceptMap := make(map[string]Model)
 	for _, c := range concordancesResp.Concordances {
 		_, found := conceptMap[c.Concept.ID]
 		if !found {
-			conceptMap[c.Concept.ID] = ConceptModel{}
+			conceptMap[c.Concept.ID] = Model{}
 		}
 
 		if c.Identifier.Authority == tmeAuthority {
@@ -118,7 +118,7 @@ func TransformToConceptModel(concordancesResp ConcordancesResponse) map[string]C
 	return conceptMap
 }
 
-func (c *ConcordanceApiService) HealthCheck() (string, error) {
+func (c *ConcordanceAPIService) HealthCheck() (string, error) {
 	req, err := http.NewRequest(http.MethodGet, c.ConcordanceApiBaseURL+"/__gtg", nil)
 	if err != nil {
 		return "", err

@@ -1,35 +1,26 @@
-package service
+package mapper
 
 import (
 	"encoding/base64"
+	"errors"
+	"github.com/Financial-Times/content-rw-elasticsearch/pkg/config"
+	"github.com/Financial-Times/content-rw-elasticsearch/pkg/schema"
 	"strings"
 	"time"
 
 	"fmt"
 
-	"github.com/Financial-Times/content-rw-elasticsearch/content"
-	"github.com/Financial-Times/content-rw-elasticsearch/service/concept"
-	"github.com/Financial-Times/content-rw-elasticsearch/service/utils"
-	"github.com/Financial-Times/go-logger"
+	"github.com/Financial-Times/content-rw-elasticsearch/pkg/concept"
+	"github.com/Financial-Times/content-rw-elasticsearch/pkg/html"
+	"github.com/Financial-Times/go-logger/v2"
 	"github.com/Financial-Times/uuid-utils-go"
-	"github.com/pkg/errors"
 )
 
 const (
-	isPrimaryClassifiedBy  = "http://www.ft.com/ontology/classification/isPrimarilyClassifiedBy"
-	isClassifiedBy         = "http://www.ft.com/ontology/classification/isClassifiedBy"
-	implicitlyClassifiedBy = "http://www.ft.com/ontology/implicitlyClassifiedBy"
-	about                  = "http://www.ft.com/ontology/annotation/about"
-	implicitlyAbout        = "http://www.ft.com/ontology/implicitlyAbout"
-	mentions               = "http://www.ft.com/ontology/annotation/mentions"
-	majorMentions          = "http://www.ft.com/ontology/annotation/majorMentions"
-	hasDisplayTag          = "http://www.ft.com/ontology/hasDisplayTag"
-	hasAuthor              = "http://www.ft.com/ontology/annotation/hasAuthor"
-	hasContributor         = "http://www.ft.com/ontology/hasContributor"
-	webURLPrefix           = "https://www.ft.com/content/"
-	apiURLPrefix           = "/content/"
-	imageServiceURL        = "https://www.ft.com/__origami/service/image/v2/images/raw/http%3A%2F%2Fprod-upp-image-read.ft.com%2F[image_uuid]?source=search&fit=scale-down&width=167"
-	imagePlaceholder       = "[image_uuid]"
+	webURLPrefix     = "https://www.ft.com/content/"
+	apiURLPrefix     = "/content/"
+	imageServiceURL  = "https://www.ft.com/__origami/service/image/v2/images/raw/http%3A%2F%2Fprod-upp-image-read.ft.com%2F[image_uuid]?source=search&fit=scale-down&width=167"
+	imagePlaceholder = "[image_uuid]"
 
 	tmeOrganisations = "ON"
 	tmePeople        = "PN"
@@ -37,88 +28,80 @@ const (
 	tmeTopics        = "Topics"
 	tmeRegions       = "GL"
 
-	ArticleType = "article"
-	VideoType   = "video"
-	BlogType    = "blog"
-	AudioType   = "audio"
-
-	video_prefix = "video"
+	videoPrefix = "video"
 )
 
-var noAnnotationErr = errors.New("No annotation to be processed")
-
-var ContentTypeMap = map[string]content.ContentType{
-	ArticleType: {
-		Collection: "FTCom",
-		Format:     "Articles",
-		Category:   "article",
-	},
-	BlogType: {
-		Collection: "FTBlogs",
-		Format:     "Blogs",
-		Category:   "blogPost",
-	},
-	VideoType: {
-		Collection: "FTVideos",
-		Format:     "Videos",
-		Category:   "video",
-	},
-	AudioType: {
-		Collection: "FTAudios",
-		Format:     "Audios",
-		Category:   "audio",
-	},
+type Handler struct {
+	ConceptReader concept.Reader
+	BaseApiURL    string
+	Config        config.AppConfig
+	log           *logger.UPPLogger
 }
 
-func (handler *MessageHandler) ToIndexModel(enrichedContent content.EnrichedContent, contentType string, tid string) content.IndexModel {
-	model := content.IndexModel{}
+var noAnnotationErr = errors.New("no annotation to be processed")
 
-	baseApiUrl := handler.baseApiUrl
-	if strings.HasPrefix(handler.baseApiUrl, "http://") {
-		baseApiUrl = strings.Replace(handler.baseApiUrl, "http", "https", 1)
+func NewMapperHandler(reader concept.Reader, baseApiURL string, appConfig config.AppConfig, logger *logger.UPPLogger) *Handler {
+	return &Handler{
+		ConceptReader: reader,
+		BaseApiURL:    baseApiURL,
+		Config:        appConfig,
+		log:           logger,
 	}
-	populateContentRelatedFields(&model, enrichedContent, contentType, tid, baseApiUrl)
+}
 
-	annotations, concepts, err := handler.prepareAnnotationsWithConcepts(&enrichedContent, tid)
+func (h *Handler) ToIndexModel(enrichedContent schema.EnrichedContent, contentType string, tid string) schema.IndexModel {
+	model := schema.IndexModel{}
+
+	if strings.HasPrefix(h.BaseApiURL, "http://") {
+		h.BaseApiURL = strings.Replace(h.BaseApiURL, "http", "https", 1)
+	}
+	h.populateContentRelatedFields(&model, enrichedContent, contentType, tid)
+
+	annotations, concepts, err := h.prepareAnnotationsWithConcepts(&enrichedContent, tid)
 	if err != nil {
 		if err == noAnnotationErr {
-			logger.WithTransactionID(tid).Warn(err.Error())
+			h.log.WithTransactionID(tid).Warn(err.Error())
 		} else {
-			logger.WithError(err).WithTransactionID(tid).Error(err)
+			h.log.WithError(err).WithTransactionID(tid).Error(err)
 		}
 		return model
 	}
 
 	for _, annotation := range annotations {
 		canonicalID := strings.TrimPrefix(annotation.ID, concept.ThingURIPrefix)
-		concept, found := concepts[annotation.ID]
+		concepts, found := concepts[annotation.ID]
 		if !found {
-			logger.WithTransactionID(tid).WithUUID(enrichedContent.UUID).Warnf("No concordance found for %v", canonicalID)
+			h.log.WithTransactionID(tid).WithUUID(enrichedContent.UUID).Warnf("No concordance found for %v", canonicalID)
 			continue
 		}
 		annIDs := []string{canonicalID}
-		if concept.TmeIDs != nil {
-			annIDs = append(annIDs, concept.TmeIDs...)
+		if concepts.TmeIDs != nil {
+			annIDs = append(annIDs, concepts.TmeIDs...)
 		} else {
-			logger.WithTransactionID(tid).WithUUID(enrichedContent.Content.UUID).Warnf("TME id missing for concept with id %s, using only canonical id", canonicalID)
+			h.log.WithTransactionID(tid).WithUUID(enrichedContent.Content.UUID).Warnf("TME id missing for concept with id %s, using only canonical id", canonicalID)
 		}
 
-		populateAnnotationRelatedFields(annotation, &model, annIDs, canonicalID)
+		h.populateAnnotationRelatedFields(annotation, &model, annIDs, canonicalID)
 	}
 	return model
 }
 
-func populateAnnotationRelatedFields(annotation content.Thing, model *content.IndexModel, annIDs []string, canonicalID string) {
-	handleSectionMapping(annotation, model, annIDs)
+func (h *Handler) populateAnnotationRelatedFields(annotation schema.Thing, model *schema.IndexModel, annIDs []string, canonicalID string) {
+	h.handleSectionMapping(annotation, model, annIDs)
+
+	about := h.Config.Predicates.Get("about")
+	hasAuthor := h.Config.Predicates.Get("hasAuthor")
+	hasContributor := h.Config.Predicates.Get("hasContributor")
 	for _, taxonomy := range annotation.Types {
+		concepts := h.Config.Concepts
 		switch taxonomy {
-		case "http://www.ft.com/ontology/organisation/Organisation":
+		case concepts.Get("organisation"):
 			model.CmrOrgnames = appendIfNotExists(model.CmrOrgnames, annotation.PrefLabel)
 			model.CmrOrgnamesIds = prepareElasticField(model.CmrOrgnamesIds, annIDs)
 			if annotation.Predicate == about {
 				setPrimaryTheme(model, annotation.PrefLabel, getCmrIDWithFallback(tmeOrganisations, annIDs))
 			}
-		case "http://www.ft.com/ontology/person/Person":
+		case concepts.Get("person"):
 			_, personFound := getCmrID(tmePeople, annIDs)
 			authorCmrID, authorFound := getCmrID(tmeAuthors, annIDs)
 			// if it's only author, skip adding to people
@@ -136,37 +119,37 @@ func populateAnnotationRelatedFields(annotation content.Thing, model *content.In
 			if annotation.Predicate == about {
 				setPrimaryTheme(model, annotation.PrefLabel, getCmrIDWithFallback(tmePeople, annIDs))
 			}
-		case "http://www.ft.com/ontology/company/Company":
+		case concepts.Get("company"):
 			model.CmrCompanynames = appendIfNotExists(model.CmrCompanynames, annotation.PrefLabel)
 			model.CmrCompanynamesIds = prepareElasticField(model.CmrCompanynamesIds, annIDs)
-		case "http://www.ft.com/ontology/product/Brand":
+		case concepts.Get("brand"):
 			model.CmrBrands = appendIfNotExists(model.CmrBrands, annotation.PrefLabel)
 			model.CmrBrandsIds = prepareElasticField(model.CmrBrandsIds, annIDs)
-		case "http://www.ft.com/ontology/Topic":
+		case concepts.Get("topic"):
 			model.CmrTopics = appendIfNotExists(model.CmrTopics, annotation.PrefLabel)
 			model.CmrTopicsIds = prepareElasticField(model.CmrTopicsIds, annIDs)
 			if annotation.Predicate == about {
 				setPrimaryTheme(model, annotation.PrefLabel, getCmrIDWithFallback(tmeTopics, annIDs))
 			}
-		case "http://www.ft.com/ontology/Location":
+		case concepts.Get("location"):
 			model.CmrRegions = appendIfNotExists(model.CmrRegions, annotation.PrefLabel)
 			model.CmrRegionsIds = prepareElasticField(model.CmrRegionsIds, annIDs)
 			if annotation.Predicate == about {
 				setPrimaryTheme(model, annotation.PrefLabel, getCmrIDWithFallback(tmeRegions, annIDs))
 			}
-		case "http://www.ft.com/ontology/Genre":
+		case concepts.Get("genre"):
 			model.CmrGenres = appendIfNotExists(model.CmrGenres, annotation.PrefLabel)
 			model.CmrGenreIds = prepareElasticField(model.CmrGenreIds, annIDs)
 		}
 	}
 }
 
-func (handler *MessageHandler) prepareAnnotationsWithConcepts(enrichedContent *content.EnrichedContent, tid string) ([]content.Thing, map[string]concept.ConceptModel, error) {
+func (h *Handler) prepareAnnotationsWithConcepts(enrichedContent *schema.EnrichedContent, tid string) ([]schema.Thing, map[string]concept.Model, error) {
 	var ids []string
-	var anns []content.Thing
+	var anns []schema.Thing
 	for _, a := range enrichedContent.Metadata {
-		if a.Thing.Predicate == mentions || a.Thing.Predicate == hasDisplayTag {
-			//ignore these annotations
+		if a.Thing.Predicate == h.Config.Predicates.Get("mentions") || a.Thing.Predicate == h.Config.Predicates.Get("hasDisplayTag") {
+			// ignore these annotations
 			continue
 		}
 		ids = append(ids, a.Thing.ID)
@@ -177,11 +160,11 @@ func (handler *MessageHandler) prepareAnnotationsWithConcepts(enrichedContent *c
 		return nil, nil, noAnnotationErr
 	}
 
-	concepts, err := handler.ConceptGetter.GetConcepts(tid, ids)
+	concepts, err := h.ConceptReader.GetConcepts(tid, ids)
 	return anns, concepts, err
 }
 
-func populateContentRelatedFields(model *content.IndexModel, enrichedContent content.EnrichedContent, contentType string, tid string, baseApiUrl string) {
+func (h *Handler) populateContentRelatedFields(model *schema.IndexModel, enrichedContent schema.EnrichedContent, contentType string, tid string) {
 	model.IndexDate = new(string)
 	*model.IndexDate = time.Now().UTC().Format("2006-01-02T15:04:05.999Z")
 	model.ContentType = new(string)
@@ -189,22 +172,22 @@ func populateContentRelatedFields(model *content.IndexModel, enrichedContent con
 	model.InternalContentType = new(string)
 	*model.InternalContentType = contentType
 	model.Category = new(string)
-	*model.Category = ContentTypeMap[contentType].Category
+	*model.Category = h.Config.ContentTypeMap.Get(contentType).Category
 	model.Format = new(string)
-	*model.Format = ContentTypeMap[contentType].Format
+	*model.Format = h.Config.ContentTypeMap.Get(contentType).Format
 	model.UID = &(enrichedContent.Content.UUID)
 	model.LeadHeadline = new(string)
-	*model.LeadHeadline = utils.TransformText(enrichedContent.Content.Title,
-		utils.HtmlEntityTransformer,
-		utils.TagsRemover,
-		utils.OuterSpaceTrimmer,
-		utils.DuplicateWhiteSpaceRemover)
+	*model.LeadHeadline = html.TransformText(enrichedContent.Content.Title,
+		html.EntityTransformer,
+		html.TagsRemover,
+		html.OuterSpaceTrimmer,
+		html.DuplicateWhiteSpaceRemover)
 	model.Byline = new(string)
-	*model.Byline = utils.TransformText(enrichedContent.Content.Byline,
-		utils.HtmlEntityTransformer,
-		utils.TagsRemover,
-		utils.OuterSpaceTrimmer,
-		utils.DuplicateWhiteSpaceRemover)
+	*model.Byline = html.TransformText(enrichedContent.Content.Byline,
+		html.EntityTransformer,
+		html.TagsRemover,
+		html.OuterSpaceTrimmer,
+		html.DuplicateWhiteSpaceRemover)
 	if enrichedContent.Content.PublishedDate != "" {
 		model.LastPublish = &(enrichedContent.Content.PublishedDate)
 	}
@@ -213,16 +196,16 @@ func populateContentRelatedFields(model *content.IndexModel, enrichedContent con
 	}
 	model.Body = new(string)
 	if enrichedContent.Content.Body != "" {
-		*model.Body = utils.TransformText(enrichedContent.Content.Body,
-			utils.InteractiveGraphicsMarkupTagRemover,
-			utils.PullTagTransformer,
-			utils.HtmlEntityTransformer,
-			utils.ScriptTagRemover,
-			utils.TagsRemover,
-			utils.OuterSpaceTrimmer,
-			utils.Embed1Replacer,
-			utils.SquaredCaptionReplacer,
-			utils.DuplicateWhiteSpaceRemover)
+		*model.Body = html.TransformText(enrichedContent.Content.Body,
+			html.InteractiveGraphicsMarkupTagRemover,
+			html.PullTagTransformer,
+			html.EntityTransformer,
+			html.ScriptTagRemover,
+			html.TagsRemover,
+			html.OuterSpaceTrimmer,
+			html.Embed1Replacer,
+			html.SquaredCaptionReplacer,
+			html.DuplicateWhiteSpaceRemover)
 	} else {
 		*model.Body = enrichedContent.Content.Description
 	}
@@ -230,35 +213,35 @@ func populateContentRelatedFields(model *content.IndexModel, enrichedContent con
 	model.ShortDescription = new(string)
 	*model.ShortDescription = enrichedContent.Content.Standfirst
 
-	if contentType != BlogType && enrichedContent.Content.MainImage != "" {
+	if contentType != config.BlogType && enrichedContent.Content.MainImage != "" {
 		model.ThumbnailURL = new(string)
 
 		var imageID *uuidutils.UUID
 
-		//Generate the actual image UUID from the received image set UUID
+		// Generate the actual image UUID from the received image set UUID
 		imageSetUUID, err := uuidutils.NewUUIDFromString(enrichedContent.Content.MainImage)
 		if err == nil {
 			imageID, err = uuidutils.NewUUIDDeriverWith(uuidutils.IMAGE_SET).From(imageSetUUID)
 		}
 
 		if err != nil {
-			logger.WithError(err).Warnf("Couldn't generate image uuid for the image set with uuid %s: image field won't be populated.", enrichedContent.Content.MainImage)
+			h.log.WithError(err).Warnf("Couldn't generate image uuid for the image set with uuid %s: image field won't be populated.", enrichedContent.Content.MainImage)
 		} else {
 			*model.ThumbnailURL = strings.Replace(imageServiceURL, imagePlaceholder, imageID.String(), -1)
 		}
 
 	}
 
-	if contentType == VideoType && len(enrichedContent.Content.DataSources) > 0 {
+	if contentType == config.VideoType && len(enrichedContent.Content.DataSources) > 0 {
 		for _, ds := range enrichedContent.Content.DataSources {
-			if strings.HasPrefix(ds.MediaType, video_prefix) {
+			if strings.HasPrefix(ds.MediaType, videoPrefix) {
 				model.LengthMillis = ds.Duration
 				break
 			}
 		}
 	}
 
-	if contentType == AudioType && len(enrichedContent.Content.DataSources) > 0 {
+	if contentType == config.AudioType && len(enrichedContent.Content.DataSources) > 0 {
 		for _, ds := range enrichedContent.Content.DataSources {
 			model.LengthMillis = ds.Duration
 			break
@@ -268,7 +251,7 @@ func populateContentRelatedFields(model *content.IndexModel, enrichedContent con
 	model.URL = new(string)
 	*model.URL = webURLPrefix + enrichedContent.Content.UUID
 	model.ModelAPIURL = new(string)
-	*model.ModelAPIURL = fmt.Sprintf("%v%v%v", baseApiUrl, apiURLPrefix, enrichedContent.Content.UUID)
+	*model.ModelAPIURL = fmt.Sprintf("%v%v%v", h.BaseApiURL, apiURLPrefix, enrichedContent.Content.UUID)
 	model.PublishReference = tid
 }
 
@@ -279,21 +262,22 @@ func prepareElasticField(elasticField []string, annIDs []string) []string {
 	return elasticField
 }
 
-func handleSectionMapping(annotation content.Thing, model *content.IndexModel, annIDs []string) {
+func (h *Handler) handleSectionMapping(annotation schema.Thing, model *schema.IndexModel, annIDs []string) {
 	// handle sections
+	predicates := h.Config.Predicates
 	switch annotation.Predicate {
-	case about:
+	case predicates.Get("about"):
 		fallthrough
-	case majorMentions:
+	case predicates.Get("majorMentions"):
 		fallthrough
-	case implicitlyAbout:
+	case predicates.Get("implicitlyAbout"):
 		fallthrough
-	case isClassifiedBy:
+	case predicates.Get("isClassifiedBy"):
 		fallthrough
-	case implicitlyClassifiedBy:
+	case predicates.Get("implicitlyClassifiedBy"):
 		model.CmrSections = appendIfNotExists(model.CmrSections, annotation.PrefLabel)
 		model.CmrSectionsIds = prepareElasticField(model.CmrSectionsIds, annIDs)
-	case isPrimaryClassifiedBy:
+	case predicates.Get("isPrimaryClassifiedBy"):
 		model.CmrSections = appendIfNotExists(model.CmrSections, annotation.PrefLabel)
 		model.CmrSectionsIds = prepareElasticField(model.CmrSectionsIds, annIDs)
 		model.CmrPrimarysection = new(string)
@@ -303,7 +287,7 @@ func handleSectionMapping(annotation content.Thing, model *content.IndexModel, a
 	}
 }
 
-func setPrimaryTheme(model *content.IndexModel, name string, id string) {
+func setPrimaryTheme(model *schema.IndexModel, name string, id string) {
 	if model.CmrPrimarytheme != nil {
 		return
 	}
@@ -311,7 +295,6 @@ func setPrimaryTheme(model *content.IndexModel, name string, id string) {
 	*model.CmrPrimarytheme = name
 	model.CmrPrimarythemeID = new(string)
 	*model.CmrPrimarythemeID = id
-
 }
 
 func getCmrID(taxonomy string, annotationIDs []string) (string, bool) {
@@ -333,9 +316,8 @@ func getCmrIDWithFallback(taxonomy string, annotationIDs []string) string {
 	}
 	if len(annotationIDs) > 1 {
 		return annotationIDs[1]
-	} else {
-		return annotationIDs[0]
 	}
+	return annotationIDs[0]
 }
 
 func appendIfNotExists(s []string, e string) []string {

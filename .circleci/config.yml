@@ -12,20 +12,16 @@ jobs:
     - run:
         name: External dependencies
         command: |
-          go get -u github.com/mattn/goveralls
-          go get -u github.com/jstemmer/go-junit-report
-          curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
+          GO111MODULE=off go get -u github.com/mattn/goveralls
+          GO111MODULE=off go get -u github.com/jstemmer/go-junit-report
     - run:
         name: Make result folders
         command: |
           mkdir -p ${CIRCLE_TEST_REPORTS}
           mkdir -p ${CIRCLE_COVERAGE_REPORT}
     - run:
-        name: Download vendored dependencies
-        command: dep ensure -v -vendor-only
-    - run:
         name: Go build
-        command: go build -v
+        command: go build -mod=readonly -v ./cmd/content-rw-elasticsearch
     - run:
         name: Run tests
         command: go test -race -cover -coverprofile=${CIRCLE_COVERAGE_REPORT}/coverage.out ./... | go-junit-report > ${CIRCLE_TEST_REPORTS}/junit.xml
@@ -47,7 +43,7 @@ jobs:
   dredd:
     working_directory: /go/src/github.com/Financial-Times/content-rw-elasticsearch
     docker:
-      - image: bankrs/golang-dredd:go1.10.0-dredd5.1.5
+      - image: bankrs/golang-dredd:go1.13.7-dredd11.2.19
         environment:
           GOPATH: /go
           ELASTICSEARCH_SAPI_ENDPOINT: http://localhost:9000
@@ -58,15 +54,8 @@ jobs:
           name: Load ersatz-fixtures.yml to ersatz image
           command: "curl -X POST --data-binary @_ft/ersatz-fixtures.yml -H \"Content-type: text/x-yaml\" http://localhost:9000/__configure"
       - run:
-          name: External Dependencies
-          command: |
-            curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
-      - run:
-          name: Download vendored dependencies
-          command: dep ensure -v -vendor-only
-      - run:
           name: Go Build
-          command: go build -v
+          command: go build -mod=readonly -v ./cmd/content-rw-elasticsearch
       - run:
           name: Dredd API Testing
           command: dredd

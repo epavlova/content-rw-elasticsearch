@@ -1,6 +1,6 @@
-var hooks = require('hooks');
-var http = require('http');
-var fs = require('fs');
+let hooks = require('hooks');
+let http = require('http');
+let fs = require('fs');
 
 const defaultFixtures = './_ft/ersatz-fixtures.yml';
 
@@ -11,9 +11,9 @@ hooks.beforeAll(function (t, done) {
         return;
     }
 
-    var contents = fs.readFileSync(defaultFixtures, 'utf8');
+    let contents = fs.readFileSync(defaultFixtures, 'utf8');
 
-    var options = {
+    const options = {
         host: 'localhost',
         port: '9000',
         path: '/__configure',
@@ -23,7 +23,7 @@ hooks.beforeAll(function (t, done) {
         }
     };
 
-    var req = http.request(options, function (res) {
+    let req = http.request(options, function (res) {
         res.setEncoding('utf8');
     });
 

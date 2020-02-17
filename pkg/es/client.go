@@ -3,12 +3,12 @@ package es
 import (
 	"net/http"
 
-	"github.com/Financial-Times/go-logger"
+	"github.com/Financial-Times/go-logger/v2"
 	awsauth "github.com/smartystreets/go-aws-auth"
 	"gopkg.in/olivere/elastic.v2"
 )
 
-type ClientI interface {
+type Client interface {
 	ClusterHealth() *elastic.ClusterHealthService
 	Index() *elastic.IndexService
 	Get() *elastic.GetService
@@ -32,7 +32,7 @@ func (a AWSSigningTransport) RoundTrip(req *http.Request) (*http.Response, error
 	return a.HTTPClient.Do(awsauth.Sign4(req, a.Credentials))
 }
 
-func NewClient(config AccessConfig, c *http.Client) (ClientI, error) {
+func NewClient(config AccessConfig, c *http.Client) (Client, error) {
 	signingTransport := AWSSigningTransport{
 		Credentials: awsauth.Credentials{
 			AccessKeyID:     config.AccessKey,
@@ -46,7 +46,7 @@ func NewClient(config AccessConfig, c *http.Client) (ClientI, error) {
 		elastic.SetURL(config.Endpoint),
 		elastic.SetScheme("https"),
 		elastic.SetHttpClient(signingClient),
-		elastic.SetSniff(false), //needs to be disabled due to EAS behavior. Healthcheck still operates as normal.
-		elastic.SetErrorLog(logger.Logger()),
+		elastic.SetSniff(false), // needs to be disabled due to EAS behavior. Healthcheck still operates as normal.
+		elastic.SetErrorLog(logger.NewUnstructuredLogger()),
 	)
 }

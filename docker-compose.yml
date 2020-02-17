@@ -1,0 +1,29 @@
+version: '3'
+services:
+  app:
+    build: .
+    image: content-rw-elasticsearch:local
+    container_name: content-rw-elasticsearch
+    ports:
+      - "8080:8080"
+    networks:
+      - common
+    depends_on:
+      - es
+  es:
+    image: elasticsearch:1.5
+    ports:
+      - 9200:9200
+    networks:
+      - common
+    environment:
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+
+volumes:
+  esdata:
+    driver: local
+
+networks:
+  common:

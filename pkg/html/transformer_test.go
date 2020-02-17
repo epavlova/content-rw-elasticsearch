@@ -1,4 +1,4 @@
-package utils
+package html
 
 import (
 	"fmt"
@@ -8,7 +8,7 @@ import (
 )
 
 func TestTextTransform(t *testing.T) {
-	assert := assert.New(t)
+	expect := assert.New(t)
 
 	inputText := `<body><content data-embedded="true" id="aae9611e-f66c-4fe4-a6c6-2e2bdea69060" type="http://www.ft.com/ontology/content/ImageSet"></content>
 <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris scelerisque, nunc vel consectetur sagittis, purus ex ultrices metus, in consectetur nisl lacus congue nulla. Integer fermentum molestie dui at accumsan.</p>
@@ -26,7 +26,7 @@ func TestTextTransform(t *testing.T) {
 	transformedText := TransformText(inputText,
 		InteractiveGraphicsMarkupTagRemover,
 		PullTagTransformer,
-		HtmlEntityTransformer,
+		EntityTransformer,
 		ScriptTagRemover,
 		TagsRemover,
 		OuterSpaceTrimmer,
@@ -47,11 +47,11 @@ func TestTextTransform(t *testing.T) {
 		"Praesent viverra non lectus ut ullamcorper. Phasellus porttitor neque at volutpat pulvinar. “Curabitur fermentum, dolor vel interdum varius, " +
 		"tellus justo dapibus velit, interdum sollicitudin dolor nibh varius velit.”"
 
-	assert.Equal(expectedText, transformedText, fmt.Sprintf("Expected text %s differs from actual text %s ", transformedText, expectedText))
+	expect.Equal(expectedText, transformedText, fmt.Sprintf("Expected text %s differs from actual text %s ", transformedText, expectedText))
 }
 
 func TestBlogTransform(t *testing.T) {
-	assert := assert.New(t)
+	expect := assert.New(t)
 
 	inputText := `<body><p><a href="http://www.ft.com/fastft/files/2017/02/Fake_blog_post_title-line_chart-ft-web-themelarge-600x397.1234567890.png"><img alt="" height="398" src="http://www.ft.com/fastft/files/2017/02/Fake_blog_post_title-line_chart-ft-web-themelarge-600x397.1234567890.png" width="600"/></a></p>
 <p>Aliquam sagittis ipsum non tortor placerat scelerisque.</p>
@@ -66,7 +66,7 @@ func TestBlogTransform(t *testing.T) {
 	transformedText := TransformText(inputText,
 		InteractiveGraphicsMarkupTagRemover,
 		PullTagTransformer,
-		HtmlEntityTransformer,
+		EntityTransformer,
 		ScriptTagRemover,
 		TagsRemover,
 		OuterSpaceTrimmer,
@@ -81,59 +81,59 @@ func TestBlogTransform(t *testing.T) {
 		"tellus, pharetra non orci eu, dictum semper enim. Donec vel dapibus mi, vel fermentum sapien. Ut nec nibh ex. " +
 		"Proin dignissim ipsum at lacus condimentum efficitur. Donec at felis felis. Etiam sagittis condimentum maximus. Donec id faucibus erat"
 
-	assert.Equal(expectedText, transformedText, fmt.Sprintf("Expected text %s differs from actual text %s ", transformedText, expectedText))
+	expect.Equal(expectedText, transformedText, fmt.Sprintf("Expected text %s differs from actual text %s ", transformedText, expectedText))
 }
 
 func TestTransformBlank(t *testing.T) {
-	assert := assert.New(t)
+	expect := assert.New(t)
 	transformedText := TransformText("",
 		InteractiveGraphicsMarkupTagRemover,
 		PullTagTransformer,
-		HtmlEntityTransformer,
+		EntityTransformer,
 		ScriptTagRemover,
 		TagsRemover,
 		OuterSpaceTrimmer,
 		Embed1Replacer,
 		SquaredCaptionReplacer,
 		DuplicateWhiteSpaceRemover)
-	assert.Equal("", transformedText, "Empty string not transformed properly")
+	expect.Equal("", transformedText, "Empty string not transformed properly")
 }
 
 func TestInteractiveGraphicsMarkupTagRemover(t *testing.T) {
-	assert := assert.New(t)
-	assert.Equal("testcomponent",
+	expect := assert.New(t)
+	expect.Equal("testcomponent",
 		InteractiveGraphicsMarkupTagRemover("test<div class=\"interactive-comp\">interactive</div>component"),
 		"Interactive components transformed properly")
 }
 func TestPullTagTransformer(t *testing.T) {
-	assert := assert.New(t)
-	assert.Equal("this is a test followed by another test", PullTagTransformer("this is a test<pull-quote>pull quote</pull-quote> followed by another test<pull-quote>\npull quote\n</pull-quote>"), "Pull tags not transformed properly")
+	expect := assert.New(t)
+	expect.Equal("this is a test followed by another test", PullTagTransformer("this is a test<pull-quote>pull quote</pull-quote> followed by another test<pull-quote>\npull quote\n</pull-quote>"), "Pull tags not transformed properly")
 }
 func TestHtmlEntityTransformer(t *testing.T) {
-	assert := assert.New(t)
-	assert.Equal("test ‑£& >&", HtmlEntityTransformer("test &#8209;&pound;&amp;&nbsp;&gt;&"), "Entities not transformed properly")
+	expect := assert.New(t)
+	expect.Equal("test ‑£& >&", EntityTransformer("test &#8209;&pound;&amp;&nbsp;&gt;&"), "Entities not transformed properly")
 }
 func TestScriptTagRemover(t *testing.T) {
-	assert := assert.New(t)
-	assert.Equal("Short as can be", ScriptTagRemover("Short as <script>a script</script>can be"), "Script tags not transformed properly")
+	expect := assert.New(t)
+	expect.Equal("Short as can be", ScriptTagRemover("Short as <script>a script</script>can be"), "Script tags not transformed properly")
 }
 func TestTagsRemover(t *testing.T) {
-	assert := assert.New(t)
-	assert.Equal("this is a simple test for tag removal", TagsRemover("this is a <b>simple </b>test<br> for <span attr=\"val\">tag </span>removal"), "Tags not transformed properly")
+	expect := assert.New(t)
+	expect.Equal("this is a simple test for tag removal", TagsRemover("this is a <b>simple </b>test<br> for <span attr=\"val\">tag </span>removal"), "Tags not transformed properly")
 }
 func TestOuterSpaceTrimmer(t *testing.T) {
-	assert := assert.New(t)
-	assert.Equal("just the  goods", OuterSpaceTrimmer("\n  just the  goods   \t"), "Space not trimmed properly")
+	expect := assert.New(t)
+	expect.Equal("just the  goods", OuterSpaceTrimmer("\n  just the  goods   \t"), "Space not trimmed properly")
 }
 func TestEmbed1Replacer(t *testing.T) {
-	assert := assert.New(t)
-	assert.Equal("takes one to ", Embed1Replacer("takes one to embed1"), "Embed not transformed properly")
+	expect := assert.New(t)
+	expect.Equal("takes one to ", Embed1Replacer("takes one to embed1"), "Embed not transformed properly")
 }
 func TestSquaredCaptionReplacer(t *testing.T) {
-	assert := assert.New(t)
-	assert.Equal("to  or not to ", SquaredCaptionReplacer("to [caption something] or not to [/caption something]"), "Squared caption not transformed properly")
+	expect := assert.New(t)
+	expect.Equal("to  or not to ", SquaredCaptionReplacer("to [caption something] or not to [/caption something]"), "Squared caption not transformed properly")
 }
 func TestDuplicateWhiteSpaceRemover(t *testing.T) {
-	assert := assert.New(t)
-	assert.Equal(" lots of space but no room", DuplicateWhiteSpaceRemover(" lots  of\t\tspace\r\nbut \t\nno room"), "Whitespace not transformed properly")
+	expect := assert.New(t)
+	expect.Equal(" lots of space but no room", DuplicateWhiteSpaceRemover(" lots  of\t\tspace\r\nbut \t\nno room"), "Whitespace not transformed properly")
 }
