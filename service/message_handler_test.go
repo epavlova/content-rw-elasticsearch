@@ -475,6 +475,40 @@ func TestHandlePACMessage(t *testing.T) {
 	serviceMock.AssertNotCalled(t, "DeleteData", mock.Anything, mock.Anything)
 }
 
+func TestHandlePACMessageWithOldSparkContent(t *testing.T) {
+
+	input, err := modifyTestInputAuthority("cct")
+	assert.NoError(t,err, "Unexpected error")
+
+	serviceMock := &esServiceMock{}
+	serviceMock.On("WriteData", "FTCom", "aae9611e-f66c-4fe4-a6c6-2e2bdea69060", mock.Anything).Return(&elastic.IndexResult{}, nil)
+	concordanceApiMock := new(concordanceApiMock)
+	concordanceApiMock.On("GetConcepts", mock.AnythingOfType("string"), mock.AnythingOfType("[]string")).Return(map[string]concept.ConceptModel{}, nil)
+
+	handler := MessageHandler{esService: serviceMock, ConceptGetter: concordanceApiMock}
+	handler.handleMessage(consumer.Message{Body: input, Headers: map[string]string{"Origin-System-Id": "http://cmdb.ft.com/systems/pac"}})
+
+	serviceMock.AssertExpectations(t)
+	concordanceApiMock.AssertExpectations(t)
+}
+
+func TestHandlePACMessageWithSparkContent(t *testing.T) {
+
+	input, err := modifyTestInputAuthority("spark")
+	assert.NoError(t,err, "Unexpected error")
+
+	serviceMock := &esServiceMock{}
+	serviceMock.On("WriteData", "FTCom", "aae9611e-f66c-4fe4-a6c6-2e2bdea69060", mock.Anything).Return(&elastic.IndexResult{}, nil)
+	concordanceApiMock := new(concordanceApiMock)
+	concordanceApiMock.On("GetConcepts", mock.AnythingOfType("string"), mock.AnythingOfType("[]string")).Return(map[string]concept.ConceptModel{}, nil)
+
+	handler := MessageHandler{esService: serviceMock, ConceptGetter: concordanceApiMock}
+	handler.handleMessage(consumer.Message{Body: input, Headers: map[string]string{"Origin-System-Id": "http://cmdb.ft.com/systems/pac"}})
+
+	serviceMock.AssertExpectations(t)
+	concordanceApiMock.AssertExpectations(t)
+}
+
 func modifyTestInputAuthority(replacement string) (string, error) {
 
 	inputJSON, err := ioutil.ReadFile("testdata/exampleEnrichedContentModel.json")
