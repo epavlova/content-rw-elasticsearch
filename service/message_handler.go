@@ -126,36 +126,10 @@ func (handler *MessageHandler) handleMessage(msg consumer.Message) {
 	uuid := combinedPostPublicationEvent.UUID
 	logger.WithTransactionID(tid).WithUUID(uuid).Info("Processing combined post publication event")
 
-	var contentType string
-	typeHeader := msg.Headers[contentTypeHeader]
-	if strings.Contains(typeHeader, audioContentTypeHeader) {
-		contentType = AudioType
-	} else if strings.Contains(typeHeader, articleContentTypeHeader) {
-		contentType = ArticleType
-	} else {
-		for _, identifier := range combinedPostPublicationEvent.Content.Identifiers {
-			if strings.HasPrefix(identifier.Authority, blogsAuthority) {
-				contentType = BlogType
-			} else if strings.HasPrefix(identifier.Authority, articleAuthority) {
-				contentType = ArticleType
-			} else if strings.HasPrefix(identifier.Authority, videoAuthority) {
-				contentType = VideoType
-			}
-		}
-	}
-
-	if contentType == "" {
-		origin := msg.Headers[originHeader]
-		if strings.Contains(origin, methodeOrigin) {
-			contentType = ArticleType
-		} else if strings.Contains(origin, wordpressOrigin) {
-			contentType = BlogType
-		} else if strings.Contains(origin, videoOrigin) {
-			contentType = VideoType
-		} else if origin != pacOrigin {
-			logger.WithTransactionID(tid).WithUUID(uuid).WithError(err).Error("Failed to index content. Could not infer type of content")
-			return
-		}
+	contentType := extractContentTypeFromMsg(msg, combinedPostPublicationEvent)
+	if contentType == "" && msg.Headers[originHeader] != pacOrigin{
+		logger.WithTransactionID(tid).WithUUID(uuid).Error("Failed to index content. Could not infer type of content")
+		return
 	}
 
 	if combinedPostPublicationEvent.MarkedDeleted == "true" {
@@ -182,4 +156,36 @@ func (handler *MessageHandler) handleMessage(msg consumer.Message) {
 	}
 	logger.WithMonitoringEvent("ContentWriteElasticsearch", tid, contentType).WithUUID(uuid).Info("Successfully saved")
 
+}
+
+func extractContentTypeFromMsg(msg consumer.Message, event content.EnrichedContent) string {
+	var contentType string
+	typeHeader := msg.Headers[contentTypeHeader]
+	if strings.Contains(typeHeader, audioContentTypeHeader) {
+		contentType = AudioType
+	} else if strings.Contains(typeHeader, articleContentTypeHeader) {
+		contentType = ArticleType
+	} else {
+		for _, identifier := range event.Content.Identifiers {
+			if strings.HasPrefix(identifier.Authority, blogsAuthority) {
+				contentType = BlogType
+			} else if strings.HasPrefix(identifier.Authority, articleAuthority) {
+				contentType = ArticleType
+			} else if strings.HasPrefix(identifier.Authority, videoAuthority) {
+				contentType = VideoType
+			}
+		}
+	}
+
+	if contentType == "" {
+		origin := msg.Headers[originHeader]
+		if strings.Contains(origin, methodeOrigin) {
+			contentType = ArticleType
+		} else if strings.Contains(origin, wordpressOrigin) {
+			contentType = BlogType
+		} else if strings.Contains(origin, videoOrigin) {
+			contentType = VideoType
+		}
+	}
+	return contentType
 }
