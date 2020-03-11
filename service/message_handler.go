@@ -22,7 +22,11 @@ const (
 	blogsAuthority           = "http://api.ft.com/system/FT-LABS-WP"
 	articleAuthority         = "http://api.ft.com/system/FTCOM-METHODE"
 	videoAuthority           = "http://api.ft.com/system/NEXT-VIDEO-EDITOR"
+	oldSparkAuthoriy         = "http://api.ft.com/system/cct"
+	sparkAuthoriy            = "http://api.ft.com/system/spark"
 	originHeader             = "Origin-System-Id"
+	oldSparkOrigin           = "cct"
+	sparkOrigin              = "spark"
 	methodeOrigin            = "methode-web-pub"
 	wordpressOrigin          = "wordpress"
 	videoOrigin              = "next-video-editor"
@@ -127,7 +131,7 @@ func (handler *MessageHandler) handleMessage(msg consumer.Message) {
 	logger.WithTransactionID(tid).WithUUID(uuid).Info("Processing combined post publication event")
 
 	contentType := extractContentTypeFromMsg(msg, combinedPostPublicationEvent)
-	if contentType == "" && msg.Headers[originHeader] != pacOrigin{
+	if contentType == "" && msg.Headers[originHeader] != pacOrigin {
 		logger.WithTransactionID(tid).WithUUID(uuid).Error("Failed to index content. Could not infer type of content")
 		return
 	}
@@ -159,33 +163,46 @@ func (handler *MessageHandler) handleMessage(msg consumer.Message) {
 }
 
 func extractContentTypeFromMsg(msg consumer.Message, event content.EnrichedContent) string {
-	var contentType string
+
 	typeHeader := msg.Headers[contentTypeHeader]
 	if strings.Contains(typeHeader, audioContentTypeHeader) {
-		contentType = AudioType
-	} else if strings.Contains(typeHeader, articleContentTypeHeader) {
-		contentType = ArticleType
-	} else {
-		for _, identifier := range event.Content.Identifiers {
-			if strings.HasPrefix(identifier.Authority, blogsAuthority) {
-				contentType = BlogType
-			} else if strings.HasPrefix(identifier.Authority, articleAuthority) {
-				contentType = ArticleType
-			} else if strings.HasPrefix(identifier.Authority, videoAuthority) {
-				contentType = VideoType
-			}
+		return AudioType
+	}
+	if strings.Contains(typeHeader, articleContentTypeHeader) {
+		return ArticleType
+	}
+	var contentType string
+
+	for _, identifier := range event.Content.Identifiers {
+		if strings.HasPrefix(identifier.Authority, blogsAuthority) {
+			contentType = BlogType
+		} else if strings.HasPrefix(identifier.Authority, articleAuthority) {
+			contentType = ArticleType
+		} else if strings.HasPrefix(identifier.Authority, videoAuthority) {
+			contentType = VideoType
+		} else if strings.HasPrefix(identifier.Authority, oldSparkAuthoriy) {
+			contentType = ArticleType
+		} else if strings.HasPrefix(identifier.Authority, sparkAuthoriy) {
+			contentType = ArticleType
+		}
+	}
+	if contentType != "" {
+		return contentType
+	}
+
+	msgOrigin := msg.Headers[originHeader]
+	originMap := map[string]string{
+		methodeOrigin:   ArticleType,
+		oldSparkOrigin:  ArticleType,
+		sparkOrigin:     ArticleType,
+		wordpressOrigin: BlogType,
+		videoOrigin:     VideoType,
+	}
+	for origin, contentType := range originMap {
+		if strings.Contains(msgOrigin, origin) {
+			return contentType
 		}
 	}
 
-	if contentType == "" {
-		origin := msg.Headers[originHeader]
-		if strings.Contains(origin, methodeOrigin) {
-			contentType = ArticleType
-		} else if strings.Contains(origin, wordpressOrigin) {
-			contentType = BlogType
-		} else if strings.Contains(origin, videoOrigin) {
-			contentType = VideoType
-		}
-	}
-	return contentType
+	return ""
 }
