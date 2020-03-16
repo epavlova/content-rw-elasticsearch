@@ -17,19 +17,23 @@ import (
 )
 
 const (
-	syntheticRequestPrefix   = "SYNTHETIC-REQ-MON"
-	transactionIDHeader      = "X-Request-Id"
-	blogsAuthority           = "http://api.ft.com/system/FT-LABS-WP"
-	articleAuthority         = "http://api.ft.com/system/FTCOM-METHODE"
-	videoAuthority           = "http://api.ft.com/system/NEXT-VIDEO-EDITOR"
-	originHeader             = "Origin-System-Id"
-	methodeOrigin            = "methode-web-pub"
-	wordpressOrigin          = "wordpress"
-	videoOrigin              = "next-video-editor"
-	pacOrigin                = "http://cmdb.ft.com/systems/pac"
-	contentTypeHeader        = "Content-Type"
-	audioContentTypeHeader   = "ft-upp-audio"
-	articleContentTypeHeader = "ft-upp-article"
+	syntheticRequestPrefix      = "SYNTHETIC-REQ-MON"
+	transactionIDHeader         = "X-Request-Id"
+	blogsAuthority              = "http://api.ft.com/system/FT-LABS-WP"
+	methodeArticleAuthority     = "http://api.ft.com/system/FTCOM-METHODE"
+	genericArticleAuthoriy      = "http://api.ft.com/system/cct"
+	genericSparkArticleAuthoriy = "http://api.ft.com/system/spark"
+	videoAuthority              = "http://api.ft.com/system/NEXT-VIDEO-EDITOR"
+	originHeader                = "Origin-System-Id"
+	cctOrigin                   = "cct"
+	sparkOrigin                 = "spark"
+	methodeOrigin               = "methode-web-pub"
+	wordpressOrigin             = "wordpress"
+	videoOrigin                 = "next-video-editor"
+	pacOrigin                   = "http://cmdb.ft.com/systems/pac"
+	contentTypeHeader           = "Content-Type"
+	audioContentTypeHeader      = "ft-upp-audio"
+	articleContentTypeHeader    = "ft-upp-article"
 )
 
 // Empty type added for older content. Placeholders - which are subject of exclusion - have type Content.
@@ -126,36 +130,10 @@ func (handler *MessageHandler) handleMessage(msg consumer.Message) {
 	uuid := combinedPostPublicationEvent.UUID
 	logger.WithTransactionID(tid).WithUUID(uuid).Info("Processing combined post publication event")
 
-	var contentType string
-	typeHeader := msg.Headers[contentTypeHeader]
-	if strings.Contains(typeHeader, audioContentTypeHeader) {
-		contentType = AudioType
-	} else if strings.Contains(typeHeader, articleContentTypeHeader) {
-		contentType = ArticleType
-	} else {
-		for _, identifier := range combinedPostPublicationEvent.Content.Identifiers {
-			if strings.HasPrefix(identifier.Authority, blogsAuthority) {
-				contentType = BlogType
-			} else if strings.HasPrefix(identifier.Authority, articleAuthority) {
-				contentType = ArticleType
-			} else if strings.HasPrefix(identifier.Authority, videoAuthority) {
-				contentType = VideoType
-			}
-		}
-	}
-
-	if contentType == "" {
-		origin := msg.Headers[originHeader]
-		if strings.Contains(origin, methodeOrigin) {
-			contentType = ArticleType
-		} else if strings.Contains(origin, wordpressOrigin) {
-			contentType = BlogType
-		} else if strings.Contains(origin, videoOrigin) {
-			contentType = VideoType
-		} else if origin != pacOrigin {
-			logger.WithTransactionID(tid).WithUUID(uuid).WithError(err).Error("Failed to index content. Could not infer type of content")
-			return
-		}
+	contentType := extractContentTypeFromMsg(msg, combinedPostPublicationEvent)
+	if contentType == "" && msg.Headers[originHeader] != pacOrigin {
+		logger.WithTransactionID(tid).WithUUID(uuid).Error("Failed to index content. Could not infer type of content")
+		return
 	}
 
 	if combinedPostPublicationEvent.MarkedDeleted == "true" {
@@ -182,4 +160,49 @@ func (handler *MessageHandler) handleMessage(msg consumer.Message) {
 	}
 	logger.WithMonitoringEvent("ContentWriteElasticsearch", tid, contentType).WithUUID(uuid).Info("Successfully saved")
 
+}
+
+func extractContentTypeFromMsg(msg consumer.Message, event content.EnrichedContent) string {
+
+	typeHeader := msg.Headers[contentTypeHeader]
+	if strings.Contains(typeHeader, audioContentTypeHeader) {
+		return AudioType
+	}
+	if strings.Contains(typeHeader, articleContentTypeHeader) {
+		return ArticleType
+	}
+	var contentType string
+
+	for _, identifier := range event.Content.Identifiers {
+		if strings.HasPrefix(identifier.Authority, blogsAuthority) {
+			contentType = BlogType
+		} else if strings.HasPrefix(identifier.Authority, methodeArticleAuthority) {
+			contentType = ArticleType
+		} else if strings.HasPrefix(identifier.Authority, videoAuthority) {
+			contentType = VideoType
+		} else if strings.HasPrefix(identifier.Authority, genericArticleAuthoriy) {
+			contentType = ArticleType
+		} else if strings.HasPrefix(identifier.Authority, genericSparkArticleAuthoriy) {
+			contentType = ArticleType
+		}
+	}
+	if contentType != "" {
+		return contentType
+	}
+
+	msgOrigin := msg.Headers[originHeader]
+	originMap := map[string]string{
+		methodeOrigin:   ArticleType,
+		cctOrigin:       ArticleType,
+		sparkOrigin:     ArticleType,
+		wordpressOrigin: BlogType,
+		videoOrigin:     VideoType,
+	}
+	for origin, contentType := range originMap {
+		if strings.Contains(msgOrigin, origin) {
+			return contentType
+		}
+	}
+
+	return ""
 }
