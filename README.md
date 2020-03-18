@@ -6,43 +6,84 @@
 ## Introduction
 Indexes V2 content in Elasticsearch for use by SAPI V1
 
-## Installation
-Download the source code, dependencies and test dependencies:
+## Project Local Execution
 
-        go get -u github.com/Financial-Times/content-rw-elasticsearch
-        cd $GOPATH/src/github.com/Financial-Times/content-rw-elasticsearch
-        dep ensure -vendor-only
-        go test ./...
+Before executing any of the proposed ways run
+```
+make install
+```
+to install external tools needed and then
+```
+make all
+```
+to run tests and a clean build of the project.
 
-## Running locally
+---
+**NOTE**
 
-1. Run the tests and install the binary:
+Each time you modify any file under the `configs` directory, please run `make generate` in order to regenerate
+the `statik` package which embeds the files in the binary.
 
-        go test -race ./...
-        go install
+---
 
-2. Run the binary (using the `help` flag to see the available optional arguments):
+### Docker Compose
+`docker-compose` is used to provide application external components:
+* Elasticsearch
 
-        $GOPATH/bin/content-rw-elasticsearch [--help]
+and to start the application itself.
 
+**Step 1.** Build application docker image
+```
+docker-compose build --no-cache app
+```
+**Step 2.** Run Elasticsearch 
+```
+docker-compose up -d es
+```
+**Step 3.** Create Elasticsearch index mapping
+```
+cd <project_home>
+curl -X PUT http://localhost:9200/ft/ -d @configs/referenceSchema.json
+```
+**Step 4.** Run application
+```
+docker-compose up -d app
+```
+**Step 5.** Check health endpoint in browser at `http://localhost:8080/__health`
+
+### Application CLI
+**Step 1.** Build project and run tests
+```
+make all
+```
+or just build project
+```
+make build-readonly
+```
+**Step 2.** Run the binary (using the `--help` flag to see the available optional arguments):
+```
+<project_home>/content-rw-elasticsearch [--help]
+```
+```
 Options:
+      --app-system-code                System Code of the application (env $APP_SYSTEM_CODE) (default "content-rw-elasticsearch")
+      --app-name                       Application name (env $APP_NAME) (default "content-rw-elasticsearch")
+      --port                           Port to listen on (env $APP_PORT) (default "8080")
+      --logLevel                       Logging level (DEBUG, INFO, WARN, ERROR) (env $LOG_LEVEL) (default "INFO")
+      --aws-access-key                 AWS ACCES KEY (env $AWS_ACCESS_KEY_ID)
+      --aws-secret-access-key          AWS SECRET ACCES KEY (env $AWS_SECRET_ACCESS_KEY)
+      --elasticsearch-sapi-endpoint    AES endpoint (env $ELASTICSEARCH_SAPI_ENDPOINT) (default "http://localhost:9200")
+      --index-name                     The name of the elaticsearch index (env $ELASTICSEARCH_SAPI_INDEX) (default "ft")
+      --kafka-proxy-address            Addresses used by the queue consumer to connect to the queue (env $KAFKA_PROXY_ADDR) (default "http://localhost:8080")
+      --kafka-consumer-group           Group used to read the messages from the queue (env $KAFKA_CONSUMER_GROUP) (default "default-consumer-group")
+      --kafka-topic                    The topic to read the messages from (env $KAFKA_TOPIC) (default "CombinedPostPublicationEvents")
+      --kafka-header                   The header identifying the queue to read the messages from (env $KAFKA_HEADER) (default "kafka")
+      --kafka-concurrent-processing    Whether the consumer uses concurrent processing for the messages (env $KAFKA_CONCURRENT_PROCESSING)
+      --public-concordances-endpoint   Endpoint to concord ids with (env $PUBLIC_CONCORDANCES_ENDPOINT) (default "http://public-concordances-api:8080")
+      --base-api-url                   Base API URL (env $BASE_API_URL) (default "https://api.ft.com/")
+```                    
+Whether the consumer uses concurrent processing for the messages ($KAFKA_CONCURRENT_PROCESSING)
 
-        --app-system-code="content-rw-elasticsearch"            System Code of the application ($APP_SYSTEM_CODE)
-        --app-name="Content RW Elasticsearch"                   Application name ($APP_NAME)
-        --port="8080"                                           Port to listen on ($APP_PORT)
-        --aws-access-key=""                                     AWS ACCES KEY ($AWS_ACCESS_KEY_ID)
-        --aws-secret-access-key=""                              AWS SECRET ACCES KEY ($AWS_SECRET_ACCESS_KEY)
-        --elasticsearch-sapi-endpoint="http://localhost:9200"   AES endpoint ($ELASTICSEARCH_SAPI_ENDPOINT)
-        --index-name="ft"                                       The name of the elaticsearch index ($ELASTICSEARCH_SAPI_INDEX)
-        --kafka-proxy-address="http://localhost:8080"           Addresses used by the queue consumer to connect to the queue ($KAFKA_PROXY_ADDR)
-        --kafka-consumer-group="default-consumer-group"         Group used to read the messages from the queue ($KAFKA_CONSUMER_GROUP)
-        --kafka-topic="CombinedPostPublicationEvents"           The topic to read the meassages from ($KAFKA_TOPIC)
-        --kafka-header="kafka"                                  The header identifying the queue to read the messages from ($KAFKA_HEADER)
-        --kafka-concurrent-processing=false                     Whether the consumer uses concurrent processing for the messages ($KAFKA_CONCURRENT_PROCESSING)
-
-3. Test:
-
-There are no service endpoints to test.
 
 ## Build and deployment
 
@@ -75,4 +116,4 @@ Shows ES cluster health details
 ## Other information
 An example of event structure is here [testdata/exampleEnrichedContentModel.json](messaging/testdata/exampleEnrichedContentModel.json)
 
-The reference mappings for Elasticsearch are found here [runtime/referenceSchema.json](runtime/referenceSchema.json)
+The reference mappings for Elasticsearch are found here [configs/referenceSchema.json](configs/referenceSchema.json)

@@ -1,4 +1,4 @@
-package content
+package schema
 
 type IndexModel struct {
 	UID                        *string  `json:"uid"`
@@ -98,7 +98,7 @@ type Content struct {
 	UUID               string       `json:"uuid"`
 	Title              string       `json:"title"`
 	Body               string       `json:"body"`
-	BodyXML            string       `json:"bodyXML,ommitempty"`
+	BodyXML            string       `json:"bodyXML,omitempty"`
 	Identifiers        []identifier `json:"identifiers"`
 	PublishedDate      string       `json:"publishedDate"`
 	LastModified       string       `json:"lastModified"`
@@ -125,12 +125,12 @@ type identifier struct {
 
 type Annotations []Annotation
 
-//Annotation is the main struct used to create and return annotations
+// Annotation is the main struct used to create and return annotations
 type Annotation struct {
 	Thing Thing `json:"thing,omitempty"`
 }
 
-//Thing represents a concept being linked to
+// Thing represents a concept being linked to
 type Thing struct {
 	ID        string   `json:"id,omitempty"`
 	PrefLabel string   `json:"prefLabel,omitempty"`

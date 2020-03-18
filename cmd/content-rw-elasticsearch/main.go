@@ -1,36 +1,26 @@
+//go:generate statik -src=../../configs -dest ../../
+
 package main
 
 import (
-	"net"
 	"net/http"
 	"os"
-	"os/signal"
-	"sync"
-	"syscall"
 	"time"
 
-	"github.com/Financial-Times/content-rw-elasticsearch/es"
-	"github.com/Financial-Times/content-rw-elasticsearch/service"
-	"github.com/Financial-Times/content-rw-elasticsearch/service/concept"
-	health "github.com/Financial-Times/go-fthealth/v1_1"
-	"github.com/Financial-Times/go-logger"
+	"github.com/Financial-Times/content-rw-elasticsearch/v2/pkg/concept"
+	"github.com/Financial-Times/content-rw-elasticsearch/v2/pkg/config"
+	"github.com/Financial-Times/content-rw-elasticsearch/v2/pkg/es"
+	"github.com/Financial-Times/content-rw-elasticsearch/v2/pkg/health"
+	pkghttp "github.com/Financial-Times/content-rw-elasticsearch/v2/pkg/http"
+	"github.com/Financial-Times/content-rw-elasticsearch/v2/pkg/mapper"
+	"github.com/Financial-Times/content-rw-elasticsearch/v2/pkg/message"
+	"github.com/Financial-Times/go-logger/v2"
 	"github.com/Financial-Times/message-queue-gonsumer/consumer"
-	status "github.com/Financial-Times/service-status-go/httphandlers"
 	"github.com/jawher/mow.cli"
 )
 
-const (
-	appNameDefaultValue = "content-rw-elasticsearch"
-	healthPath          = "/__health"
-	healthDetailsPath   = "/__health-details"
-)
-
-func init() {
-	logger.InitDefaultLogger(appNameDefaultValue)
-}
-
 func main() {
-	app := cli.App("content-rw-elasticsearch", "Service for loading contents into elasticsearch")
+	app := cli.App(config.AppName, config.AppDescription)
 
 	appSystemCode := app.String(cli.StringOpt{
 		Name:   "app-system-code",
@@ -40,7 +30,7 @@ func main() {
 	})
 	appName := app.String(cli.StringOpt{
 		Name:   "app-name",
-		Value:  appNameDefaultValue,
+		Value:  config.AppName,
 		Desc:   "Application name",
 		EnvVar: "APP_NAME",
 	})
@@ -50,9 +40,15 @@ func main() {
 		Desc:   "Port to listen on",
 		EnvVar: "APP_PORT",
 	})
+	logLevel := app.String(cli.StringOpt{
+		Name:   "logLevel",
+		Value:  config.AppDefaultLogLevel,
+		Desc:   "Logging level (DEBUG, INFO, WARN, ERROR)",
+		EnvVar: "LOG_LEVEL",
+	})
 	accessKey := app.String(cli.StringOpt{
 		Name:   "aws-access-key",
-		Desc:   "AWS ACCES KEY",
+		Desc:   "AWS ACCESS KEY",
 		EnvVar: "AWS_ACCESS_KEY_ID",
 	})
 	secretKey := app.String(cli.StringOpt{
@@ -87,7 +83,7 @@ func main() {
 	kafkaTopic := app.String(cli.StringOpt{
 		Name:   "kafka-topic",
 		Value:  "CombinedPostPublicationEvents",
-		Desc:   "The topic to read the meassages from",
+		Desc:   "The topic to read the messages from",
 		EnvVar: "KAFKA_TOPIC",
 	})
 	kafkaHeader := app.String(cli.StringOpt{
@@ -108,7 +104,7 @@ func main() {
 		Desc:   "Endpoint to concord ids with",
 		EnvVar: "PUBLIC_CONCORDANCES_ENDPOINT",
 	})
-	baseApiUrl := app.String(cli.StringOpt{
+	baseAPIUrl := app.String(cli.StringOpt{
 		Name:   "base-api-url",
 		Value:  "https://api.ft.com/",
 		Desc:   "Base API URL",
@@ -123,81 +119,57 @@ func main() {
 		ConcurrentProcessing: *kafkaConcurrentProcessing,
 	}
 
-	logger.Info("[Startup] Application is starting")
+	log := logger.NewUPPLogger(*appSystemCode, *logLevel)
+	log.Info("[Startup] Application is starting")
 
 	app.Action = func() {
-
 		accessConfig := es.AccessConfig{
 			AccessKey: *accessKey,
 			SecretKey: *secretKey,
 			Endpoint:  *esEndpoint,
 		}
 
-		httpClient := &http.Client{
-			Transport: &http.Transport{
-				Proxy: http.ProxyFromEnvironment,
-				DialContext: (&net.Dialer{
-					Timeout:   30 * time.Second,
-					KeepAlive: 30 * time.Second,
-				}).DialContext,
-				MaxIdleConnsPerHost:   20,
-				TLSHandshakeTimeout:   3 * time.Second,
-				ExpectContinueTimeout: 1 * time.Second,
-			},
+		httpClient := pkghttp.NewHTTPClient()
+
+		appConfig, err := config.ParseConfig("app.yml")
+		if err != nil {
+			log.Fatal(err)
 		}
 
-		svc := es.NewService(*indexName)
-		var wg sync.WaitGroup
-		concordanceApiService := concept.NewConcordanceApiService(*publicConcordancesEndpoint, httpClient)
-		handler := service.NewMessageHandler(svc, concordanceApiService, httpClient, queueConfig, &wg, es.NewClient)
+		esService := es.NewService(*indexName)
 
-		handler.Start(*baseApiUrl, accessConfig, httpClient)
+		concordanceAPIService := concept.NewConcordanceAPIService(*publicConcordancesEndpoint, httpClient)
 
-		healthService := newHealthService(&queueConfig, svc, httpClient, concordanceApiService, *appSystemCode)
-		serveAdminEndpoints(healthService, *appSystemCode, *appName, *port)
+		mapperHandler := mapper.NewMapperHandler(
+			concordanceAPIService,
+			*baseAPIUrl,
+			appConfig,
+			log,
+		)
+
+		handler := message.NewMessageHandler(
+			esService,
+			mapperHandler,
+			httpClient,
+			queueConfig,
+			es.NewClient,
+			log,
+		)
+
+		handler.Start(*baseAPIUrl, accessConfig)
+
+		healthService := health.NewHealthService(&queueConfig, esService, httpClient, concordanceAPIService, *appSystemCode, log)
+		//
+		serveMux := http.NewServeMux()
+		serveMux = healthService.AttachHTTPEndpoints(serveMux, *appName, config.AppDescription)
+		pkghttp.StartServer(log, serveMux, *port)
 
 		handler.Stop()
-		wg.Wait()
 	}
 	err := app.Run(os.Args)
 	if err != nil {
-		logger.WithError(err).WithTime(time.Now()).Fatal("App could not start")
+		log.WithError(err).WithTime(time.Now()).Fatal("App could not start")
 		return
 	}
-	logger.Info("[Shutdown] Shutdown complete")
-}
-
-func serveAdminEndpoints(healthService *healthService, appSystemCode string, appName string, port string) {
-	serveMux := http.NewServeMux()
-
-	hc := health.HealthCheck{SystemCode: appSystemCode, Name: appName, Description: "Content Read Writer for Elasticsearch", Checks: healthService.checks}
-	serveMux.HandleFunc(healthPath, health.Handler(hc))
-	serveMux.HandleFunc(healthDetailsPath, healthService.HealthDetails)
-	serveMux.HandleFunc(status.GTGPath, status.NewGoodToGoHandler(healthService.gtgCheck))
-	serveMux.HandleFunc(status.BuildInfoPath, status.BuildInfoHandler)
-
-	server := &http.Server{Addr: ":" + port, Handler: serveMux}
-
-	var wg sync.WaitGroup
-	wg.Add(1)
-	go func() {
-		if err := server.ListenAndServe(); err != nil {
-			logger.WithError(err).Error("HTTP server is closing")
-		}
-		wg.Done()
-	}()
-
-	waitForSignal()
-	logger.Info("[Shutdown] Application is shutting down")
-
-	if err := server.Close(); err != nil {
-		logger.WithError(err).Error("Unable to stop http server")
-	}
-	wg.Wait()
-}
-
-func waitForSignal() {
-	ch := make(chan os.Signal)
-	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
-	<-ch
+	log.Info("[Shutdown] Shutdown complete")
 }

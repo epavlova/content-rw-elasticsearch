@@ -1,4 +1,4 @@
-package utils
+package html
 
 import (
 	"html"
@@ -31,14 +31,13 @@ func TransformText(text string, transformers ...textTransformer) string {
 
 func InteractiveGraphicsMarkupTagRemover(input string) string {
 	return interactiveGraphicsRegex.ReplaceAllString(input, "")
-
 }
 
 func PullTagTransformer(input string) string {
 	return pullTagRegex.ReplaceAllString(input, "")
 }
 
-func HtmlEntityTransformer(input string) string {
+func EntityTransformer(input string) string {
 	text := nbspRegex.ReplaceAllString(input, " ")
 	return html.UnescapeString(text)
 }
@@ -61,7 +60,6 @@ func Embed1Replacer(input string) string {
 
 func SquaredCaptionReplacer(input string) string {
 	return squaredCaptionRegex.ReplaceAllString(input, "")
-
 }
 
 func DuplicateWhiteSpaceRemover(input string) string {

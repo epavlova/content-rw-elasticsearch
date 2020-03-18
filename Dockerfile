@@ -4,16 +4,17 @@ ENV PROJECT=content-rw-elasticsearch
 
 ENV ORG_PATH="github.com/Financial-Times"
 ENV SRC_FOLDER="${GOPATH}/src/${ORG_PATH}/${PROJECT}"
-ENV BUILDINFO_PACKAGE="${ORG_PATH}/${PROJECT}/vendor/${ORG_PATH}/service-status-go/buildinfo."
+ENV BUILDINFO_PACKAGE="${ORG_PATH}/service-status-go/buildinfo."
 
 COPY . ${SRC_FOLDER}
 WORKDIR ${SRC_FOLDER}
 
-# Set up our extra bits in the image
-RUN curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
-
-# Install dependancies
-RUN $GOPATH/bin/dep ensure -vendor-only
+# Install statik cli tool in GOPATH in order to successfully execute the go generate command
+RUN GO111MODULE=off go get -u github.com/myitcv/gobin \
+  # Get statik version from go.mod of the project
+  && STATIK_VERSION="$(go list -mod=readonly -m all | grep statik | cut -d ' ' -f2)" \
+  && gobin github.com/rakyll/statik@${STATIK_VERSION} \
+  && go generate ./cmd/${PROJECT}
 
 # Build app
 RUN VERSION="version=$(git describe --tag --always 2> /dev/null)" \
@@ -22,15 +23,13 @@ RUN VERSION="version=$(git describe --tag --always 2> /dev/null)" \
   && REVISION="revision=$(git rev-parse HEAD)" \
   && BUILDER="builder=$(go version)" \
   && LDFLAGS="-X '"${BUILDINFO_PACKAGE}$VERSION"' -X '"${BUILDINFO_PACKAGE}$DATETIME"' -X '"${BUILDINFO_PACKAGE}$REPOSITORY"' -X '"${BUILDINFO_PACKAGE}$REVISION"' -X '"${BUILDINFO_PACKAGE}$BUILDER"'" \
-  && CGO_ENABLED=0 go build -a -o /artifacts/${PROJECT} -ldflags="${LDFLAGS}" \
+  && CGO_ENABLED=0 go build -mod=readonly -a -o /artifacts/${PROJECT}/${PROJECT} -ldflags="${LDFLAGS}" ./cmd/${PROJECT} \
   && echo "Build flags: ${LDFLAGS}"
 
+# Multi-stage build - copy only the certs and the binary into the image
 FROM scratch
 WORKDIR /
 COPY --from=0 /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=0 /artifacts/* /
-
-# Copy things specific for this service
-COPY ./runtime/referenceSchema.json /
 
 CMD [ "/content-rw-elasticsearch" ]

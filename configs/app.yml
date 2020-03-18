@@ -1,0 +1,60 @@
+conceptTypes:
+  organisation: "http://www.ft.com/ontology/organisation/Organisation"
+  person: "http://www.ft.com/ontology/person/Person"
+  company: "http://www.ft.com/ontology/company/Company"
+  brand: "http://www.ft.com/ontology/product/Brand"
+  topic: "http://www.ft.com/ontology/Topic"
+  location: "http://www.ft.com/ontology/Location"
+  genre: "http://www.ft.com/ontology/Genre"
+
+predicates:
+  isPrimaryClassifiedBy: "http://www.ft.com/ontology/classification/isPrimarilyClassifiedBy"
+  isClassifiedBy: "http://www.ft.com/ontology/classification/isClassifiedBy"
+  implicitlyClassifiedBy: "http://www.ft.com/ontology/implicitlyClassifiedBy"
+  about: "http://www.ft.com/ontology/annotation/about"
+  implicitlyAbout: "http://www.ft.com/ontology/implicitlyAbout"
+  mentions: "http://www.ft.com/ontology/annotation/mentions"
+  majorMentions: "http://www.ft.com/ontology/annotation/majorMentions"
+  hasDisplayTag: "http://www.ft.com/ontology/hasDisplayTag"
+  hasAuthor: "http://www.ft.com/ontology/annotation/hasAuthor"
+  hasContributor: "http://www.ft.com/ontology/hasContributor"
+
+contentMetadata:
+  methode:
+    origin: "methode-web-pub"
+    authority: "http://api.ft.com/system/FTCOM-METHODE"
+    contentType: "article"
+  wordpress:
+    origin: "wordpress"
+    authority: "http://api.ft.com/system/FT-LABS-WP"
+    contentType: "blog"
+  video:
+    origin: "next-video-editor"
+    authority: "http://api.ft.com/system/NEXT-VIDEO-EDITOR"
+    contentType: "video"
+  cct:
+    origin: "http://cmdb.ft.com/systems/cct"
+    authority: "http://api.ft.com/system/cct"
+    contentType: "article"
+  spark:
+    origin: "http://cmdb.ft.com/systems/spark"
+    authority: "http://api.ft.com/system/spark"
+    contentType: "article"
+
+esContentTypeMetadata:
+  article:
+    collection: "FTCom"
+    format: "Articles"
+    category: "article"
+  blog:
+    collection: "FTBlogs"
+    format: "Blogs"
+    category: "blogPost"
+  video:
+    collection: "FTVideos"
+    format: "Videos"
+    category: "video"
+  audio:
+    collection: "FTAudios"
+    format: "Audios"
+    category: "audio"
