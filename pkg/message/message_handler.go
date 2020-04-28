@@ -161,7 +161,7 @@ func (h *Handler) readContentType(msg consumer.Message, event schema.EnrichedCon
 
 func isAllowedType(s string) bool {
 	// Empty type added for older content. Placeholders - which are subject of exclusion - have type Content.
-	var allowedTypes = [...]string{"Article", "Video", "MediaResource", "Audio", ""}
+	var allowedTypes = [...]string{"Article", "Video", "MediaResource", "Audio", "ContentPackage", ""}
 	for _, value := range allowedTypes {
 		if value == s {
 			return true
