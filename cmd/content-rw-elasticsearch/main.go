@@ -3,9 +3,16 @@
 package main
 
 import (
+	"github.com/Financial-Times/upp-go-sdk/pkg/internalcontent"
 	"net/http"
 	"os"
 	"time"
+
+	"github.com/jawher/mow.cli"
+
+	"github.com/Financial-Times/go-logger/v2"
+	"github.com/Financial-Times/message-queue-gonsumer/consumer"
+	"github.com/Financial-Times/upp-go-sdk/pkg/api"
 
 	"github.com/Financial-Times/content-rw-elasticsearch/v2/pkg/concept"
 	"github.com/Financial-Times/content-rw-elasticsearch/v2/pkg/config"
@@ -14,9 +21,6 @@ import (
 	pkghttp "github.com/Financial-Times/content-rw-elasticsearch/v2/pkg/http"
 	"github.com/Financial-Times/content-rw-elasticsearch/v2/pkg/mapper"
 	"github.com/Financial-Times/content-rw-elasticsearch/v2/pkg/message"
-	"github.com/Financial-Times/go-logger/v2"
-	"github.com/Financial-Times/message-queue-gonsumer/consumer"
-	"github.com/jawher/mow.cli"
 )
 
 func main() {
@@ -111,6 +115,28 @@ func main() {
 		EnvVar: "BASE_API_URL",
 	})
 
+	// todo config add to helm
+	internalContentAPIURL := app.String(cli.StringOpt{
+		Name:   "internal-content-api-url",
+		Value:  "",
+		Desc:   "URL of the API uses to retrieve lists data from",
+		EnvVar: "INTERNAL_CONTENT_API_URL",
+	})
+
+	apiBasicAuthUsername := app.String(cli.StringOpt{
+		Name:   "api-basic-auth-user",
+		Value:  "",
+		Desc:   "API Basic Auth username",
+		EnvVar: "API_BASIC_USER",
+	})
+
+	apiBasicAuthPassword := app.String(cli.StringOpt{
+		Name:   "api-basic-auth-pass",
+		Value:  "",
+		Desc:   "API Basic Auth password",
+		EnvVar: "API_BASIC_PASS",
+	})
+
 	queueConfig := consumer.QueueConfig{
 		Addrs:                []string{*kafkaProxyAddress},
 		Group:                *kafkaConsumerGroup,
@@ -140,11 +166,17 @@ func main() {
 
 		concordanceAPIService := concept.NewConcordanceAPIService(*publicConcordancesEndpoint, httpClient)
 
+		// initialize apiClient
+		internalAPIConfig := api.NewConfig(*internalContentAPIURL, *apiBasicAuthUsername, *apiBasicAuthPassword)
+		internalContentAPIClient := api.NewClient(*internalAPIConfig, httpClient)
+		iContent := internalcontent.NewContentClient(internalContentAPIClient, internalcontent.URLInternalContent)
+
 		mapperHandler := mapper.NewMapperHandler(
 			concordanceAPIService,
 			*baseAPIUrl,
 			appConfig,
 			log,
+			iContent,
 		)
 
 		handler := message.NewMessageHandler(

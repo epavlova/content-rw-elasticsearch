@@ -8,17 +8,21 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+	"gopkg.in/olivere/elastic.v2"
+
+	"github.com/Financial-Times/go-logger/v2"
+	"github.com/Financial-Times/message-queue-gonsumer/consumer"
+	"github.com/Financial-Times/upp-go-sdk/pkg/api"
+	"github.com/Financial-Times/upp-go-sdk/pkg/internalcontent"
+
 	"github.com/Financial-Times/content-rw-elasticsearch/v2/pkg/concept"
 	"github.com/Financial-Times/content-rw-elasticsearch/v2/pkg/config"
 	"github.com/Financial-Times/content-rw-elasticsearch/v2/pkg/es"
 	"github.com/Financial-Times/content-rw-elasticsearch/v2/pkg/mapper"
 	"github.com/Financial-Times/content-rw-elasticsearch/v2/pkg/schema"
 	tst "github.com/Financial-Times/content-rw-elasticsearch/v2/test"
-	"github.com/Financial-Times/go-logger/v2"
-	"github.com/Financial-Times/message-queue-gonsumer/consumer"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
-	"gopkg.in/olivere/elastic.v2"
 )
 
 type esServiceMock struct {
@@ -127,7 +131,11 @@ func mockMessageHandler(esClient ESClient, mocks ...interface{}) (es.AccessConfi
 		}
 	}
 
-	mapperHandler := mockMapperHandler(concordanceAPI, uppLogger)
+	internalAPIConfig := api.NewConfig("internalContentAPIURL", "apiBasicAuthUsername", "apiBasicAuthPassword")
+	internalContentAPIClient := api.NewClient(*internalAPIConfig, http.DefaultClient)
+	iContent := internalcontent.NewContentClient(internalContentAPIClient, internalcontent.URLInternalContent)
+
+	mapperHandler := mockMapperHandler(concordanceAPI, uppLogger, iContent)
 
 	handler := NewMessageHandler(esService, mapperHandler, http.DefaultClient, queueConfig, esClient, uppLogger)
 	if mocks == nil {
@@ -136,9 +144,9 @@ func mockMessageHandler(esClient ESClient, mocks ...interface{}) (es.AccessConfi
 	return accessConfig, handler
 }
 
-func mockMapperHandler(concordanceAPIMock *concordanceAPIMock, log *logger.UPPLogger) *mapper.Handler {
+func mockMapperHandler(concordanceAPIMock *concordanceAPIMock, log *logger.UPPLogger, internalClient *internalcontent.ContentClient) *mapper.Handler {
 	appConfig := initAppConfig()
-	mapperHandler := mapper.NewMapperHandler(concordanceAPIMock, "http://api.ft.com", appConfig, log)
+	mapperHandler := mapper.NewMapperHandler(concordanceAPIMock, "http://api.ft.com", appConfig, log, internalClient)
 	return mapperHandler
 }
 
