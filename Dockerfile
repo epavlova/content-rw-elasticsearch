@@ -6,11 +6,16 @@ ENV ORG_PATH="github.com/Financial-Times"
 ENV SRC_FOLDER="${GOPATH}/src/${ORG_PATH}/${PROJECT}"
 ENV BUILDINFO_PACKAGE="${ORG_PATH}/service-status-go/buildinfo."
 
+ARG GITHUB_USERNAME
+ARG GITHUB_TOKEN
+
 COPY . ${SRC_FOLDER}
 WORKDIR ${SRC_FOLDER}
 
 # Install statik cli tool in GOPATH in order to successfully execute the go generate command
-RUN GO111MODULE=off go get -u github.com/myitcv/gobin \
+RUN echo "machine github.com login $GITHUB_USERNAME password $GITHUB_TOKEN" > ~/.netrc \
+  && GOPRIVATE="github.com/Financial-Times" \
+  && GO111MODULE=off go get -u github.com/myitcv/gobin \
   # Get statik version from go.mod of the project
   && STATIK_VERSION="$(go list -mod=readonly -m all | grep statik | cut -d ' ' -f2)" \
   && gobin github.com/rakyll/statik@${STATIK_VERSION} \

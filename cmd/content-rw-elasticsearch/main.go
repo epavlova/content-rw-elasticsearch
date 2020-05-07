@@ -7,7 +7,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/jawher/mow.cli"
+	cli "github.com/jawher/mow.cli"
 
 	"github.com/Financial-Times/go-logger/v2"
 	"github.com/Financial-Times/message-queue-gonsumer/consumer"
@@ -115,10 +115,9 @@ func main() {
 		EnvVar: "BASE_API_URL",
 	})
 
-	// todo config add to helm
 	internalContentAPIURL := app.String(cli.StringOpt{
 		Name:   "internal-content-api-url",
-		Value:  "",
+		Value:  "http://internal-content-api-url:8080",
 		Desc:   "URL of the API uses to retrieve lists data from",
 		EnvVar: "INTERNAL_CONTENT_API_URL",
 	})
