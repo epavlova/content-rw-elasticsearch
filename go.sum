@@ -17,6 +17,8 @@ github.com/Financial-Times/upp-go-sdk v0.0.7-0.20200430080237-49ff089288b0 h1:wF
 github.com/Financial-Times/upp-go-sdk v0.0.7-0.20200430080237-49ff089288b0/go.mod h1:1/Dnsqf8FQ0yOHKG8d/eM3X7rCeqDK4pouCFtp9pdmo=
 github.com/Financial-Times/upp-go-sdk v0.0.7-0.20200504082910-9703af35fe6f h1:2yi0dcva0Vz0DiWUzy0kuGb5+Cv4NSCDYfeQeNPIYVU=
 github.com/Financial-Times/upp-go-sdk v0.0.7-0.20200504082910-9703af35fe6f/go.mod h1:1/Dnsqf8FQ0yOHKG8d/eM3X7rCeqDK4pouCFtp9pdmo=
+github.com/Financial-Times/upp-go-sdk v0.0.7-0.20200507103015-bd4ce069c449 h1:4rUI6vOFoG/OaL0zPJqw4fKS8ciUvu1ZGFQb+5eGDGQ=
+github.com/Financial-Times/upp-go-sdk v0.0.7-0.20200507103015-bd4ce069c449/go.mod h1:1/Dnsqf8FQ0yOHKG8d/eM3X7rCeqDK4pouCFtp9pdmo=
 github.com/Financial-Times/uuid-utils-go v0.0.0-20170516110427-e22658edd0f1 h1:FXM7cqqPyGh2QZ8BRJA16Gr65/+/91KEFSPKyRM+Nd8=
 github.com/Financial-Times/uuid-utils-go v0.0.0-20170516110427-e22658edd0f1/go.mod h1:i62wLwNq+NmRCQpZS5BLTKsOVYsTOxs9bSx7FgtxXwM=
 github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=

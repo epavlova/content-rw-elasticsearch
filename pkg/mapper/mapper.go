@@ -9,7 +9,6 @@ import (
 
 	"github.com/Financial-Times/go-logger/v2"
 	"github.com/Financial-Times/upp-go-sdk/pkg/internalcontent"
-	"github.com/Financial-Times/uuid-utils-go"
 
 	"github.com/Financial-Times/content-rw-elasticsearch/v2/pkg/concept"
 	"github.com/Financial-Times/content-rw-elasticsearch/v2/pkg/config"
@@ -18,11 +17,10 @@ import (
 )
 
 const (
-	webURLPrefix        = "https://www.ft.com/content/"
-	apiURLPrefix        = "/content/"
-	imageServiceURL     = "https://www.ft.com/__origami/service/image/v2/images/raw/[image_url]/[image_uuid]?source=search&fit=scale-down&width=167"
-	imagePlaceholder    = "[image_uuid]"
-	imageURLPlaceholder = "[image_url]"
+	webURLPrefix     = "https://www.ft.com/content/"
+	apiURLPrefix     = "/content/"
+	imageServiceURL  = "https://www.ft.com/__origami/service/image/v2/images/raw/http%3A%2F%2Fprod-upp-image-read.ft.com%2F[image_uuid]?source=search&fit=scale-down&width=167"
+	imagePlaceholder = "[image_uuid]"
 
 	tmeOrganisations = "ON"
 	tmePeople        = "PN"
@@ -222,28 +220,19 @@ func (h *Handler) populateContentRelatedFields(model *schema.IndexModel, enriche
 		model.ThumbnailURL = new(string)
 
 		log := h.log.WithTransactionID(tid).WithUUID(enrichedContent.UUID)
-		var imageID *uuidutils.UUID
 
-		// Generate the actual image UUID from the received image set UUID
 		ic, err := h.internalClient.GetContent(enrichedContent.UUID, true)
-		if err != nil || len(ic.Embeds) == 0 && len(ic.Embeds[0].Members) == 0 {
-			log.WithError(err).Warnf("Couldn't get image url from %s", internalcontent.URLInternalContent)
+		if err != nil || len(ic.MainImage.Members) == 0 || ic.MainImage.Members[0].APIURL == "" {
+			log.WithError(err).Warnf("Couldn't get image UUID from %s", internalcontent.URLInternalContent)
 		} else {
-			binaryURL := ic.Embeds[0].Members[0].BinaryURL
-			*model.ThumbnailURL = strings.Replace(imageServiceURL, imageURLPlaceholder, binaryURL, -1)
+			aux := strings.Split(ic.MainImage.Members[0].APIURL, "/")
+			if len(aux) > 0 {
+				imageUUID := aux[len(aux)-1]
+				*model.ThumbnailURL = strings.Replace(imageServiceURL, imagePlaceholder, imageUUID, -1)
+			} else {
+				log.WithError(err).Warnf("Couldn't get image UUID from %s", internalcontent.URLInternalContent)
+			}
 		}
-
-		imageSetUUID, err := uuidutils.NewUUIDFromString(enrichedContent.Content.MainImage)
-		if err == nil {
-			imageID, err = uuidutils.NewUUIDDeriverWith(uuidutils.IMAGE_SET).From(imageSetUUID)
-		}
-
-		if err != nil {
-			log.WithError(err).Warnf("Couldn't generate image uuid for the image set with uuid %s: image field won't be populated.", enrichedContent.Content.MainImage)
-		} else {
-			*model.ThumbnailURL = strings.Replace(*model.ThumbnailURL, imagePlaceholder, imageID.String(), -1)
-		}
-
 	}
 
 	if contentType == config.VideoType && len(enrichedContent.Content.DataSources) > 0 {

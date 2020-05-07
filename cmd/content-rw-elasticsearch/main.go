@@ -3,7 +3,6 @@
 package main
 
 import (
-	"github.com/Financial-Times/upp-go-sdk/pkg/internalcontent"
 	"net/http"
 	"os"
 	"time"
@@ -13,6 +12,7 @@ import (
 	"github.com/Financial-Times/go-logger/v2"
 	"github.com/Financial-Times/message-queue-gonsumer/consumer"
 	"github.com/Financial-Times/upp-go-sdk/pkg/api"
+	"github.com/Financial-Times/upp-go-sdk/pkg/internalcontent"
 
 	"github.com/Financial-Times/content-rw-elasticsearch/v2/pkg/concept"
 	"github.com/Financial-Times/content-rw-elasticsearch/v2/pkg/config"
