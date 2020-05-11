@@ -133,9 +133,9 @@ func mockMessageHandler(esClient ESClient, mocks ...interface{}) (es.AccessConfi
 
 	internalAPIConfig := api.NewConfig("internalContentAPIURL", "apiBasicAuthUsername", "apiBasicAuthPassword")
 	internalContentAPIClient := api.NewClient(*internalAPIConfig, http.DefaultClient)
-	iContent := internalcontent.NewContentClient(internalContentAPIClient, internalcontent.URLInternalContent)
+	internalContentClient := internalcontent.NewContentClient(internalContentAPIClient, internalcontent.URLInternalContent)
 
-	mapperHandler := mockMapperHandler(concordanceAPI, uppLogger, iContent)
+	mapperHandler := mockMapperHandler(concordanceAPI, uppLogger, internalContentClient)
 
 	handler := NewMessageHandler(esService, mapperHandler, http.DefaultClient, queueConfig, esClient, uppLogger)
 	if mocks == nil {

@@ -225,9 +225,9 @@ func (h *Handler) populateContentRelatedFields(model *schema.IndexModel, enriche
 		if err != nil || len(ic.MainImage.Members) == 0 || ic.MainImage.Members[0].APIURL == "" {
 			log.WithError(err).Warnf("Couldn't get image UUID from %s", internalcontent.URLInternalContent)
 		} else {
-			aux := strings.Split(ic.MainImage.Members[0].APIURL, "/")
-			if len(aux) > 0 {
-				imageUUID := aux[len(aux)-1]
+			uris := strings.Split(ic.MainImage.Members[0].APIURL, "/")
+			if len(uris) > 0 {
+				imageUUID := uris[len(uris)-1]
 				*model.ThumbnailURL = strings.Replace(imageServiceURL, imagePlaceholder, imageUUID, -1)
 			} else {
 				log.WithError(err).Warnf("Couldn't get image UUID from %s", internalcontent.URLInternalContent)

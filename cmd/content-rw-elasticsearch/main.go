@@ -117,7 +117,7 @@ func main() {
 
 	internalContentAPIURL := app.String(cli.StringOpt{
 		Name:   "internal-content-api-url",
-		Value:  "http://internal-content-api-url:8080",
+		Value:  "http://internal-content-api:8080",
 		Desc:   "URL of the API uses to retrieve lists data from",
 		EnvVar: "INTERNAL_CONTENT_API_URL",
 	})
@@ -168,14 +168,14 @@ func main() {
 		// initialize apiClient
 		internalAPIConfig := api.NewConfig(*internalContentAPIURL, *apiBasicAuthUsername, *apiBasicAuthPassword)
 		internalContentAPIClient := api.NewClient(*internalAPIConfig, httpClient)
-		iContent := internalcontent.NewContentClient(internalContentAPIClient, internalcontent.URLInternalContent)
+		internalContentClient := internalcontent.NewContentClient(internalContentAPIClient, internalcontent.URLInternalContent)
 
 		mapperHandler := mapper.NewMapperHandler(
 			concordanceAPIService,
 			*baseAPIUrl,
 			appConfig,
 			log,
-			iContent,
+			internalContentClient,
 		)
 
 		handler := message.NewMessageHandler(
