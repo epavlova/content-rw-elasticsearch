@@ -16,6 +16,8 @@ jobs:
       - run:
           name: External dependencies
           command: |
+            GOPRIVATE="github.com/Financial-Times"
+            git config --global url."https://$GITHUB_USERNAME:$GITHUB_TOKEN@github.com/".insteadOf "https://github.com/"
             GO111MODULE=off go get -u github.com/mattn/goveralls
             GO111MODULE=off go get -u github.com/jstemmer/go-junit-report
             GO111MODULE=off go get -u github.com/myitcv/gobin
@@ -31,6 +33,8 @@ jobs:
       - run:
           name: Go build
           command: |
+            GOPRIVATE="github.com/Financial-Times"
+            git config --global url."https://$GITHUB_USERNAME:$GITHUB_TOKEN@github.com/".insteadOf "https://github.com/"
             go generate ./cmd/content-rw-elasticsearch
             go build -mod=readonly -v ./cmd/content-rw-elasticsearch
       - run:
@@ -53,7 +57,7 @@ jobs:
       - setup_remote_docker
       - run:
           name: Build Dockerfile
-          command: docker build .
+          command: docker build --build-arg GITHUB_USERNAME="$GITHUB_USERNAME" --build-arg GITHUB_TOKEN="$GITHUB_TOKEN" .
   dredd:
     working_directory: /go/src/github.com/Financial-Times/content-rw-elasticsearch
     docker:
@@ -61,12 +65,16 @@ jobs:
         environment:
           GOPATH: /go
           ELASTICSEARCH_SAPI_ENDPOINT: http://localhost:9000
+          GITHUB_USERNAME: ${GITHUB_USERNAME}
+          GITHUB_TOKEN: ${GITHUB_TOKEN}
       - image: peteclarkft/ersatz:stable
     steps:
       - checkout
       - run:
           name: Download dredd
           command: |
+            GOPRIVATE="github.com/Financial-Times"
+            git config --global url."https://$GITHUB_USERNAME:$GITHUB_TOKEN@github.com/".insteadOf "https://github.com/"
             curl -sL https://deb.nodesource.com/setup_11.x | bash -
             DEBIAN_FRONTEND=noninteractive apt-get install -y nodejs=11.\*
             npm install -g --unsafe-perm --loglevel warn --user 0 --no-progress dredd@11.2.19
@@ -80,6 +88,8 @@ jobs:
       - run:
           name: Go Build
           command: |
+            GOPRIVATE="github.com/Financial-Times"
+            git config --global url."https://$GITHUB_USERNAME:$GITHUB_TOKEN@github.com/".insteadOf "https://github.com/"
             go generate ./cmd/content-rw-elasticsearch
             go build -mod=readonly -v ./cmd/content-rw-elasticsearch
       - run:
@@ -91,6 +101,11 @@ jobs:
       - image: circleci/golang:1
     steps:
       - checkout
+      - run:
+          name: Github private config
+          command: |
+            GOPRIVATE="github.com/Financial-Times"
+            git config --global url."https://$GITHUB_USERNAME:$GITHUB_TOKEN@github.com/".insteadOf "https://github.com/"
       - snyk/scan:
           monitor-on-build: false
           severity-threshold: medium

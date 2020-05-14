@@ -3,18 +3,17 @@ package mapper
 import (
 	"encoding/base64"
 	"errors"
+	"fmt"
 	"strings"
 	"time"
 
-	"github.com/Financial-Times/content-rw-elasticsearch/v2/pkg/config"
-	"github.com/Financial-Times/content-rw-elasticsearch/v2/pkg/schema"
-
-	"fmt"
+	"github.com/Financial-Times/go-logger/v2"
+	"github.com/Financial-Times/upp-go-sdk/pkg/internalcontent"
 
 	"github.com/Financial-Times/content-rw-elasticsearch/v2/pkg/concept"
+	"github.com/Financial-Times/content-rw-elasticsearch/v2/pkg/config"
 	"github.com/Financial-Times/content-rw-elasticsearch/v2/pkg/html"
-	"github.com/Financial-Times/go-logger/v2"
-	"github.com/Financial-Times/uuid-utils-go"
+	"github.com/Financial-Times/content-rw-elasticsearch/v2/pkg/schema"
 )
 
 const (
@@ -33,20 +32,22 @@ const (
 )
 
 type Handler struct {
-	ConceptReader concept.Reader
-	BaseAPIURL    string
-	Config        config.AppConfig
-	log           *logger.UPPLogger
+	ConceptReader  concept.Reader
+	BaseAPIURL     string
+	Config         config.AppConfig
+	log            *logger.UPPLogger
+	internalClient *internalcontent.ContentClient
 }
 
 var errNoAnnotation = errors.New("no annotation to be processed")
 
-func NewMapperHandler(reader concept.Reader, baseAPIURL string, appConfig config.AppConfig, logger *logger.UPPLogger) *Handler {
+func NewMapperHandler(reader concept.Reader, baseAPIURL string, appConfig config.AppConfig, logger *logger.UPPLogger, internalClient *internalcontent.ContentClient) *Handler {
 	return &Handler{
-		ConceptReader: reader,
-		BaseAPIURL:    baseAPIURL,
-		Config:        appConfig,
-		log:           logger,
+		ConceptReader:  reader,
+		BaseAPIURL:     baseAPIURL,
+		Config:         appConfig,
+		log:            logger,
+		internalClient: internalClient,
 	}
 }
 
@@ -218,21 +219,20 @@ func (h *Handler) populateContentRelatedFields(model *schema.IndexModel, enriche
 	if contentType != config.BlogType && enrichedContent.Content.MainImage != "" {
 		model.ThumbnailURL = new(string)
 
-		var imageID *uuidutils.UUID
-
-		// Generate the actual image UUID from the received image set UUID
-		imageSetUUID, err := uuidutils.NewUUIDFromString(enrichedContent.Content.MainImage)
-		if err == nil {
-			imageID, err = uuidutils.NewUUIDDeriverWith(uuidutils.IMAGE_SET).From(imageSetUUID)
-		}
-
 		log := h.log.WithTransactionID(tid).WithUUID(enrichedContent.UUID)
-		if err != nil {
-			log.WithError(err).Warnf("Couldn't generate image uuid for the image set with uuid %s: image field won't be populated.", enrichedContent.Content.MainImage)
-		} else {
-			*model.ThumbnailURL = strings.Replace(imageServiceURL, imagePlaceholder, imageID.String(), -1)
-		}
 
+		ic, err := h.internalClient.GetContent(enrichedContent.UUID, true)
+		if err != nil || len(ic.MainImage.Members) == 0 || ic.MainImage.Members[0].APIURL == "" {
+			log.WithError(err).Warnf("Couldn't get image UUID from %s", internalcontent.URLInternalContent)
+		} else {
+			uris := strings.Split(ic.MainImage.Members[0].APIURL, "/")
+			if len(uris) > 0 {
+				imageUUID := uris[len(uris)-1]
+				*model.ThumbnailURL = strings.Replace(imageServiceURL, imagePlaceholder, imageUUID, -1)
+			} else {
+				log.WithError(err).Warnf("Couldn't get image UUID from %s", internalcontent.URLInternalContent)
+			}
+		}
 	}
 
 	if contentType == config.VideoType && len(enrichedContent.Content.DataSources) > 0 {
