@@ -37,8 +37,8 @@ var mainImageContent = `{"mainImage": {
         "lastModified": "2020-04-27T10:50:44.186Z",
         "members": [
             {
-                "apiUrl": "https://test.api.ft.com/content/546cbc4-d4f7-47f9-3f3e-941fb0799c4f",
-                "binaryUrl": "https://d1e00ek4ebabms.cloudfront.net/production/546cbc4-d4f7-47f9-3f3e-941fb0799c4f.jpg",
+                "apiUrl": "https://test.api.ft.com/content/5546cbc4-d4f7-47f9-3f3e-941fb0799c4f",
+                "binaryUrl": "https://d1e00ek4ebabms.cloudfront.net/production/5546cbc4-d4f7-47f9-3f3e-941fb0799c4f.jpg",
                 "copyright": {
                     "notice": "© PA"
                 },
@@ -52,7 +52,7 @@ var mainImageContent = `{"mainImage": {
                     }
                 ],
                 "lastModified": "2020-04-27T10:50:44.182Z",
-                "publishReference": "tid_cct_image_546cbc4-d4f7-47f9-3f3e-941fb0799c4f_1587984635897",
+                "publishReference": "tid_cct_image_5546cbc4-d4f7-47f9-3f3e-941fb0799c4f_1587984635897",
                 "publishedDate": "2020-04-27T10:50:35.897Z",
                 "title": "Admiral announced last week that it would issue customers with a £25 refund per vehicle insured because lockdown restrictions mean fewer people are driving",
                 "type": "http://www.ft.com/ontology/content/Image"
