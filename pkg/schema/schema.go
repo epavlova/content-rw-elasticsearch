@@ -9,6 +9,9 @@ type IndexModel struct {
 	LeadHeadline               *string  `json:"lead_headline"`
 	Byline                     *string  `json:"byline"`
 	Body                       *string  `json:"body"`
+	Scoop                      bool     `json:"scoop"`
+	CanBeSyndicated            *string  `json:"canBeSyndicated"`
+	CanBeDistributed           *string  `json:"canBeDistributed"`
 	URL                        *string  `json:"url"`
 	InitialPublish             *string  `json:"initial_publish"`
 	LastPublish                *string  `json:"last_publish"`
@@ -111,6 +114,9 @@ type Content struct {
 	PublishReference   string       `json:"publishReference"`
 	Type               string       `json:"type"`
 	DataSources        []dataSource `json:"dataSource"`
+	Scoop              bool         `json:"scoop"`
+	CanBeSyndicated    *string      `json:"canBeSyndicated"`
+	CanBeDistributed   *string      `json:"canBeDistributed"`
 }
 
 type dataSource struct {

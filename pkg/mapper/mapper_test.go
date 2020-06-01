@@ -84,10 +84,34 @@ func TestConvertToESContentModel(t *testing.T) {
 		outputFile                string
 		tid                       string
 	}{
-		{config.ArticleType, "exampleEnrichedContentModel.json", "exampleConcordanceResponse.json", "exampleElasticModel.json", "tid_1"},
-		{config.ArticleType, "testEnrichedContentModel1.json", "testConcordanceResponse1.json", "testElasticModel1.json", "tid_2"},
-		{config.ArticleType, "testEnrichedContentModel2.json", "", "testElasticModel2.json", "tid_3"},
-		{config.VideoType, "testEnrichedContentModel4.json", "", "testElasticModel4.json", "tid_video"},
+		{
+			contentType:               config.ArticleType,
+			inputFileEnrichedModel:    "exampleEnrichedContentModel.json",
+			inputFileConcordanceModel: "exampleConcordanceResponse.json",
+			outputFile:                "exampleElasticModel.json",
+			tid:                       "tid_1",
+		},
+		{
+			contentType:               config.ArticleType,
+			inputFileEnrichedModel:    "testEnrichedContentModel1.json",
+			inputFileConcordanceModel: "testConcordanceResponse1.json",
+			outputFile:                "testElasticModel1.json",
+			tid:                       "tid_2",
+		},
+		{
+			contentType:               config.ArticleType,
+			inputFileEnrichedModel:    "testEnrichedContentModel2.json",
+			inputFileConcordanceModel: "",
+			outputFile:                "testElasticModel2.json",
+			tid:                       "tid_3",
+		},
+		{
+			contentType:               config.VideoType,
+			inputFileEnrichedModel:    "testEnrichedContentModel4.json",
+			inputFileConcordanceModel: "",
+			outputFile:                "testElasticModel4.json",
+			tid:                       "tid_video",
+		},
 	}
 
 	log := logger.NewUPPLogger(config.AppName, config.AppDefaultLogLevel)
