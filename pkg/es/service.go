@@ -76,7 +76,18 @@ func (s *ElasticsearchService) GetSchemaHealth() (string, error) {
 		return "", err
 	}
 
-	settings, ok := liveIndex[s.IndexName].Settings["index"].(map[string]interface{})
+	indices := make([]string, 0, len(liveIndex))
+	for indexName := range liveIndex {
+		indices = append(indices, indexName)
+	}
+	// we are getting the first index name because we are using index alias and this is the real name
+	realIndexName := indices[0]
+
+	if len(indices) < 1 {
+		return fmt.Sprintf("not ok, could not find index that has alias %s", s.IndexName), nil
+	}
+
+	settings, ok := liveIndex[realIndexName].Settings["index"].(map[string]interface{})
 	if ok {
 		delete(settings, "creation_date")
 		delete(settings, "uuid")
@@ -84,11 +95,11 @@ func (s *ElasticsearchService) GetSchemaHealth() (string, error) {
 		delete(settings, "created")
 	}
 
-	if !reflect.DeepEqual(liveIndex[s.IndexName].Settings, referenceIndex.index[s.IndexName].Settings) {
+	if !reflect.DeepEqual(liveIndex[realIndexName].Settings, referenceIndex.index[s.IndexName].Settings) {
 		return "not ok, wrong settings", nil
 	}
 
-	if !reflect.DeepEqual(liveIndex[s.IndexName].Mappings, referenceIndex.index[s.IndexName].Mappings) {
+	if !reflect.DeepEqual(liveIndex[realIndexName].Mappings, referenceIndex.index[s.IndexName].Mappings) {
 		return "not ok, wrong mappings", nil
 	}
 
