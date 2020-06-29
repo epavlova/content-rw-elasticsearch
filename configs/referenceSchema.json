@@ -38,6 +38,15 @@
           "type": "string",
           "include_in_all": true
         },
+        "scoop": {
+          "type": "boolean"
+        },
+        "canBeDistributed": {
+          "type": "string"
+        },
+        "canBeSyndicated": {
+          "type": "string"
+        },
         "byline": {
           "type": "string",
           "fields": {
@@ -797,6 +806,15 @@
         "body": {
           "type": "string",
           "include_in_all": true
+        },
+        "scoop": {
+          "type": "boolean"
+        },
+        "canBeDistributed": {
+          "type": "string"
+        },
+        "canBeSyndicated": {
+          "type": "string"
         },
         "byline": {
           "type": "string",
@@ -1573,6 +1591,15 @@
           "type": "string",
           "include_in_all": true
         },
+        "scoop": {
+          "type": "boolean"
+        },
+        "canBeDistributed": {
+          "type": "string"
+        },
+        "canBeSyndicated": {
+          "type": "string"
+        },
         "byline": {
           "type": "string",
           "fields": {
@@ -2329,6 +2356,15 @@
         "body": {
           "type": "string",
           "include_in_all": true
+        },
+        "scoop": {
+          "type": "boolean"
+        },
+        "canBeDistributed": {
+          "type": "string"
+        },
+        "canBeSyndicated": {
+          "type": "string"
         },
         "byline": {
           "type": "string",
@@ -3087,6 +3123,15 @@
           "type": "string",
           "include_in_all": true
         },
+        "scoop": {
+          "type": "boolean"
+        },
+        "canBeDistributed": {
+          "type": "string"
+        },
+        "canBeSyndicated": {
+          "type": "string"
+        },
         "byline": {
           "type": "string",
           "fields": {
@@ -3843,6 +3888,15 @@
         "body": {
           "type": "string",
           "include_in_all": true
+        },
+        "scoop": {
+          "type": "boolean"
+        },
+        "canBeDistributed": {
+          "type": "string"
+        },
+        "canBeSyndicated": {
+          "type": "string"
         },
         "byline": {
           "type": "string",
