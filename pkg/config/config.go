@@ -24,6 +24,8 @@ const (
 	AudioType   = "audio"
 
 	PACOrigin = "http://cmdb.ft.com/systems/pac"
+
+	ContentTypeAudio = "Audio"
 )
 
 type ESContentTypeMetadataMap map[string]schema.ContentType
